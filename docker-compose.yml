@@ -1,8 +1,37 @@
-nginx:
-  image: nginx:latest
-  ports:
-    - "443:443"
-  volumes:
-    - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
-    - ./static/html:/etc/nginx/html
-    - ./certs:/etc/ssl/
+version: '2'
+services:
+
+  django:
+    container_name: pmp-django
+    build:
+      context: .
+    networks:
+      - pmp-django-nginx
+    volumes:
+      - pmp-django-static:/usr/src/app/static
+    ports:
+      - 8000:8000
+
+  nginx:
+    container_name: pmp-nginx
+    build:
+      context: ./nginx
+      dockerfile: nginx.dockerfile
+    networks:
+      - pmp-django-nginx
+    volumes:
+      - pmp-django-static:/usr/src/app/static
+      - pmp-nginx-cert:/etc/ssl/certs:ro
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - django
+
+volumes:
+  pmp-django-static:
+  pmp-nginx-cert:
+
+networks:
+  pmp-django-nginx:
+    driver: bridge

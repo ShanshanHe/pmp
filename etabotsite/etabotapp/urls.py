@@ -17,7 +17,6 @@ urlpatterns = {
     url(r'^api/projects/update/(?P<pk>[0-9]+)/$', ProjectUpdateView.as_view(), name="project_update"),
     url(r'^api/projects/(?P<pk>[0-9]+)/$', ProjectDetailsView.as_view(), name="details"),
     url(r'^api/get-token/', obtain_auth_token),
- 
 
 }
 
