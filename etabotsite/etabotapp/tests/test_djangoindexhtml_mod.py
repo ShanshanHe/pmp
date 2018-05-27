@@ -12,6 +12,7 @@ Copyright (C) 2018 Alex Radnaev
 
 import unittest
 import logging
+import os
 import sys
 sys.path.append("..")
 import misc_utils.django_indexhtml_mod as djhtml_mod
@@ -20,7 +21,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 class TestDjangoIndexHTMLmod(unittest.TestCase):
-    work_dir = 'test_djangoindexhtml_mod/'
+    work_dir = 'resources/'
     def test_html_to_django_template(self):
         src_html = self.work_dir + 'test_index.html'
         target_html = self.work_dir + 'test_index_modified.html'
@@ -33,9 +34,11 @@ class TestDjangoIndexHTMLmod(unittest.TestCase):
 
         with open(target_html) as f:
             t = f.readlines()
+        os.remove(target_html)
 
         with open(reference_html) as f:
             r = f.readlines()
 
         self.assertEqual(r, t)
+
 unittest.main()
