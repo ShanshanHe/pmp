@@ -6,15 +6,15 @@ FROM python:3.6
 # File Author / Maintainer
 MAINTAINER Maintaner Shanshan He
 
-ADD . /my_application
+ENV PROJECT_ROOT /usr/src/app
+ADD . /usr/src/app
+COPY start.sh /start.sh
 
-RUN pip install -r my_application/requirements.txt
+RUN pip install -r /usr/src/app/requirements.txt
 
 # EXPOSE port 8000 to allow communication to/from server
 EXPOSE 8000
 
-WORKDIR my_application/etabotsite/
-
 # CMD specifcies the command to execute to start the server running.
-CMD ["../start.sh"]
+CMD ["/start.sh", "-docker"]
 # done!
