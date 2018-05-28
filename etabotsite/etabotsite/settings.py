@@ -65,7 +65,6 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -74,7 +73,7 @@ MIDDLEWARE = [
     
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True   
+# CORS_ORIGIN_ALLOW_ALL = True   
 
 ROOT_URLCONF = 'etabotsite.urls'
 
@@ -153,4 +152,4 @@ STATIC_ROOT = '../static'
 #SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 #SECURE_SSL_REDIRECT = True
 #SESSION_COOKIE_SECURE = True
-#CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
