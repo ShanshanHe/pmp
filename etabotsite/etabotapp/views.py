@@ -6,8 +6,10 @@ from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import Project
 from .models import TMS
 from .permissions import IsOwner
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
+@ensure_csrf_cookie
 def index(request, path='', format=None):
     """
     Renders the Angular2 SPA
@@ -66,6 +68,7 @@ class TMSDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self, *args, **kwargs):
         return TMS.objects.all().filter(owner=self.request.user)
+
 
 class TMSUpdateView(generics.GenericAPIView, mixins.UpdateModelMixin):
     '''
