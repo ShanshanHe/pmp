@@ -22,6 +22,7 @@ def html_to_django_template(
         target_html,
         django_static_subpath):
 
+
     """src_html - filename with path to process
     target_html - filename with path to write
     django_static_subpath - path within Django static folder
@@ -31,6 +32,7 @@ def html_to_django_template(
 
     static_prefix = "{{% static '{}".format(django_static_subpath)
     static_suffix = "' %}"
+
     logging.info('replacing <filename> with pattern: ' + static_prefix +
                  '<filename>' + static_suffix)
 
@@ -49,3 +51,4 @@ def html_to_django_template(
         f.write(s)
 
     logging.info('{} is created'.format(target_html))
+
