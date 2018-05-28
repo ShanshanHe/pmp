@@ -7,6 +7,15 @@ from .models import Project
 from .models import TMS
 from .permissions import IsOwner
 
+
+def index(request, path='', format=None):
+    """
+    Renders the Angular2 SPA
+    """
+    print('format = "{}"'.format(format))
+    return render(request, 'index.html')
+
+
 class UserCreateView(generics.ListCreateAPIView):
     """This class defines the create behavior of our rest api."""
 
@@ -89,7 +98,6 @@ class ProjectDetailsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = (permissions.IsAuthenticated, IsOwner)
-
 
     def get_queryset(self, *args, **kwargs):
         return Project.objects.all().filter(owner=self.request.user)
