@@ -69,6 +69,7 @@ class TMSDetailsView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self, *args, **kwargs):
         return TMS.objects.all().filter(owner=self.request.user)
 
+
 class TMSUpdateView(generics.GenericAPIView, mixins.UpdateModelMixin):
     '''
     You just need to provide the field which is to be modified.
