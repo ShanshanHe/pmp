@@ -2,10 +2,12 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics, permissions, status, mixins
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import Project
 from .models import TMS
 from .permissions import IsOwner
+from .TMSlib.TMS import TMSTypes, TMSWrapper
 
 class UserCreateView(generics.ListCreateAPIView):
     """This class defines the create behavior of our rest api."""
@@ -104,3 +106,16 @@ class ProjectUpdateView(generics.GenericAPIView, mixins.UpdateModelMixin):
 
     def put(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
+
+
+class EstimateTMSView(APIView):
+
+    def get(self, request, format=None):
+        tms_id = request.query_params.get('tms', None)
+        tms = TMS.objects.all().filter(owner=self.request.user, id=tms_id)
+        permission_classes = (permissions.IsAuthenticated, IsOwner)
+        # here we need to call an estimate method that takes TMS object which includes TMS credentials
+        tms_wrapper = TMSWrapper(tms.type, tms.endpoint, tms.username, '')
+        tms_wrapper.estimate_tasks()
+
+        return Response(tms, status=status.HTTP_200_OK)
