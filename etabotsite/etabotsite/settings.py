@@ -30,7 +30,8 @@ SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 FIELD_ENCRYPTION_KEY = str.encode(os.environ['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True if LOCAL_MODE else False
+# DEBUG = True if LOCAL_MODE else False
+DEBUG = True
 
 # Update this in production environment to host ip for security reason
 ALLOWED_HOSTS = ["*"]
