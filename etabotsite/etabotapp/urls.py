@@ -18,7 +18,7 @@ urlpatterns = {
     url(r'^api/projects/update/(?P<pk>[0-9]+)/$', ProjectUpdateView.as_view(), name="project_update"),
     url(r'^api/projects/(?P<pk>[0-9]+)/$', ProjectDetailsView.as_view(), name="details"),
     url(r'^api/get-token/', obtain_auth_token),
-    url(r'api/estimate', EstimateTMSView, name="estimate_tms")
+    url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms")
 
 }
 

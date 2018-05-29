@@ -109,13 +109,14 @@ class ProjectUpdateView(generics.GenericAPIView, mixins.UpdateModelMixin):
 
 
 class EstimateTMSView(APIView):
+    #permission_classes = (permissions.IsAuthenticated, IsOwner)
 
     def get(self, request, format=None):
         tms_id = request.query_params.get('tms', None)
-        tms = TMS.objects.all().filter(owner=self.request.user, id=tms_id)
-        permission_classes = (permissions.IsAuthenticated, IsOwner)
+        tms_set = TMS.objects.all().filter(owner=self.request.user, id=tms_id)
         # here we need to call an estimate method that takes TMS object which includes TMS credentials
-        tms_wrapper = TMSWrapper(tms.type, tms.endpoint, tms.username, '')
-        tms_wrapper.estimate_tasks()
+        for tms in tms_set:
+            tms_wrapper = TMSWrapper(TMSTypes.JIRA, tms.endpoint, tms.username, '')
+            tms_wrapper.estimate_tasks()
 
-        return Response(tms, status=status.HTTP_200_OK)
+        return Response(tms_set, status=status.HTTP_200_OK)
