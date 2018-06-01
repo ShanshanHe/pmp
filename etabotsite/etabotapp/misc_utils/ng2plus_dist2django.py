@@ -44,7 +44,7 @@ def deploy_ng2plus(
     django_indexhtml_mod.html_to_django_template(
         indexhtml_src,
         django_template_path + '/index.html',
-        ui_target_dir)
+        django_angular_static_subpath)
 
     results.append(os.remove(indexhtml_src))
     logging.info('adding to git repo')
