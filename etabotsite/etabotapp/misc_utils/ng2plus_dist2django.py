@@ -31,17 +31,23 @@ def deploy_ng2plus(
     django_static_dir - path to where all files except index.html are copied
     django_template_path - path to where modified index.html is placed
     django_angular_static_subpath - location of angular files
-        with respect to Django static dir"""
+        with respect to Django static dir (e.g. 'ng_app/')"""
+    results = []
+    ui_target_dir = django_static_dir + '/' + django_angular_static_subpath
+    results.append(os.system("rm -rf {}".format(ui_target_dir)))
+    results.append(os.system("mkdir {}".format(ui_target_dir)))
+    results.append(os.system("cp -rf {} {}".format(
+        source_dir, ui_target_dir)))
+    logging.info('copy ng built dist result: {}'.format(results[-1]))
 
-    result = os.system("cp -rf {} {}".format(
-        source_dir, django_static_dir))
-    logging.info('copy ng built dist result: {}'.format(result))
-
-    indexhtml_src = django_static_dir + '/index.html'
+    indexhtml_src = ui_target_dir + '/index.html'
     django_indexhtml_mod.html_to_django_template(
         indexhtml_src,
         django_template_path + '/index.html',
-        django_angular_static_subpath)
+        ui_target_dir)
 
-    os.remove(indexhtml_src)
+    results.append(os.remove(indexhtml_src))
+    logging.info('adding to git repo')
+    results.append(os.system("git add {}".format(ui_target_dir)))
+    logging.info('results log: {}'.format(results))
     logging.info('deploy_ng2plus is done')
