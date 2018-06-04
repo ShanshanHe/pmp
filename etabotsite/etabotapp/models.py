@@ -1,5 +1,6 @@
-import sys,os
-
+import sys
+import os
+import logging
 
 sys.path.append(os.path.abspath('etabotapp'))
 from TMSlib.TMS import TMSWrapper, TMSTypes
