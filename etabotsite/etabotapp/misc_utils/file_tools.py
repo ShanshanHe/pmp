@@ -1,7 +1,8 @@
 """Purpose: collect common file tools.
 
-author: Alex Radnaev
+Author: Alex Radnaev
 
+date created: 2018-06-03
 """
 import fnmatch
 import os

@@ -1,13 +1,12 @@
-"""
-purpose: tests django_indexhtml_mod.py using 
-         reference django template
+"""Purpose: tests django_indexhtml_mod.py.
+
+Uses reference django template
 
 Author: Alex Radnaev
 
 date created: 2018-05-27
 
 Copyright (C) 2018 Alex Radnaev
-
 """
 
 import unittest

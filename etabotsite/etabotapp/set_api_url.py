@@ -1,4 +1,4 @@
-"""sets api url in UI
+"""sets api url in UI.
 
 author: Alex Radnaev
 

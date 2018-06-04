@@ -2,7 +2,7 @@
 
 
 def assertFileEqual(target_filename, reference_filename, unittest_instance):
-    """Returns None. Raises unittest assertion error if files are not equal"""
+    """Return None. Raises unittest assertion error if files are not equal."""
     with open(target_filename) as f:
         target = f.readlines()
 
