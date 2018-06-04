@@ -62,8 +62,10 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 # This receiver handles TMS credential check before saving it.
 @receiver(post_save, sender=TMS)
 def validate_tms_credential(sender, instance, **kwargs):
+    logging.debug('validate_tms_credential started')
     TMS_w1 = TMSWrapper(TMSTypes.JIRA, instance.endpoint, instance.username, {})
     TMS_w1.connect_to_TMS(instance.password)
+    logging.debug('validate_tms_credential finished')
 
 
 models.signals.pre_save.connect(validate_tms_credential, sender=TMS)

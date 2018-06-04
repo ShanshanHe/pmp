@@ -53,7 +53,9 @@ class TMSCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         """Save the post data when creating a new TMS account."""
+        logging.debug('TMSCreateView serializer.save started')
         serializer.save(owner=self.request.user)
+        logging.debug('TMSCreateView serializer.save finished')
 
     def get_queryset(self, *args, **kwargs):
         return TMS.objects.all().filter(owner=self.request.user)

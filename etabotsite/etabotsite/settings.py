@@ -14,6 +14,10 @@ import os
 import platform
 import base64
 import json
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 LOCAL_MODE = platform.system() == 'Darwin'
 
