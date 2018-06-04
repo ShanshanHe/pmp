@@ -16,12 +16,15 @@ import os
 import sys
 sys.path.append("..")
 import misc_utils.django_indexhtml_mod as djhtml_mod
+import misc_utils.unittest_extend as ute
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
+
 class TestDjangoIndexHTMLmod(unittest.TestCase):
     work_dir = 'resources/'
+
     def test_html_to_django_template(self):
         src_html = self.work_dir + 'test_index.html'
         target_html = self.work_dir + 'test_index_modified.html'
@@ -31,14 +34,6 @@ class TestDjangoIndexHTMLmod(unittest.TestCase):
             src_html,
             target_html,
             'ng_app_js/')
-
-        with open(target_html) as f:
-            t = f.readlines()
+        ute.assertFileEqual(target_html, reference_html, self)
         os.remove(target_html)
-
-        with open(reference_html) as f:
-            r = f.readlines()
-
-        self.assertEqual(r, t)
-
 unittest.main()
