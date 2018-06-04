@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os
 import platform
 import base64
+import json
 
 LOCAL_MODE = platform.system() == 'Darwin'
 
@@ -23,18 +24,21 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+django_keys = {}
+with open('django_keys.json') as f:
+    django_keys = json.load(f)
+
+SECRET_KEY = django_keys['DJANGO_SECRET_KEY']
 
 # Keys used to encrypt the password for TMS accounts
-
-FIELD_ENCRYPTION_KEY = str.encode(os.environ['DJANGO_FIELD_ENCRYPT_KEY'])
+FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True if LOCAL_MODE else False
 DEBUG = True
 
 # Update this in production environment to host ip for security reason
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*", "app.etabot.ai"]
 
 
 REST_FRAMEWORK = {
@@ -170,8 +174,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '../static'
-#STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-#SECURE_SSL_REDIRECT = True
-#SESSION_COOKIE_SECURE = True
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = False
