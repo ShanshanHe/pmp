@@ -1,6 +1,7 @@
 import sys
 import os
 import logging
+logging.getLogger().setLevel(logging.DEBUG)
 
 sys.path.append(os.path.abspath('etabotapp'))
 from TMSlib.TMS import TMSWrapper, TMSTypes

@@ -8,7 +8,7 @@ from .models import TMS
 from .permissions import IsOwner
 from django.views.decorators.csrf import ensure_csrf_cookie
 import logging
-
+logging.getLogger().setLevel(logging.DEBUG)
 
 @ensure_csrf_cookie
 def index(request, path='', format=None):
