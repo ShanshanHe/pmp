@@ -22,7 +22,6 @@ def html_to_django_template(
         target_html,
         django_static_subpath):
 
-
     """src_html - filename with path to process
     target_html - filename with path to write
     django_static_subpath - path within Django static folder
@@ -51,4 +50,3 @@ def html_to_django_template(
         f.write(s)
 
     logging.info('{} is created'.format(target_html))
-

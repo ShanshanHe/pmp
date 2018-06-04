@@ -7,7 +7,8 @@ from .models import Project
 from .models import TMS
 from .permissions import IsOwner
 from django.views.decorators.csrf import ensure_csrf_cookie
-
+import logging
+logging.getLogger().setLevel(logging.DEBUG)
 
 @ensure_csrf_cookie
 def index(request, path='', format=None):
@@ -53,7 +54,9 @@ class TMSCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         """Save the post data when creating a new TMS account."""
+        logging.debug('TMSCreateView serializer.save started')
         serializer.save(owner=self.request.user)
+        logging.debug('TMSCreateView serializer.save finished')
 
     def get_queryset(self, *args, **kwargs):
         return TMS.objects.all().filter(owner=self.request.user)
