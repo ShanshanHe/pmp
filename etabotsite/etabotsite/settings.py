@@ -11,6 +11,15 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import platform
+import base64
+import json
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+LOCAL_MODE = platform.system() == 'Darwin'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,20 +28,21 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# todo: ET-228, ET-232 to move keys from code to safer environment
-SECRET_KEY = 'k3ku*za@*z$it7@+6+r46pyjv220++5kn((d)w+gozvleu-fhu'
+django_keys = {}
+with open('django_keys.json') as f:
+    django_keys = json.load(f)
 
+SECRET_KEY = django_keys['DJANGO_SECRET_KEY']
 
 # Keys used to encrypt the password for TMS accounts
-# todo: ET-228, ET-232 to move keys from code to safer environment
-FIELD_ENCRYPTION_KEY = b'M3h4avmBpgu_QTDr4k5jO9yUfsMIvfNGnQr21aCLbzw='
+FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = True if LOCAL_MODE else False
 DEBUG = True
 
 # Update this in production environment to host ip for security reason
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*", "app.etabot.ai"]
 
 
 REST_FRAMEWORK = {
@@ -60,21 +70,40 @@ INSTALLED_APPS = [
     'corsheaders',
     'encrypted_model_fields',
 ]
-
+    
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-        
-    
+    'django.middleware.clickjacking.XFrameOptionsMiddleware', 
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True   
+if LOCAL_MODE:
+    MIDDLEWARE = [
+        'django.middleware.security.SecurityMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'corsheaders.middleware.CorsMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware', 
+    ]
+
+    CORS_ORIGIN_ALLOW_ALL = True
+else:
+    MIDDLEWARE = [
+        'django.middleware.security.SecurityMiddleware',
+        'django.contrib.sessions.middleware.SessionMiddleware',
+        'django.middleware.common.CommonMiddleware',
+        'django.middleware.csrf.CsrfViewMiddleware',
+        'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'django.contrib.messages.middleware.MessageMiddleware',
+        'django.middleware.clickjacking.XFrameOptionsMiddleware', 
+    ]
 
 ROOT_URLCONF = 'etabotsite.urls'
 
@@ -149,8 +178,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '../static'
-#STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-#SECURE_SSL_REDIRECT = True
-#SESSION_COOKIE_SECURE = True
-#CSRF_COOKIE_SECURE = True
+# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
