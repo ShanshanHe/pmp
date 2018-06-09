@@ -5,6 +5,7 @@ author: Alex Radnaev
 usage:
 
 python set_api_url.py UI_path api_url
+python set_api_url.py static/ng2_app https://0.0.0.0:8000/api/
 """
 import sys
 import re
