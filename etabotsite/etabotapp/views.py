@@ -8,6 +8,18 @@ from .models import Project
 from .models import TMS
 from .permissions import IsOwner
 from .TMSlib.TMS import TMSTypes, TMSWrapper
+from django.views.decorators.csrf import ensure_csrf_cookie
+import logging
+logging.getLogger().setLevel(logging.DEBUG)
+
+@ensure_csrf_cookie
+def index(request, path='', format=None):
+    """
+    Renders the Angular2 SPA
+    """
+    print('format = "{}"'.format(format))
+    return render(request, 'index.html')
+
 
 class UserCreateView(generics.ListCreateAPIView):
     """This class defines the create behavior of our rest api."""
@@ -44,7 +56,9 @@ class TMSCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         """Save the post data when creating a new TMS account."""
+        logging.debug('TMSCreateView serializer.save started')
         serializer.save(owner=self.request.user)
+        logging.debug('TMSCreateView serializer.save finished')
 
     def get_queryset(self, *args, **kwargs):
         return TMS.objects.all().filter(owner=self.request.user)
@@ -59,6 +73,7 @@ class TMSDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self, *args, **kwargs):
         return TMS.objects.all().filter(owner=self.request.user)
+
 
 class TMSUpdateView(generics.GenericAPIView, mixins.UpdateModelMixin):
     '''
@@ -91,7 +106,6 @@ class ProjectDetailsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = (permissions.IsAuthenticated, IsOwner)
-
 
     def get_queryset(self, *args, **kwargs):
         return Project.objects.all().filter(owner=self.request.user)
