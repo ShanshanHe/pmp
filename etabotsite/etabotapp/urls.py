@@ -3,7 +3,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework.authtoken.views import obtain_auth_token
 from .views import UserCreateView, TMSCreateView, TMSUpdateView
 from .views import UserDetailsView, TMSDetailsView, ProjectUpdateView
-from .views import ProjectCreateView, ProjectDetailsView
+from .views import ProjectCreateView, ProjectDetailsView, EstimateTMSView
 from .views import index
 
 urlpatterns = {
@@ -24,6 +24,7 @@ urlpatterns = {
     url(r'^api/projects/(?P<pk>[0-9]+)/$', ProjectDetailsView.as_view(),
         name="details"),
     url(r'^api/get-token/', obtain_auth_token),
+    url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
 
     # catch-all pattern for compatibility with the Angular routes
     url(r'^(?P<path>.*)/$', index),
