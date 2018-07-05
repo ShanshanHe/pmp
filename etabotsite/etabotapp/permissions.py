@@ -32,7 +32,7 @@ class AnonCreateAndUpdateOwnerOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return view.action in ['retrieve', 'update', 'partial_update',
                                'destroy'] and obj.id == request.user.id or \
-               request.user.is_staff
+               request.user.is_staff or obj.owner == request.user
 
 
 class ListAdminOnly(permissions.BasePermission):
