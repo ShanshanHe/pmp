@@ -32,6 +32,7 @@ django_keys = {}
 with open('django_keys.json') as f:
     django_keys = json.load(f)
 
+logging.debug('loaded django_keys: "{}"'.format(django_keys.keys()))
 SECRET_KEY = django_keys['DJANGO_SECRET_KEY']
 
 # Keys used to encrypt the password for TMS accounts
