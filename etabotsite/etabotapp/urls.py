@@ -24,6 +24,7 @@ urlpatterns = {
     url(r'^api/projects/(?P<pk>[0-9]+)/$', ProjectDetailsView.as_view(),
         name="details"),
     url(r'^api/get-token/', obtain_expiring_auth_token),
+    url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
 
     # catch-all pattern for compatibility with the Angular routes
     url(r'^(?P<path>.*)/$', index),
