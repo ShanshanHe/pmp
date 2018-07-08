@@ -1,6 +1,6 @@
 from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
-from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 from .views import UserCreateView, TMSCreateView, TMSUpdateView
 from .views import UserDetailsView, TMSDetailsView, ProjectUpdateView
 from .views import ProjectCreateView, ProjectDetailsView, EstimateTMSView
@@ -23,7 +23,7 @@ urlpatterns = {
         name="project_update"),
     url(r'^api/projects/(?P<pk>[0-9]+)/$', ProjectDetailsView.as_view(),
         name="details"),
-    url(r'^api/get-token/', obtain_auth_token),
+    url(r'^api/get-token/', obtain_expiring_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
 
     # catch-all pattern for compatibility with the Angular routes

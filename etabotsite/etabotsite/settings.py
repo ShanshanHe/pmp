@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os
 import platform
 import base64
+import datetime
 import json
 import logging
 
@@ -32,6 +33,7 @@ django_keys = {}
 with open('django_keys.json') as f:
     django_keys = json.load(f)
 
+logging.debug('loaded django_keys: "{}"'.format(django_keys.keys()))
 SECRET_KEY = django_keys['DJANGO_SECRET_KEY']
 
 # Keys used to encrypt the password for TMS accounts
@@ -43,6 +45,9 @@ DEBUG = True
 
 # Update this in production environment to host ip for security reason
 ALLOWED_HOSTS = ["*", "app.etabot.ai"]
+
+# Life span for expiring token
+EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(seconds=900)
 
 
 REST_FRAMEWORK = {
@@ -67,6 +72,7 @@ INSTALLED_APPS = [
     'etabotapp',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_expiring_authtoken',
     'corsheaders',
     'encrypted_model_fields',
 ]
