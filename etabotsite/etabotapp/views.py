@@ -2,10 +2,12 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics, permissions, status, mixins
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import Project
 from .models import TMS
 from .permissions import IsOwner
+from .TMSlib.TMS import TMSTypes, TMSWrapper
 from django.views.decorators.csrf import ensure_csrf_cookie
 import logging
 logging.getLogger().setLevel(logging.DEBUG)
@@ -118,3 +120,17 @@ class ProjectUpdateView(generics.GenericAPIView, mixins.UpdateModelMixin):
 
     def put(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
+
+
+class EstimateTMSView(APIView):
+    #permission_classes = (permissions.IsAuthenticated, IsOwner)
+
+    def get(self, request, format=None):
+        tms_id = request.query_params.get('tms', None)
+        tms_set = TMS.objects.all().filter(owner=self.request.user, id=tms_id)
+        # here we need to call an estimate method that takes TMS object which includes TMS credentials
+        for tms in tms_set:
+            tms_wrapper = TMSWrapper(TMSTypes.JIRA, tms.endpoint, tms.username, '')
+            tms_wrapper.estimate_tasks()
+
+        return Response(tms_set, status=status.HTTP_200_OK)

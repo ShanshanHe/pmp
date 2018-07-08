@@ -3,7 +3,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from rest_framework_expiring_authtoken.views import obtain_expiring_auth_token
 from .views import UserCreateView, TMSCreateView, TMSUpdateView
 from .views import UserDetailsView, TMSDetailsView, ProjectUpdateView
-from .views import ProjectCreateView, ProjectDetailsView
+from .views import ProjectCreateView, ProjectDetailsView, EstimateTMSView
 from .views import index
 
 urlpatterns = {
