@@ -8,15 +8,27 @@ backend data infrastructure and server for Smart project management tool made fo
 #### Prequisites:
 * Have docker, docker compose installed
 * Knowledge of Django and Nginx
+* Add your dns to hosts, for example:
+  ``` 
+  $ sudo vi /etc/hosts
+  ```
+  Add the following line to the end of the file:
+  ```
+  0.0.0.0 app.etabot.ai
+  ```
 
 #### Bring up pmp services which include nginx and django
-Clone the repo to your server, and at the root directory, run the following command:
+Clone the repo to your server
+```
+git clone https://github.com/ShanshanHe/pmp.git
+```
+At the root directory, run the following commands:
 ```
 $ docker-compose build --no-cache
 $ docker-compose up --no-start --force-recreate
 ```
 
-It will build two docker images: `pmp-nginx` and `pmp-django`, and run both images as two containers. At the same time, it creates two docker local volumes:
+The two commands above will build two docker images: `pmp-nginx` and `pmp-django`, and then run both images as two containers. At the same time, they create two docker local volumes, you can check the volumes using the following command:
 
 ```
 $ docker volume ls
