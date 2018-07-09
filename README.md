@@ -64,3 +64,59 @@ And you should see two containers running.
 Vola, you successfully deployed your `pmp` project! Type the ip address of your server in your browser to visit the default `pmp` webpage. 
 
 Hope you enjoy!
+
+## To run django seperately for development, please follow the process below:
+
+#### Prerequisite:
+* Have python 3.6 installed on your development machine
+
+If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.
+#### Install `virtualenv` and `virtualenvwrapper` tool to manage python environment
+```
+$ pip install virtualenv
+$ pip install virtualenvwrapper
+```
+Open your bash profile:
+```
+$ vim ~/.bash_profile
+```
+and add the following two lines at the end of the file:
+```
+export WORKON_HOME=~/Envs
+source /usr/local/bin/virtualenvwrapper.sh
+```
+And at your terminal, run:
+```
+$ source ~/.bash_profile
+```
+
+To create a virtual environment for the project, follow the command below:
+```
+$ mkvirtualenv --python=python3 <name_of_the_virtual_environment>
+```
+#### Run django server locally
+Suppose you're already in a virtual environemnt, go to our project root directory,install the dependencies:
+```
+$ pip install -r requirements.txt
+```
+Go the etabotsite directory:
+```
+$ cd etabotsite/
+```
+If this is your first time running the project in development mode, you want to create the database table by running the following command:
+```
+$ python manage.py migrate
+$ python manage.py makemigrations
+```
+To run all the unit tests:
+```
+$ python manage.py test
+```
+To run the backend server:
+```
+$ python manage.py runserver 0.0.0.0:8000
+```
+
+Vola! You have django server up and running in development mode. Go to you browser, enter the address below:
+http://0.0.0.0:8000/index
+You have a sample project management site ready to go!
