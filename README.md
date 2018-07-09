@@ -69,6 +69,14 @@ Hope you enjoy!
 
 #### Prerequisite:
 * Have python 3.6 installed on your development machine
+* Add your dns to hosts, for example:
+  ``` 
+  $ sudo vi /etc/hosts
+  ```
+  Add the following line to the end of the file:
+  ```
+  0.0.0.0 app.etabot.ai
+  ```
 
 If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.
 #### Install `virtualenv` and `virtualenvwrapper` tool to manage python environment
@@ -112,11 +120,16 @@ To run all the unit tests:
 ```
 $ python manage.py test
 ```
+Before we run the server, we will need to modify the `/static/ng2_app/main.js` static file to point to `http` instead of `https`, to do this, follow the command below:
+```
+$ cd etabotapp/
+$ python set_api_url.py static/ng2_app/ http://app.etabot.ai:8000/api/
+```
 To run the backend server:
 ```
 $ python manage.py runserver 0.0.0.0:8000
 ```
 
 Vola! You have django server up and running in development mode. Go to you browser, enter the address below:
-http://0.0.0.0:8000/index
+http://app.etabot.ai:8000/index
 You have a sample project management site ready to go!
