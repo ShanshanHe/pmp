@@ -5,12 +5,12 @@ from .views import UserViewSet, ProjectViewSet, TMSViewSet, EstimateTMSView
 from .views import index
 
 router = DefaultRouter()
-router.register(r'api/users', UserViewSet)
-router.register(r'api/projects', ProjectViewSet)
-router.register(r'api/tms', TMSViewSet)
+router.register(r'users', UserViewSet)
+router.register(r'projects', ProjectViewSet)
+router.register(r'tms', TMSViewSet)
 
 urlpatterns = [
-    url(r'^', include(router.urls)),
+    url(r'^api/', include(router.urls)),
     url(r'^api/auth/',
         include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/get-token/', obtain_auth_token),
