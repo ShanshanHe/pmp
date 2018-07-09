@@ -1,15 +1,13 @@
 import sys
 import os
 import logging
+
 logging.getLogger().setLevel(logging.DEBUG)
 
 sys.path.append(os.path.abspath('etabotapp'))
-from TMSlib.TMS import TMSWrapper, TMSTypes
+from .TMSlib.TMS import TMSWrapper, TMSTypes
+
 sys.path.pop(0)
-
-
-
-
 
 from django.db import models
 from jsonfield import JSONField
@@ -23,13 +21,15 @@ from django.core.exceptions import ValidationError
 from encrypted_model_fields.fields import EncryptedCharField
 from django.utils.translation import gettext as _
 
+
 class TMS(models.Model):
     """This class represents the jira user model."""
     TMS_TYPE = (
         ('JI', 'JIRA'),
         ('TR', 'Trello'),
     )
-    owner = models.ForeignKey('auth.User', related_name='TMSAccounts', on_delete=models.CASCADE)
+    owner = models.ForeignKey('auth.User', related_name='TMSAccounts',
+                              on_delete=models.CASCADE)
     endpoint = models.CharField(max_length=60)
     username = models.CharField(max_length=60)
     password = EncryptedCharField(max_length=60)
@@ -42,7 +42,8 @@ class TMS(models.Model):
 class Project(models.Model):
     """This class represents the project model."""
     # jiraacount = models.ForeignKey(JIRAAccount, on_delete=models.CASCADE)
-    owner = models.ForeignKey('auth.User', related_name='projects', on_delete=models.CASCADE)
+    owner = models.ForeignKey('auth.User', related_name='projects',
+                              on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
     mode = models.CharField(max_length=60)
     open_status = models.CharField(max_length=60)
@@ -65,7 +66,8 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 @receiver(post_save, sender=TMS)
 def validate_tms_credential(sender, instance, **kwargs):
     logging.debug('validate_tms_credential started')
-    TMS_w1 = TMSWrapper(TMSTypes.JIRA, instance.endpoint, instance.username, {})
+    TMS_w1 = TMSWrapper(TMSTypes.JIRA, instance.endpoint, instance.username,
+                        {})
     TMS_w1.connect_to_TMS(instance.password)
     logging.debug('validate_tms_credential finished')
 
