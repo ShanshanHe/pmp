@@ -12,6 +12,11 @@
 
 from enum import Enum
 import TMSlib.JIRA_API as JIRA_API
+import logging
+
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 class TMSTypes(Enum):
 	JIRA = 1
@@ -34,7 +39,10 @@ class ProtoTMS():
 		raise NotImplementedError('default connect_to_TMS is not implemented')
 
 	def get_all_tasks(self, tasks_framework):
-		raise NotImplementedError('default get_all_tasks is not implemented')		
+		raise NotImplementedError('default get_all_tasks is not implemented')
+
+	def estimate_tasks(self):
+		raise NotImplementedError('default estimate task deadlines is not implemented')
 
 class TMS_JIRA(ProtoTMS):
 	
@@ -53,6 +61,11 @@ class TMS_JIRA(ProtoTMS):
 			self.jira = JIRA_API.JIRA_wrapper(self.server_end_point, self.username_login, password = password)
 		except Exception as e:
 			raise NameError("cannot connnect to TMS JIRA due to {}".format(e))
+
+	def estimate_tasks(self):
+		logging.info('Estimating tasks for JIRA: {}, hold tight!'.format(self))
+		#TODO Shanshan Implement the method to call estimate algo
+
 
 
 class TMSWrapper(TMS_JIRA):

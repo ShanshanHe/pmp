@@ -41,7 +41,7 @@ $ docker cp nginx/certs/key.pem temp-volume:/etc/ssl/certs/key.pem
 Now we run the following commands again:
 ```
 $ docker-compose build --no-cache
-$ docker-compose up --no-start --force-recreate
+$ docker-compose up --force-recreate
 ```
 Ensure all containers are up and running by:
 ```
