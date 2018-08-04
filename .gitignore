@@ -1,0 +1,10 @@
+db.sqlite3
+
+etabotsite/etabotapp/TMSlib/__pycache__/
+etabotsite/etabotapp/__pycache__/
+etabotsite/etabotapp/passwords/__pycache__/
+etabotsite/etabotsite/__pycache__/
+etabotsite/etabotapp/misc_utils/__pycache__/
+
+# pycharm
+.idea/
