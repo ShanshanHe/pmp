@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import Project, TMS
-from .permissions import IsOwnerOrReadOnly, AnonCreateAndUpdateOwnerOnly
+from .permissions import IsOwnerOrReadOnly, IsOwner
 from .TMSlib.TMS import TMSTypes, TMSWrapper
 
 import logging
@@ -46,8 +46,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          AnonCreateAndUpdateOwnerOnly,)
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwner,)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -62,8 +62,8 @@ class TMSViewSet(viewsets.ModelViewSet):
     """
     queryset = TMS.objects.all()
     serializer_class = TMSSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          AnonCreateAndUpdateOwnerOnly,)
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwner,)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
