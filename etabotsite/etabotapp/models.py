@@ -12,7 +12,7 @@ sys.path.pop(0)
 from django.db import models
 from jsonfield import JSONField
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from django.dispatch import receiver
@@ -63,7 +63,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 
 # This receiver handles TMS credential check before saving it.
-@receiver(post_save, sender=TMS)
+@receiver(pre_save, sender=TMS)
 def validate_tms_credential(sender, instance, **kwargs):
     logging.debug('validate_tms_credential started')
     TMS_w1 = TMSWrapper(TMSTypes.JIRA, instance.endpoint, instance.username,

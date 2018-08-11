@@ -27,6 +27,11 @@ At the root directory, run the following commands:
 $ docker-compose build --no-cache
 $ docker-compose up --no-start --force-recreate
 ```
+add the following lines in case you run into Networking errors:
+Edit /etc/default/docker and add your DNS server to the following line:
+
+Example 
+DOCKER_OPTS="--dns 8.8.8.8 --dns 10.252.252.252"
 
 The two commands above will build two docker images: `pmp-nginx` and `pmp-django`, and then run both images as two containers. At the same time, they create two docker local volumes, you can check the volumes using the following command:
 
