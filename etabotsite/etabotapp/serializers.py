@@ -20,6 +20,9 @@ class UserSerializer(serializers.ModelSerializer):
     TMSAccounts = serializers.PrimaryKeyRelatedField(
         many=True, required=False, queryset=TMS.objects.all()
     )
+    is_active = serializers.BooleanField(
+        required=False
+    )
 
     def create(self, validated_data):
         user = User.objects.create_user(validated_data['username'],
@@ -31,7 +34,7 @@ class UserSerializer(serializers.ModelSerializer):
         """Meta class to map serializer's fields with the model fields."""
         model = User
         fields = (
-        'id', 'username', 'password', 'email', 'projects', 'TMSAccounts')
+        'id', 'username', 'password', 'email', 'is_active', 'projects', 'TMSAccounts')
         write_only_fields = ('password',)
         read_only_fields = ('id',)
 

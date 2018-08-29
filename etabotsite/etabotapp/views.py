@@ -1,16 +1,19 @@
-from django.shortcuts import render
+import logging
+
 from django.contrib.auth.models import User
+from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import permissions, status, viewsets
-from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
+from rest_framework.views import APIView
 from .models import Project, TMS
 from .permissions import IsOwnerOrReadOnly, AnonCreateAndUpdateOwnerOnly
+from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .TMSlib.TMS import TMSTypes, TMSWrapper
+from .user_activation import ActivationProcessor, ResponseCode
 
-import logging
+
 logging.getLogger().setLevel(logging.DEBUG)
 
 
@@ -21,6 +24,24 @@ def index(request, path='', format=None):
     """
     print('format = "{}"'.format(format))
     return render(request, 'index.html')
+
+
+@api_view(['GET', 'POST'])
+def activate(request, token):
+    code = ActivationProcessor.activate_user(token)
+
+    if code == ResponseCode.DECRYPTION_ERROR:
+        return Response('Token is invalid. Please contact ETAbot.')
+    elif code == ResponseCode.EXPIRATION_ERROR:
+        return Response('Token already expired!')
+    elif code == ResponseCode.ALREADY_ACTIVATE_ERROR:
+        return Response('The user was already activated!')
+    elif code == ResponseCode.NOT_EXIST_ERROR:
+        return Response('The user does not exist!')
+    elif code == ResponseCode.SUCCESS:
+        return Response('The user is successfully activated!')
+    else:
+        return Response('Something wrong!')
 
 
 class UserViewSet(viewsets.ModelViewSet):

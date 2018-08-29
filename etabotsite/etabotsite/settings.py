@@ -52,7 +52,7 @@ EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(seconds=900)
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.BasicAuthentication',
@@ -177,6 +177,13 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'wuhao101@gmail.com'
+EMAIL_HOST_PASSWORD = 'Ng_19900407007'
 
 
 # Static files (CSS, JavaScript, Images)

@@ -14,7 +14,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
             return True
 
         # Write permissions are only allowed to the owner of the snippet.
-        return obj.owner == request.user
+        return obj.owner == request.user and request.user.is_active
 
 
 class AnonCreateAndUpdateOwnerOnly(permissions.BasePermission):
