@@ -2,24 +2,20 @@ import sys
 import os
 import logging
 
-logging.getLogger().setLevel(logging.DEBUG)
-
-sys.path.append(os.path.abspath('etabotapp'))
-from .TMSlib.TMS import TMSWrapper, TMSTypes
-
-sys.path.pop(0)
-
 from django.db import models
-from jsonfield import JSONField
-
 from django.db.models.signals import post_save, pre_save
 from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
 from django.dispatch import receiver
-from django.core.exceptions import ValidationError
-
 from encrypted_model_fields.fields import EncryptedCharField
-from django.utils.translation import gettext as _
+from jsonfield import JSONField
+from rest_framework.authtoken.models import Token
+from .user_activation import ActivationProcessor
+
+logging.getLogger().setLevel(logging.DEBUG)
+sys.path.append(os.path.abspath('etabotapp'))
+sys.path.pop(0)
+
+from .TMSlib.TMS import TMSWrapper, TMSTypes
 
 
 class TMS(models.Model):
@@ -60,6 +56,11 @@ class Project(models.Model):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+        user = User.objects.get(pk=instance.id)
+        user.is_active = False
+        user.save()
+
+        ActivationProcessor.email_token(user)
 
 
 # This receiver handles TMS credential check before saving it.
