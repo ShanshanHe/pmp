@@ -27,6 +27,11 @@ At the root directory, run the following commands:
 $ docker-compose build --no-cache
 $ docker-compose up --no-start --force-recreate
 ```
+add the following lines in case you run into Networking errors:
+Edit /etc/default/docker and add your DNS server to the following line:
+
+Example 
+DOCKER_OPTS="--dns 8.8.8.8 --dns 10.252.252.252"
 
 The two commands above will build two docker images: `pmp-nginx` and `pmp-django`, and then run both images as two containers. At the same time, they create two docker local volumes, you can check the volumes using the following command:
 
@@ -69,6 +74,14 @@ Hope you enjoy!
 
 #### Prerequisite:
 * Have python 3.6 installed on your development machine
+* Add your dns to hosts, for example:
+  ``` 
+  $ sudo vi /etc/hosts
+  ```
+  Add the following line to the end of the file:
+  ```
+  0.0.0.0 app.etabot.ai
+  ```
 
 If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.
 #### Install `virtualenv` and `virtualenvwrapper` tool to manage python environment
@@ -112,11 +125,16 @@ To run all the unit tests:
 ```
 $ python manage.py test
 ```
+Before we run the server, we will need to modify the `/static/ng2_app/main.js` static file to point to `http` instead of `https`, to do this, follow the command below:
+```
+$ cd etabotapp/
+$ python set_api_url.py static/ng2_app/ http://app.etabot.ai:8000/api/
+```
 To run the backend server:
 ```
 $ python manage.py runserver 0.0.0.0:8000
 ```
 
 Vola! You have django server up and running in development mode. Go to you browser, enter the address below:
-http://0.0.0.0:8000/index
+http://app.etabot.ai:8000/index
 You have a sample project management site ready to go!

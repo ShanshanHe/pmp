@@ -44,7 +44,8 @@ FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 DEBUG = True
 
 # Update this in production environment to host ip for security reason
-ALLOWED_HOSTS = ["*", "app.etabot.ai", "localhost", "127.0.0.1", "0.0.0.0"]
+ALLOWED_HOSTS = [
+    "*", "app.etabot.ai", "localhost", "127.0.0.1", "0.0.0.0", "dev.etabot.ai"]
 
 # Life span for expiring token
 EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(seconds=900)

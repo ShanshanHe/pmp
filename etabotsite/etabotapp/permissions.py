@@ -4,6 +4,16 @@ from .models import TMS
 from django.contrib.auth.models import User
 
 
+class IsOwner(permissions.BasePermission):
+    """Custom permission class to allow only bucketlist owners to edit them."""
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        # permissions are only allowed to the owner of the snippet.
+        return obj.owner == request.user
+
+
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """Custom permission class to allow only bucketlist owners to edit them."""
 

@@ -3,7 +3,7 @@ import os
 import logging
 
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.contrib.auth.models import User
 from django.dispatch import receiver
 from encrypted_model_fields.fields import EncryptedCharField
@@ -64,7 +64,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 
 # This receiver handles TMS credential check before saving it.
-@receiver(post_save, sender=TMS)
+@receiver(pre_save, sender=TMS)
 def validate_tms_credential(sender, instance, **kwargs):
     logging.debug('validate_tms_credential started')
     TMS_w1 = TMSWrapper(TMSTypes.JIRA, instance.endpoint, instance.username,
@@ -72,5 +72,3 @@ def validate_tms_credential(sender, instance, **kwargs):
     TMS_w1.connect_to_TMS(instance.password)
     logging.debug('validate_tms_credential finished')
 
-
-models.signals.pre_save.connect(validate_tms_credential, sender=TMS)

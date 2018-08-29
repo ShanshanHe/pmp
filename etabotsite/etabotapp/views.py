@@ -8,7 +8,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Project, TMS
-from .permissions import IsOwnerOrReadOnly, AnonCreateAndUpdateOwnerOnly
+
+from .permissions import IsOwnerOrReadOnly, , IsOwner, AnonCreateAndUpdateOwnerOnly
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .TMSlib.TMS import TMSTypes, TMSWrapper
 from .user_activation import ActivationProcessor, ResponseCode
@@ -67,8 +68,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          AnonCreateAndUpdateOwnerOnly,)
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwner,)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -83,8 +84,8 @@ class TMSViewSet(viewsets.ModelViewSet):
     """
     queryset = TMS.objects.all()
     serializer_class = TMSSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                          AnonCreateAndUpdateOwnerOnly,)
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwner,)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -102,4 +103,4 @@ class EstimateTMSView(APIView):
                                      '')
             tms_wrapper.estimate_tasks()
 
-        return Response(tms_set, status=status.HTTP_200_OK)
+        return Response('TMS account to estimate: %s'%tms_set, status=status.HTTP_200_OK)
