@@ -70,4 +70,49 @@ def validate_tms_credential(sender, instance, **kwargs):
                         {})
     TMS_w1.connect_to_TMS(instance.password)
     logging.debug('validate_tms_credential finished')
+    logging.debug('instance  ({}): {}'.format(type(instance), instance))
+    logging.debug('sender: {}'.format(sender))
+    logging.debug('kwargs: {}'.format(kwargs))
+    dummy_project1 = Project(
+        owner=instance.owner,
+        name='Dummy project',
+        mode='Scrum',
+        open_status='To Do',
+        grace_period='4.0',
+        work_hours={
+            "Monday": [
 
+                {"end": 14, "start": 10},
+                {"end": 17, "start": 15}
+
+            ],
+
+            "Thursday": [
+
+                {"end": 14, "start": 10}
+
+            ],
+
+            "Time Zone": "GMT +8",
+
+            "Tuesday": [
+
+                {"end": 14, "start": 10}
+
+            ],
+            "Wednesday": [
+
+                {"end": 14, "start": 10},
+                {"end": 22, "start": 19}
+
+            ]},
+        vacation_days=[
+
+            {"start": "2017-04-01", "end": "2017-05-02"},
+            {"start": "2018-07-01", "end": "2018-07-02"}
+
+        ])
+    dummy_project1.save()
+    logging.debug('dummy_project1 saved')
+
+models.signals.pre_save.connect(validate_tms_credential, sender=TMS)

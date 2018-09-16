@@ -19,7 +19,6 @@ def index(request, path='', format=None):
     """
     Renders the Angular2 SPA
     """
-    print('format = "{}"'.format(format))
     return render(request, 'index.html')
 
 
