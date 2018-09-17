@@ -1,7 +1,10 @@
 import base64
 import logging
+import smtplib
 import time
 
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
@@ -13,7 +16,12 @@ email_subject = 'Welcome to ETAbot'
 #sys_domain = '127.0.0.1:8000'
 sys_domain = ''
 sys_email = ''
-token_expiration_period = 2 * 60 * 1000
+sys_email_pwd = ''
+email_host = 'smtp.gmail.com'
+token_link = 'http://{}/api/activate/{}'
+email_port = 587
+# token_expiration_period = 2 * 60 * 1000
+token_expiration_period = 24 * 60 * 60 * 1000
 
 
 class ResponseCode(Enum):
@@ -33,13 +41,25 @@ class ActivationProcessor(object):
             encoded_token = base64.urlsafe_b64encode(force_bytes(plain_token))
             token_str = encoded_token.decode('utf-8')
 
-            message = render_to_string('acc_active_email.html', {
+            msg = MIMEMultipart()
+            msg['From'] = sys_email
+            msg['To'] = user.email
+            msg['Subject'] = email_subject
+            hyper_link = token_link.format(sys_domain, token_str)
+            msg_body = render_to_string('acc_active_email.html', {
                 'username': user.username,
-                'domain': sys_domain,
-                'token': token_str
+                'link': hyper_link,
             })
+            msg.attach(MIMEText(msg_body, 'html'))
 
-            user.email_user(subject=email_subject, message=message, from_email=sys_email)
+            server = smtplib.SMTP(email_host, email_port)
+            server.set_debuglevel(1)
+            server.ehlo()
+            server.starttls()
+            server.login(sys_email, sys_email_pwd)
+            server.send_message(msg)
+            del server
+
             logging.info('Successfully send activation email to User %s ' % user.username)
         except Exception as ex:
             logging.error('Failed to send  activation email to User %s: %s' % (user.username, str(ex)))

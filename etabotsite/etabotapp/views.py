@@ -15,6 +15,7 @@ from .user_activation import ActivationProcessor, ResponseCode
 import logging
 logging.getLogger().setLevel(logging.DEBUG)
 
+
 @ensure_csrf_cookie
 def index(request, path='', format=None):
     """
@@ -23,7 +24,8 @@ def index(request, path='', format=None):
     print('format = "{}"'.format(format))
     return render(request, 'index.html')
 
-@api_view(['GET', 'POST'])
+
+@api_view(['GET'])
 @authentication_classes([])
 @permission_classes([])
 def activate(request, token):
