@@ -3,25 +3,26 @@ import logging
 import smtplib
 import time
 
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from enum import Enum
 
 logging.getLogger().setLevel(logging.INFO)
 
-email_subject = 'Welcome to ETAbot'
-#sys_domain = '127.0.0.1:8000'
-sys_domain = ''
-sys_email = ''
-sys_email_pwd = ''
-email_host = 'smtp.gmail.com'
-token_link = 'http://{}/api/activate/{}'
-email_port = 587
-# token_expiration_period = 2 * 60 * 1000
-token_expiration_period = 24 * 60 * 60 * 1000
+
+SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1:8000")
+SYS_EMAIL = getattr(settings, "SYS_EMAIL", None)
+SYS_EMAIL_PWD = getattr(settings, "SYS_EMAIL_PWD", None)
+EMAIL_HOST = getattr(settings, "EMAIL_HOST", None)
+EMAIL_PORT = getattr(settings, "EMAIL_PORT", None)
+EMAIL_SUBJECT = 'Welcome to ETAbot'
+TOKEN_LINK = 'http://{}/api/activate/{}'
+# TOKEN_EXPIRATION_PERIOD = 2 * 60 * 1000
+TOKEN_EXPIRATION_PERIOD = 24 * 60 * 60 * 1000
 
 
 class ResponseCode(Enum):
@@ -34,6 +35,28 @@ class ResponseCode(Enum):
 
 class ActivationProcessor(object):
     @staticmethod
+    def send_email(user, token):
+        server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+        server.set_debuglevel(1)
+        server.ehlo()
+        server.starttls()
+        server.login(SYS_EMAIL, SYS_EMAIL_PWD)
+
+        msg = MIMEMultipart()
+        msg['From'] = SYS_EMAIL
+        msg['To'] = user.email
+        msg['Subject'] = EMAIL_SUBJECT
+        hyper_link = TOKEN_LINK.format(SYS_DOMAIN, token)
+        msg_body = render_to_string('acc_active_email.html', {
+            'username': user.username,
+            'link': hyper_link,
+        })
+        msg.attach(MIMEText(msg_body, 'html'))
+
+        server.send_message(msg)
+        del server
+
+    @staticmethod
     def email_token(user):
         try:
             now_millis = int(round(time.time() * 1000))
@@ -41,24 +64,7 @@ class ActivationProcessor(object):
             encoded_token = base64.urlsafe_b64encode(force_bytes(plain_token))
             token_str = encoded_token.decode('utf-8')
 
-            msg = MIMEMultipart()
-            msg['From'] = sys_email
-            msg['To'] = user.email
-            msg['Subject'] = email_subject
-            hyper_link = token_link.format(sys_domain, token_str)
-            msg_body = render_to_string('acc_active_email.html', {
-                'username': user.username,
-                'link': hyper_link,
-            })
-            msg.attach(MIMEText(msg_body, 'html'))
-
-            server = smtplib.SMTP(email_host, email_port)
-            server.set_debuglevel(1)
-            server.ehlo()
-            server.starttls()
-            server.login(sys_email, sys_email_pwd)
-            server.send_message(msg)
-            del server
+            ActivationProcessor.send_email(user, token_str)
 
             logging.info('Successfully send activation email to User %s ' % user.username)
         except Exception as ex:
@@ -82,7 +88,7 @@ class ActivationProcessor(object):
         user = User.objects.get(pk=uid)
 
         if user is not None and user.is_active is False:
-            if time_delta > token_expiration_period:
+            if time_delta > TOKEN_EXPIRATION_PERIOD:
                 logging.error('Token already expired')
                 return ResponseCode.EXPIRATION_ERROR
             else:
