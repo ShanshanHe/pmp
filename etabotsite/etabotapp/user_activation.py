@@ -10,9 +10,10 @@ from enum import Enum
 logging.getLogger().setLevel(logging.INFO)
 
 email_subject = 'Welcome to ETAbot'
-sys_domain = '127.0.0.1:8000'
-sys_email = 'wuhao101@gmail.com'
-token_expiration_period = 1 * 60 * 1000
+#sys_domain = '127.0.0.1:8000'
+sys_domain = ''
+sys_email = ''
+token_expiration_period = 2 * 60 * 1000
 
 
 class ResponseCode(Enum):
