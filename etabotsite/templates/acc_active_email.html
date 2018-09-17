@@ -1,0 +1,10 @@
+{% autoescape off %}
+Dear {{ username }},
+
+Please click on the following link to complete your registration:
+
+http://{{ domain }}{% url 'activate' token=token %}
+
+Best and Regards,
+ETAbot
+{% endautoescape %}

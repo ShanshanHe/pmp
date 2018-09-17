@@ -17,6 +17,7 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
+from .user_activation import ActivationProcessor
 
 from encrypted_model_fields.fields import EncryptedCharField
 from django.utils.translation import gettext as _
@@ -60,6 +61,11 @@ class Project(models.Model):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+        user = User.objects.get(pk=instance.id)
+        user.is_active = False
+        user.save()
+
+        ActivationProcessor.email_token(user)
 
 
 # This receiver handles TMS credential check before saving it.
