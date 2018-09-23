@@ -27,9 +27,13 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     This viewset automatically provides `list` and `detail` actions.
     """
-    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (permissions.AllowAny(),)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return User.objects.all()
+        return User.objects.filter(owner=self.request.user)
 
     def get_permissions(self):
         # allow non-authenticated user to create via POST
@@ -44,10 +48,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     Additionally we also provide an extra `highlight` action.
     """
-    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     permission_classes = (permissions.IsAuthenticated,
                           IsOwner,)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Project.objects.all()
+        return Project.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -60,10 +68,14 @@ class TMSViewSet(viewsets.ModelViewSet):
 
     Additionally we also provide an extra `highlight` action.
     """
-    queryset = TMS.objects.all()
     serializer_class = TMSSerializer
     permission_classes = (permissions.IsAuthenticated,
                           IsOwner,)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return TMS.objects.all()
+        return TMS.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
