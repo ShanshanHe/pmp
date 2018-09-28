@@ -6,9 +6,9 @@ from .views import index
 from .views import activate
 
 router = DefaultRouter()
-router.register(r'users', UserViewSet)
-router.register(r'projects', ProjectViewSet)
-router.register(r'tms', TMSViewSet)
+router.register(r'users', UserViewSet, base_name='users')
+router.register(r'projects', ProjectViewSet, base_name='projects')
+router.register(r'tms', TMSViewSet, base_name='tms')
 
 urlpatterns = [
     url(r'^api/', include(router.urls)),
