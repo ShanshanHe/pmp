@@ -40,8 +40,8 @@ SECRET_KEY = django_keys['DJANGO_SECRET_KEY']
 FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True if LOCAL_MODE else False
-DEBUG = True
+DEBUG = True if LOCAL_MODE else False
+# DEBUG = True
 
 # Update this in production environment to host ip for security reason
 ALLOWED_HOSTS = [
@@ -77,7 +77,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'encrypted_model_fields',
 ]
-    
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -85,7 +85,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware', 
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 if LOCAL_MODE:
@@ -97,7 +97,7 @@ if LOCAL_MODE:
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
-        'django.middleware.clickjacking.XFrameOptionsMiddleware', 
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
     ]
 
     CORS_ORIGIN_ALLOW_ALL = True
@@ -109,7 +109,7 @@ else:
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
-        'django.middleware.clickjacking.XFrameOptionsMiddleware', 
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
     ]
 
 ROOT_URLCONF = 'etabotsite.urls'
@@ -179,12 +179,21 @@ USE_L10N = True
 
 USE_TZ = True
 
-SYS_DOMAIN = ''
-SYS_EMAIL = ''
-SYS_EMAIL_PWD = ''
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
+# system email settings
+SYS_DOMAIN = '127.0.0.1' if LOCAL_MODE else 'app.etabot.ai'
+
+sys_email_settings = {}
+try:
+    with open('sys_email_settings.json') as f:
+        sys_email_settings = json.load(f)
+except Exception as e:
+    logging.warning('Cannot load sys_email_settings due to "{}"'.format(e))
+
+SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL')
+SYS_EMAIL_PWD = sys_email_settings.get('DJANGO_SYS_EMAIL_PWD')
+EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST')
+EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS') == 'True'
+EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/

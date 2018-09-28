@@ -21,7 +21,7 @@ def index(request, path='', format=None):
     """
     Renders the Angular2 SPA
     """
-    print('format = "{}"'.format(format))
+    # print('format = "{}"'.format(format))
     return render(request, 'index.html')
 
 
@@ -43,6 +43,7 @@ def activate(request, token):
         return Response('The user is successfully activated!')
     else:
         return Response('Something wrong!')
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """

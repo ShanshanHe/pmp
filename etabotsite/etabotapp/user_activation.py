@@ -66,9 +66,11 @@ class ActivationProcessor(object):
 
             ActivationProcessor.send_email(user, token_str)
 
-            logging.info('Successfully send activation email to User %s ' % user.username)
+            logging.info('Successfully send activation email to User %s '
+                         % user.username)
         except Exception as ex:
-            logging.error('Failed to send  activation email to User %s: %s' % (user.username, str(ex)))
+            logging.error('Failed to send  activation email to User %s: %s'
+                          % (user.username, str(ex)))
             raise ex
 
     @staticmethod
@@ -102,4 +104,3 @@ class ActivationProcessor(object):
         else:
             logging.error('User does not exist')
             return ResponseCode.NOT_EXIST_ERROR
-
