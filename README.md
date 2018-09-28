@@ -22,6 +22,21 @@ Clone the repo to your server
 ```
 git clone https://github.com/ShanshanHe/pmp.git
 ```
+
+Add sys_email_settings.json like this to etabotsite directory:
+```
+{
+    "DJANGO_SYS_EMAIL": "email",
+    "DJANGO_SYS_EMAIL_PWD": "your_password",
+    "DJANGO_EMAIL_HOST":"smtp.your.server",
+    "DJANGO_EMAIL_USE_TLS":true,
+    "DJANGO_EMAIL_PORT":000,
+    "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":86400
+}
+```
+
+Add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
+
 At the root directory, run the following commands:
 ```
 $ docker-compose build --no-cache
