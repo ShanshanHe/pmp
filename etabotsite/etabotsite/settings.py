@@ -16,12 +16,18 @@ import base64
 import datetime
 import json
 import logging
+import subprocess
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-LOCAL_MODE = platform.system() == 'Darwin'
-
+PLATFORM = platform.system()
+logging.info("PLATFORM={}".format(PLATFORM))
+LOCAL_MODE = (PLATFORM == 'Darwin')
+local_host_url = 'http://127.0.0.1:8000'
+prod_host_url = 'https://app.etabot.ai'
+HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
+logging.info('HOST_URL="{}"'.format(HOST_URL))
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -40,8 +46,8 @@ SECRET_KEY = django_keys['DJANGO_SECRET_KEY']
 FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True if LOCAL_MODE else False
-DEBUG = True
+DEBUG = True if LOCAL_MODE else False
+# DEBUG = True
 
 # Update this in production environment to host ip for security reason
 ALLOWED_HOSTS = [
@@ -77,7 +83,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'encrypted_model_fields',
 ]
-    
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -85,7 +91,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware', 
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 if LOCAL_MODE:
@@ -97,7 +103,7 @@ if LOCAL_MODE:
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
-        'django.middleware.clickjacking.XFrameOptionsMiddleware', 
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
     ]
 
     CORS_ORIGIN_ALLOW_ALL = True
@@ -109,7 +115,7 @@ else:
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
-        'django.middleware.clickjacking.XFrameOptionsMiddleware', 
+        'django.middleware.clickjacking.XFrameOptionsMiddleware',
     ]
 
 ROOT_URLCONF = 'etabotsite.urls'
@@ -179,20 +185,43 @@ USE_L10N = True
 
 USE_TZ = True
 
-SYS_DOMAIN = ''
-SYS_EMAIL = ''
-SYS_EMAIL_PWD = ''
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_USE_TLS = True
-EMAIL_PORT = 587
+# system email settings
+
+SYS_DOMAIN = local_host_url if LOCAL_MODE else prod_host_url
+
+sys_email_settings = {}
+try:
+    with open('sys_email_settings.json') as f:
+        sys_email_settings = json.load(f)
+    logging.info('loaded sys_email_settings.json: {}'.format(
+        sys_email_settings.keys()))
+except Exception as e:
+    logging.warning('Cannot load sys_email_settings due to "{}". \
+Will use default values'.format(e))
+
+SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
+SYS_EMAIL_PWD = sys_email_settings.get('DJANGO_SYS_EMAIL_PWD', '')
+EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST', '')
+EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
+EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
+EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
+    'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
+api_url = HOST_URL + '/api/'
+logging.info('updating UI with api endpoint: "{}"'.format(api_url))
+byteOutput = subprocess.check_output(
+    ['python', 'set_api_url.py', 'static/ng2_app', api_url],
+    cwd='etabotapp/')
+print(byteOutput)
+logging.info(byteOutput.decode('UTF-8'))
+
 STATIC_URL = '/static/'
 STATIC_ROOT = '../static'
-#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-#SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-#SECURE_SSL_REDIRECT = True
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False

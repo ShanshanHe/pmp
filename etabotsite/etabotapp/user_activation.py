@@ -12,17 +12,24 @@ from email.mime.text import MIMEText
 from enum import Enum
 
 logging.getLogger().setLevel(logging.INFO)
+# logging.getLogger().setLevel(logging.DEBUG)
 
-
-SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1:8000")
+SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1")
 SYS_EMAIL = getattr(settings, "SYS_EMAIL", None)
 SYS_EMAIL_PWD = getattr(settings, "SYS_EMAIL_PWD", None)
 EMAIL_HOST = getattr(settings, "EMAIL_HOST", None)
 EMAIL_PORT = getattr(settings, "EMAIL_PORT", None)
+TOKEN_EXPIRATION_PERIOD = getattr(
+    settings, "EMAIL_TOKEN_EXPIRATION_PERIOD_MS", 24 * 60 * 60 * 1000)
 EMAIL_SUBJECT = 'Welcome to ETAbot'
 TOKEN_LINK = 'http://{}/api/activate/{}'
-# TOKEN_EXPIRATION_PERIOD = 2 * 60 * 1000
-TOKEN_EXPIRATION_PERIOD = 24 * 60 * 60 * 1000
+
+logging.info('SYS_DOMAIN: "{}"'.format(SYS_DOMAIN))
+logging.info('SYS_EMAIL: "{}"'.format(SYS_EMAIL))
+# logging.debug('SYS_EMAIL_PWD: "{}"'.format(SYS_EMAIL_PWD))
+logging.info('EMAIL_HOST: "{}"'.format(EMAIL_HOST))
+logging.info('EMAIL_PORT: "{}"'.format(EMAIL_PORT))
+logging.info('TOKEN_EXPIRATION_PERIOD: "{}"'.format(TOKEN_EXPIRATION_PERIOD))
 
 
 class ResponseCode(Enum):
@@ -40,10 +47,11 @@ class ActivationProcessor(object):
         server.set_debuglevel(1)
         server.ehlo()
         server.starttls()
+        # logging.debug('login("{}","{}")'.format(SYS_EMAIL, SYS_EMAIL_PWD))
         server.login(SYS_EMAIL, SYS_EMAIL_PWD)
 
         msg = MIMEMultipart()
-        msg['From'] = SYS_EMAIL
+        msg['From'] = 'no-reply@etabot.ai'
         msg['To'] = user.email
         msg['Subject'] = EMAIL_SUBJECT
         hyper_link = TOKEN_LINK.format(SYS_DOMAIN, token)
@@ -66,9 +74,11 @@ class ActivationProcessor(object):
 
             ActivationProcessor.send_email(user, token_str)
 
-            logging.info('Successfully send activation email to User %s ' % user.username)
+            logging.info('Successfully send activation email to User %s '
+                         % user.username)
         except Exception as ex:
-            logging.error('Failed to send  activation email to User %s: %s' % (user.username, str(ex)))
+            logging.error('Failed to send  activation email to User %s: %s'
+                          % (user.username, str(ex)))
             raise ex
 
     @staticmethod
@@ -102,4 +112,3 @@ class ActivationProcessor(object):
         else:
             logging.error('User does not exist')
             return ResponseCode.NOT_EXIST_ERROR
-

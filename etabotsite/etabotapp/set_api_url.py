@@ -18,6 +18,7 @@ def set_api_url(UI_path, api_url, api_url_var_name='apiUrl'):
     """Return None. Replaces api_url_var_name value with api_url."""
     pattern = r'({}:\")(.*?)(\")'.format(api_url_var_name)
     logging.info('pattern: "{}"'.format(pattern))
+    logging.info('searching for main*.js in "{}"'.format(UI_path))
     for filename in ft.find_all_recursively('main*.js', UI_path):
         logging.info('modifying file "{}"'.format(filename))
 
@@ -34,6 +35,7 @@ def set_api_url(UI_path, api_url, api_url_var_name='apiUrl'):
             f.write(s)
 
         logging.info('modified file {} saved'.format(filename))
+    logging.info('set_api_url finished')
 
 if __name__ == '__main__':
     logger = logging.getLogger()
