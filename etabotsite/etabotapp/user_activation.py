@@ -22,7 +22,7 @@ EMAIL_PORT = getattr(settings, "EMAIL_PORT", None)
 TOKEN_EXPIRATION_PERIOD = getattr(
     settings, "EMAIL_TOKEN_EXPIRATION_PERIOD_MS", 24 * 60 * 60 * 1000)
 EMAIL_SUBJECT = 'Welcome to ETAbot'
-TOKEN_LINK = 'http://{}/api/activate/{}'
+TOKEN_LINK = '{}/api/activate/{}'
 
 logging.info('SYS_DOMAIN: "{}"'.format(SYS_DOMAIN))
 logging.info('SYS_EMAIL: "{}"'.format(SYS_EMAIL))

@@ -6,6 +6,6 @@ etabotsite/etabotapp/passwords/__pycache__/
 etabotsite/etabotsite/__pycache__/
 etabotsite/etabotapp/misc_utils/__pycache__/
 etabotsite/sys_email_settings.json
-
+etabotsite/django_keys_prod.json
 # pycharm
 .idea/

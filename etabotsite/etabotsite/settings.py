@@ -36,9 +36,27 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 django_keys = {}
-with open('django_keys.json') as f:
-    django_keys = json.load(f)
-
+try:
+    with open('django_keys_prod.json') as f:
+        django_keys = json.load(f)
+    if (django_keys['DJANGO_SECRET_KEY'] ==
+            'k3ku*za@*z$it7@+6+r46pyjv220++5kn((d)w+gozvleu-fhu' or
+            django_keys['DJANGO_FIELD_ENCRYPT_KEY'] ==
+            'N4h4avmBpgu_QTDr4k5jO9yUfsMIvfNGnQr21aCLbzw='):
+        raise NameError('production keys from django_keys_prod.json are default \
+keys - not allowed in production for security reasons')
+    logging.info('loaded production keys from django_keys_prod.json')
+except Exception as e:
+    logging.warning('django_keys_prod.json not loaded due to "{}"'.format(e))
+    if LOCAL_MODE:
+        logging.warning('production keys "django_keys_prod.json" not found, \
+loading default keys in local mode (for production please provide \
+"django_keys_prod.json"')
+        with open('django_keys.json') as f:
+            django_keys = json.load(f)
+    else:
+        raise NameError('production keys "django_keys_prod.json" not found.\
+ Cannot proceed in non-local mode')
 logging.debug('loaded django_keys: "{}"'.format(django_keys.keys()))
 SECRET_KEY = django_keys['DJANGO_SECRET_KEY']
 
@@ -223,5 +241,10 @@ STATIC_ROOT = '../static'
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 # SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+
+if LOCAL_MODE:
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+else:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
