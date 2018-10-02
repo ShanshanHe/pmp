@@ -21,7 +21,7 @@ EMAIL_HOST = getattr(settings, "EMAIL_HOST", None)
 EMAIL_PORT = getattr(settings, "EMAIL_PORT", None)
 TOKEN_EXPIRATION_PERIOD = getattr(
     settings, "EMAIL_TOKEN_EXPIRATION_PERIOD_MS", 24 * 60 * 60 * 1000)
-EMAIL_SUBJECT = 'Welcome to ETAbot'
+EMAIL_SUBJECT = '[ETAbot] Please verify your email'
 TOKEN_LINK = '{}/api/activate/{}'
 
 logging.info('SYS_DOMAIN: "{}"'.format(SYS_DOMAIN))
@@ -51,7 +51,7 @@ class ActivationProcessor(object):
         server.login(SYS_EMAIL, SYS_EMAIL_PWD)
 
         msg = MIMEMultipart()
-        msg['From'] = 'no-reply@etabot.ai'
+        msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
         msg['To'] = user.email
         msg['Subject'] = EMAIL_SUBJECT
         hyper_link = TOKEN_LINK.format(SYS_DOMAIN, token)
