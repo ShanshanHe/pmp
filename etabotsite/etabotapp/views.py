@@ -111,8 +111,11 @@ class EstimateTMSView(APIView):
         # here we need to call an estimate method that takes TMS object which
         # includes TMS credentials
         for tms in tms_set:
-            tms_wrapper = TMSWrapper(TMSTypes.JIRA, tms.endpoint, tms.username,
-                                     '')
-            tms_wrapper.estimate_tasks()
+            projects_set = Projects.objects.all().filter(
+                owner=self.request.user, tms_project=tms.tms_id)
 
-        return Response('TMS account to estimate: %s'%tms_set, status=status.HTTP_200_OK)
+            tms_wrapper = TMSWrapper(tms)
+            tms_wrapper.estimate_tasks(projects_set)
+
+        return Response(
+            'TMS account to estimate: %s' % tms_set, status=status.HTTP_200_OK)

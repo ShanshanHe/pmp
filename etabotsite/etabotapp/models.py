@@ -45,6 +45,7 @@ class Project(models.Model):
     # jiraacount = models.ForeignKey(JIRAAccount, on_delete=models.CASCADE)
     owner = models.ForeignKey('auth.User', related_name='projects',
                               on_delete=models.CASCADE)
+    project_tms = models.ForeignKey(TMS, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
     mode = models.CharField(max_length=60)
     open_status = models.CharField(max_length=60)
@@ -72,8 +73,15 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 @receiver(pre_save, sender=TMS)
 def validate_tms_credential(sender, instance, **kwargs):
     logging.debug('validate_tms_credential started')
-    TMS_w1 = TMSWrapper(TMSTypes.JIRA, instance.endpoint, instance.username,
-                        {})
+    TMS_w1 = TMSWrapper(instance)
     TMS_w1.connect_to_TMS(instance.password)
     logging.debug('validate_tms_credential finished')
 
+@receiver(post_save, sender=TMS)
+def parse_tms(sender, instance, **kwargs):
+    logging.debug('parse_tms started')
+    TMS_w1 = TMSWrapper(instance)
+    TMS_w1.init_ETApredict([])
+    for project in TMS_w1.ETApredict_obj.projects:
+        
+    logging.debug('parse_tms')
