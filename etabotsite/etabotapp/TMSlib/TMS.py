@@ -11,9 +11,12 @@ Python Version: 3.6
 from enum import Enum
 import TMSlib.JIRA_API as JIRA_API
 import logging
+import sys
 
 try:
-    import ETApredict
+    sys.path.append('etabot_algo/')
+    logging.debug(sys.path)
+    import etabot_algo.ETApredict as ETApredict
 except Exception as e:
     logging.warning('cannot load ETApredict due to "{}"\
  Loading ETApredict_placeholder'.format(e))
