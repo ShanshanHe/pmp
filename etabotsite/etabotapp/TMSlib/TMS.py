@@ -15,14 +15,16 @@ import logging
 try:
     import ETApredict
 except Exception as e:
-    import ETApredict_placeholder as ETApredict
+    logging.warning('cannot load ETApredict due to "{}"\
+ Loading ETApredict_placeholder'.format(e))
+    import TMSlib.ETApredict_placeholder as ETApredict
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
-
-class TMSTypes(Enum):
-    JIRA = 1
+TMS_TYPES = (
+        ('JI', 'JIRA'),
+    )
 
 
 class ProtoTMS():
@@ -44,8 +46,12 @@ class ProtoTMS():
     def get_all_tasks(self, tasks_framework):
         raise NotImplementedError('default get_all_tasks is not implemented')
 
+    def get_all_open_tasks_ranked(self, tasks_framework):
+        raise NotImplementedError('default get_all_tasks is not implemented')
+
     def estimate_tasks(self):
-        raise NotImplementedError('default estimate task deadlines is not implemented')
+        raise NotImplementedError(
+            'default estimate task deadlines is not implemented')
 
 
 class TMS_JIRA(ProtoTMS):
@@ -60,6 +66,7 @@ class TMS_JIRA(ProtoTMS):
         }
 
         self.jira = None
+        logging.debug('TMS_JIRA initalized')
 
     def connect_to_TMS(self, password):
         try:
@@ -70,27 +77,50 @@ class TMS_JIRA(ProtoTMS):
         except Exception as e:
             raise NameError("cannot connnect to TMS JIRA due to {}".format(e))
 
+    def get_all_open_tasks_ranked(self, tasks_framework):
+        open_status_vals_list = [
+            '"{}"'.format(x)
+            for x in self.task_system_schema.get(
+                'open_status_values',
+                ['Open'])]
+        return self.jira.get_jira_issues(
+            'assignee={username} \
+AND status in ({open_status_values})  ORDER BY Rank ASC'.format(
+                username=self.username,
+                open_status_values=', '.join(open_status_vals_list)))
+
 
 class TMSWrapper(TMS_JIRA):
     def __init__(
             self,
             tms_config):
+        """
+        Arguments:
+            tms_config - Django model of TMS"""
+        logging.debug('initializing TMSWrapper with "{}"'.format(
+            tms_config))
         self.tms_config = tms_config
-        self.TMS_type = tms_config.TMS_type
+        self.TMS_type = tms_config.type
         self.ETApredict_obj = None
 
-        if self.TMS_type == TMSTypes.JIRA:
+        logging.debug('allowed TMS types: "{}"'.format(TMS_TYPES))
+        if self.TMS_type == TMS_TYPES[0][0]:
+            logging.debug('initalizing TMS JIRA class')
             TMS_JIRA.__init__(
                 self,
-                tms.endpoint,
-                tms.username)
+                tms_config.endpoint,
+                tms_config.username)
             # self.TMS = TMS_JIRA()
         else:
-            raise NameError("TMS_type {} is not supported at this time")
+            raise NameError(
+                "TMS_type {} is not supported at this time".format(
+                    self.TMS_type))
 
     def init_ETApredict(self, projects):
+        logging.debug('init_ETApredict started')
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
         self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)
+        logging.debug('init_ETApredict finished')
 
     def estimate_tasks(self, projects):
         logging.info('Estimating tasks for JIRA: {}, hold tight!'.format(self))

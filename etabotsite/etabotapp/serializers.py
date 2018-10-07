@@ -34,7 +34,8 @@ class UserSerializer(serializers.ModelSerializer):
         """Meta class to map serializer's fields with the model fields."""
         model = User
         fields = (
-        'id', 'username', 'password', 'email', 'is_active', 'projects', 'TMSAccounts')
+            'id', 'username', 'password',
+            'email', 'is_active', 'projects', 'TMSAccounts')
         write_only_fields = ('password',)
         read_only_fields = ('id',)
 

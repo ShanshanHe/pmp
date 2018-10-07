@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import Project, TMS
 from .permissions import IsOwnerOrReadOnly, IsOwner
-from .TMSlib.TMS import TMSTypes, TMSWrapper
+import TMSlib.TMS as TMSlib
 from .user_activation import ActivationProcessor, ResponseCode
 
 import logging
@@ -114,7 +114,7 @@ class EstimateTMSView(APIView):
             projects_set = Projects.objects.all().filter(
                 owner=self.request.user, tms_project=tms.tms_id)
 
-            tms_wrapper = TMSWrapper(tms)
+            tms_wrapper = TMSlib.TMSWrapper(tms)
             tms_wrapper.estimate_tasks(projects_set)
 
         return Response(

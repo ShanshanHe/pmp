@@ -5,7 +5,7 @@ import logging
 logging.getLogger().setLevel(logging.DEBUG)
 
 sys.path.append(os.path.abspath('etabotapp'))
-from .TMSlib.TMS import TMSWrapper, TMSTypes
+import TMSlib.TMS as TMSlib
 
 sys.path.pop(0)
 
@@ -24,17 +24,13 @@ from django.utils.translation import gettext as _
 
 
 class TMS(models.Model):
-    """This class represents the jira user model."""
-    TMS_TYPE = (
-        ('JI', 'JIRA'),
-        ('TR', 'Trello'),
-    )
+    """This class represents the TMS account model."""
     owner = models.ForeignKey('auth.User', related_name='TMSAccounts',
                               on_delete=models.CASCADE)
     endpoint = models.CharField(max_length=60)
     username = models.CharField(max_length=60)
     password = EncryptedCharField(max_length=60)
-    type = models.CharField(max_length=20, choices=TMS_TYPE)
+    type = models.CharField(max_length=20, choices=TMSlib.TMS_TYPES)
 
     def __str__(self):
         return self.username
@@ -73,15 +69,25 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 @receiver(pre_save, sender=TMS)
 def validate_tms_credential(sender, instance, **kwargs):
     logging.debug('validate_tms_credential started')
-    TMS_w1 = TMSWrapper(instance)
+    TMS_w1 = TMSlib.TMSWrapper(instance)
     TMS_w1.connect_to_TMS(instance.password)
     logging.debug('validate_tms_credential finished')
 
 @receiver(post_save, sender=TMS)
 def parse_tms(sender, instance, **kwargs):
     logging.debug('parse_tms started')
-    TMS_w1 = TMSWrapper(instance)
+    TMS_w1 = TMSlib.TMSWrapper(instance)
     TMS_w1.init_ETApredict([])
     for project in TMS_w1.ETApredict_obj.projects:
-        
-    logging.debug('parse_tms')
+        django_project = Project(
+            owner=instance.owner,
+            project_tms=instance,
+            name=project.name,
+            mode=project.mode,
+            open_status=project.open_status,
+            grace_period=project.grace_period,
+            work_hours=project.work_hours,
+            vacation_days=project.vacation_days)
+        django_project.save()
+
+    logging.debug('parse_tms has finished')
