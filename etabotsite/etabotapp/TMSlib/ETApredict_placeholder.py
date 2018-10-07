@@ -9,7 +9,7 @@ class ETApredict():
             TMS_interface=None):
         self.TMS_interface = TMS_interface
         self.projects = []
-        logging.debug('ETApredict initalized')
+        logging.debug('ETApredict initialized')
 
     def init_with_Django_models(
             self,
