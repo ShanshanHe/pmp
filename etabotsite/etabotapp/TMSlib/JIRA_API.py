@@ -77,6 +77,7 @@ class JIRA_wrapper():
 
     def get_jira_issues(self, search_string, get_all=True):
         # get jira issues using the search_string
+        logging.debug('jira search_string = "{}"'.format(search_string))
         returned_result_length = 50
         jira_issues = []
         while get_all and returned_result_length == self.max_results_jira_api:

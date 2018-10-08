@@ -76,7 +76,9 @@ def validate_tms_credential(sender, instance, **kwargs):
 @receiver(post_save, sender=TMS)
 def parse_tms(sender, instance, **kwargs):
     logging.debug('parse_tms started')
-    TMS_w1 = TMSlib.TMSWrapper(instance)
+    TMS_w1 = TMSlib.TMSWrapper(
+        instance,
+        projects=Project.objects.filter(project_tms=instance.id))
     TMS_w1.init_ETApredict([])
     for project in TMS_w1.ETApredict_obj.projects:
         django_project = Project(

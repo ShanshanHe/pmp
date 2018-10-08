@@ -46,10 +46,10 @@ class ProtoTMS():
     def connect_to_TMS(self):
         raise NotImplementedError('default connect_to_TMS is not implemented')
 
-    def get_all_tasks(self, tasks_framework):
+    def get_all_tasks(self, assignee):
         raise NotImplementedError('default get_all_tasks is not implemented')
 
-    def get_all_open_tasks_ranked(self, tasks_framework):
+    def get_all_open_tasks_ranked(self, assignee):
         raise NotImplementedError('default get_all_tasks is not implemented')
 
     def estimate_tasks(self):
@@ -59,14 +59,19 @@ class ProtoTMS():
 
 class TMS_JIRA(ProtoTMS):
 
-    def __init__(self, server_end_point, username_login):
+    default_open_status_values = ['Open', 'To Do', 'Selected for Development']
+
+    def __init__(
+            self, server_end_point, username_login, task_system_schema):
+
+        if task_system_schema is None:
+            task_system_schema = {
+                'done_status_values': ['Done'],
+                'open_status_values': default_open_status_values
+            }
 
         ProtoTMS.__init__(
-            self, server_end_point, username_login, None)
-        self.defualt_task_system_schema = {
-            'done_status_values': ['Done'],
-            'open_status_values': ['To Do', 'Selected for Development']
-        }
+            self, server_end_point, username_login, task_system_schema)
 
         self.jira = None
         logging.debug('TMS_JIRA initalized')
@@ -80,23 +85,82 @@ class TMS_JIRA(ProtoTMS):
         except Exception as e:
             raise NameError("cannot connnect to TMS JIRA due to {}".format(e))
 
-    def get_all_open_tasks_ranked(self, tasks_framework):
+        # all_issues = jira.get_jira_issues('assignee={username} ORDER BY Rank ASC'.format(username = self.username))
+
+    def get_all_done_tasks_ranked(self, assignee=None):
+        if assignee is None:
+            assignee = 'currentUser()'
+
+        done_issues = self.jira.get_jira_issues(
+            'assignee={assignee} AND status in ({done_status_values}) \
+ORDER BY Rank ASC'.format(
+                assignee=assignee,
+                done_status_values=', '.join(
+                    ['"{}"'.format(x) for x in self.task_system_schema.get(
+                        'done_status_values', ['Done'])])))
+        logging.debug('acquired done tasks count: {}'.format(
+            len(done_issues)))
+        return done_issues
+
+    def get_all_open_tasks_ranked(self, assignee=None):
+        if assignee is None:
+            assignee = 'currentUser()'
+
+        open_status_values = self.task_system_schema.get(
+                'open_status_values',
+                self.default_open_status_values)
+        if len(open_status_values) == 0:
+            open_status_values = self.default_open_status_values
         open_status_vals_list = [
             '"{}"'.format(x)
-            for x in self.task_system_schema.get(
-                'open_status_values',
-                ['Open'])]
-        return self.jira.get_jira_issues(
-            'assignee={username} \
-AND status in ({open_status_values})  ORDER BY Rank ASC'.format(
-                username=self.username,
-                open_status_values=', '.join(open_status_vals_list)))
+            for x in open_status_values]
+        open_status_values_css = ', '.join(open_status_vals_list)
+
+        in_progress_issues_current_sprint = self.jira.get_jira_issues(
+            'assignee={assignee} AND status="In Progress" \
+AND sprint in openSprints() ORDER BY Rank ASC'.format(assignee=assignee))
+
+        in_progress_issues = self.jira.get_jira_issues(
+            'assignee={assignee} AND status="In Progress" \
+ORDER BY Rank ASC'.format(assignee=assignee))
+
+        if len(open_status_values_css) > 0:
+            open_issues_current_sprint = self.jira.get_jira_issues(
+                    'assignee={assignee} AND status in ({open_status_values}) \
+    AND sprint in openSprints()  ORDER BY Rank ASC'.format(
+                        assignee=assignee,
+                        open_status_values=open_status_values_css))
+
+            open_issues = self.jira.get_jira_issues(
+                'assignee={assignee} AND status in ({open_status_values}) \
+    ORDER BY Rank ASC'.format(
+                    assignee=assignee,
+                    open_status_values=open_status_values_css))
+        else:
+            open_issues_current_sprint = []
+            open_issues = []
+
+        logging.debug("""acquired open tasks counts:
+in_progress_issues_current_sprint: {},
+in_progress_issues: {},
+open_issues_current_sprint: {},
+open_issues: {}""".format(
+                    len(in_progress_issues_current_sprint),
+                    len(in_progress_issues),
+                    len(open_issues_current_sprint),
+                    len(open_issues)))
+
+        return in_progress_issues_current_sprint \
+            + in_progress_issues \
+            + open_issues_current_sprint \
+            + open_issues
 
 
 class TMSWrapper(TMS_JIRA):
     def __init__(
             self,
-            tms_config):
+            tms_config,
+            projects=None):
         """
         Arguments:
             tms_config - Django model of TMS"""
@@ -106,13 +170,25 @@ class TMSWrapper(TMS_JIRA):
         self.TMS_type = tms_config.type
         self.ETApredict_obj = None
 
+        task_system_schema = {}
+
+        if projects is not None:
+            open_status_values = []
+            for project in projects:
+                open_status_values.append(project.open_status)
+            task_system_schema['open_status_values'] = list(
+                set(open_status_values))
+            logging.debug('detected open_status_values: "{}"'.format(
+                task_system_schema['open_status_values']))
+
         logging.debug('allowed TMS types: "{}"'.format(TMS_TYPES))
         if self.TMS_type == TMS_TYPES[0][0]:
             logging.debug('initalizing TMS JIRA class')
             TMS_JIRA.__init__(
                 self,
                 tms_config.endpoint,
-                tms_config.username)
+                tms_config.username,
+                task_system_schema)
             # self.TMS = TMS_JIRA()
         else:
             raise NameError(

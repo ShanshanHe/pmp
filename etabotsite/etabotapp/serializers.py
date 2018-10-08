@@ -2,13 +2,20 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 from .models import Project, TMS
+from django.conf import settings
+
+LOCAL_MODE = getattr(settings, "LOCAL_MODE", False)
 
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer to map the Model instance into JSON format."""
+    email_validators = []
+    if not LOCAL_MODE:
+        email_validators.append(UniqueValidator(queryset=User.objects.all()))
+
     email = serializers.EmailField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
+        validators=email_validators
     )
     username = serializers.CharField(
         validators=[UniqueValidator(queryset=User.objects.all())]
