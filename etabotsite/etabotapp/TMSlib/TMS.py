@@ -120,6 +120,11 @@ ORDER BY Rank ASC'.format(
             'assignee={assignee} AND status="In Progress" \
 AND sprint in openSprints() ORDER BY Rank ASC'.format(assignee=assignee))
 
+        if len(in_progress_issues_current_sprint) > 0:
+            logging.debug('task sample')
+            logging.debug(in_progress_issues_current_sprint[0])
+            logging.debug(in_progress_issues_current_sprint[0].fields.summary)
+
         in_progress_issues = self.jira.get_jira_issues(
             'assignee={assignee} AND status="In Progress" \
 ORDER BY Rank ASC'.format(assignee=assignee))

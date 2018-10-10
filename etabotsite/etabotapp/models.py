@@ -43,7 +43,7 @@ class Project(models.Model):
                               on_delete=models.CASCADE)
     project_tms = models.ForeignKey(TMS, on_delete=models.CASCADE)
     name = models.CharField(max_length=60)
-    mode = models.CharField(max_length=60)
+    mode = models.CharField(max_length=60)  # scrum or kanban
     open_status = models.CharField(max_length=60)
     grace_period = models.FloatField()
     work_hours = JSONField()
@@ -80,16 +80,18 @@ def parse_tms(sender, instance, **kwargs):
         instance,
         projects=Project.objects.filter(project_tms=instance.id))
     TMS_w1.init_ETApredict([])
-    for project in TMS_w1.ETApredict_obj.projects:
-        django_project = Project(
-            owner=instance.owner,
-            project_tms=instance,
-            name=project.name,
-            mode=project.mode,
-            open_status=project.open_status,
-            grace_period=project.grace_period,
-            work_hours=project.work_hours,
-            vacation_days=project.vacation_days)
-        django_project.save()
+    projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
+    if projects_dict is not None:
+        for project_name, attrs in projects_dict.items():
+            django_project = Project(
+                owner=instance.owner,
+                project_tms=instance,
+                name=project_name,
+                mode=attrs.get('mode', 'unknown mode'),
+                open_status=attrs.get('open_status', None),
+                grace_period=attrs.get('grace_period', '12'),
+                work_hours=attrs.get('work_hours'),
+                vacation_days=attrs.get(vacation_days))
+            django_project.save()
 
     logging.debug('parse_tms has finished')
