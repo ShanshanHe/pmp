@@ -29,6 +29,7 @@ def index(request, path='', format=None):
 @authentication_classes([])
 @permission_classes([])
 def activate(request, token):
+    logging.debug('activate API started')
     code = ActivationProcessor.activate_user(token)
 
     if code == ResponseCode.DECRYPTION_ERROR:

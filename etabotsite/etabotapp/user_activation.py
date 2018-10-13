@@ -69,9 +69,11 @@ class ActivationProcessor(object):
         try:
             now_millis = int(round(time.time() * 1000))
             plain_token = str(user.id) + "/" + str(now_millis)
+            logging.debug('plain_token: "{}"'.format(plain_token))
             encoded_token = base64.urlsafe_b64encode(force_bytes(plain_token))
+            logging.debug('encoded_token: "{}"'.format(encoded_token))
             token_str = encoded_token.decode('utf-8')
-
+            logging.debug('token_str: "{}"'.format(token_str))
             ActivationProcessor.send_email(user, token_str)
 
             logging.info('Successfully send activation email to User %s '
@@ -83,12 +85,14 @@ class ActivationProcessor(object):
 
     @staticmethod
     def activate_user(token):
+        logging.debug('activating user with token "{}"'.format(token))
         try:
             now_millis = int(round(time.time() * 1000))
             token_bytes = force_bytes(token)
             plain_token = base64.urlsafe_b64decode(token_bytes).decode('utf-8')
             uid_and_time = plain_token.split('/')
             uid = int(uid_and_time[0])
+            logging.debug('user id: {}'.format(uid))
             email_time = int(uid_and_time[1])
             time_delta = now_millis - email_time
         except (IndexError, UnicodeDecodeError, ValueError) as ex:
@@ -99,12 +103,12 @@ class ActivationProcessor(object):
 
         if user is not None and user.is_active is False:
             if time_delta > TOKEN_EXPIRATION_PERIOD:
-                logging.error('Token already expired')
+                logging.error('Token has expired')
                 return ResponseCode.EXPIRATION_ERROR
             else:
                 user.is_active = True
                 user.save()
-                logging.info('Successfully activate User %s' % user.username)
+                logging.info('Successfully activated User %s' % user.username)
                 return ResponseCode.SUCCESS
         elif user is not None and user.is_active is True:
             logging.error('User %s is already activated' % user.username)

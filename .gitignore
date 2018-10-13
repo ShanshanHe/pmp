@@ -1,5 +1,6 @@
 db.sqlite3
-
+*.csv
+*.txt
 etabotsite/etabotapp/TMSlib/__pycache__/
 etabotsite/etabotapp/__pycache__/
 etabotsite/etabotapp/passwords/__pycache__/
