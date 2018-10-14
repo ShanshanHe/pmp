@@ -1,7 +1,13 @@
 """ETApredict placeholder."""
-syntax error
+# uncomment for syntax error for ensuring placeholder is not used
+
 import logging
-import TMSlib.TMS_project as TMS_project
+# import TMSlib.TMS_project as TMS_project
+
+
+class ETAengine():
+    def __init__(self):
+        self.projects = {}
 
 
 class ETApredict():
@@ -9,7 +15,7 @@ class ETApredict():
             self,
             TMS_interface=None):
         self.TMS_interface = TMS_interface
-        self.projects = []
+        self.eta_engine = ETAengine()
         logging.debug('ETApredict initialized')
 
     def init_with_Django_models(
@@ -32,12 +38,8 @@ class ETApredict():
         self.TMS_interface.connect_to_TMS(
             self.TMS_interface.tms_config.password)
 
-        project1 = TMS_project.TMS_project(
-            name='Project Buckwheat',
-            mode='Scrum',
-            open_status='To Do',
-            grace_period='4.0',
-            work_hours={
+        self.eta_engine.projects['Project Buckwheat'] = {}
+        self.eta_engine.projects['Project Buckwheat']['work_hours'] = {
                 "Monday": [
 
                     {"end": 21, "start": 19}
@@ -62,21 +64,20 @@ class ETApredict():
                     {"end": 20, "start": 19},
                     {"end": 23, "start": 22}
 
-                ]},
-            vacation_days=[
+                ]}
 
-                {"start": "2017-04-01", "end": "2017-05-02"},
-                {"start": "2018-07-01", "end": "2018-07-02"},
-                {"start": "2018-09-14", "end": "2018-09-21"}
+        self.eta_engine.projects['Project Buckwheat']['mode'] = 'Scrum'
+        self.eta_engine.projects['Project Buckwheat']['open_status'] = 'To Do'
+        self.eta_engine.projects['Project Buckwheat']['grace_period'] = 4.0
+        self.eta_engine.projects['Project Buckwheat']['vacation_days'] = [
 
-            ])
+            {"start": "2017-04-01", "end": "2017-05-02"},
+            {"start": "2018-07-01", "end": "2018-07-02"},
+            {"start": "2018-09-14", "end": "2018-09-21"}
 
-        project2 = TMS_project.TMS_project(
-            name='Project Cheburashka',
-            mode='Kanban',
-            open_status='To Do',
-            grace_period='8.0',
-            work_hours={
+        ]
+        self.eta_engine.projects['Project Cheburashka'] = {}
+        self.eta_engine.projects['Project Cheburashka']['work_hours'] = {
                 "Sunday": [
 
                     {"end": 15, "start": 13}
@@ -91,14 +92,17 @@ class ETApredict():
 
                 "Time Zone": "GMT +7",
 
-                },
-            vacation_days=[
+                }
 
-                {"start": "2017-04-01", "end": "2017-05-02"},
-                {"start": "2018-07-01", "end": "2018-07-02"},
-                {"start": "2018-09-14", "end": "2018-09-21"}
+        self.eta_engine.projects['Project Cheburashka']['mode'] = 'Kanban'
+        self.eta_engine.projects['Project Cheburashka']['open_status'] = 'To Do'
+        self.eta_engine.projects['Project Cheburashka']['grace_period'] = 8.0
+        self.eta_engine.projects['Project Cheburashka']['vacation_days'] = [
 
-            ])
-        self.projects.append(project1)
-        self.projects.append(project2)
+            {"start": "2017-04-01", "end": "2017-05-02"},
+            {"start": "2018-07-01", "end": "2018-07-02"},
+            {"start": "2018-09-14", "end": "2018-09-21"}
+
+        ]
+
         logging.debug('get_projects finished')

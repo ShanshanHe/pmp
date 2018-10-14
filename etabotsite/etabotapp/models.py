@@ -88,10 +88,10 @@ def parse_tms(sender, instance, **kwargs):
                 project_tms=instance,
                 name=project_name,
                 mode=attrs.get('mode', 'unknown mode'),
-                open_status=attrs.get('open_status', None),
-                grace_period=attrs.get('grace_period', '12'),
-                work_hours=attrs.get('work_hours'),
-                vacation_days=attrs.get(vacation_days))
+                open_status=attrs.get('open_status', ''),
+                grace_period=attrs.get('grace_period', 12.0),
+                work_hours=attrs.get('work_hours', '{}'),
+                vacation_days=attrs.get('vacation_days', '{}'))
             django_project.save()
 
     logging.debug('parse_tms has finished')

@@ -37,7 +37,9 @@ class JIRA_wrapper():
         self.max_results_jira_api = 50
 
     def JIRA_connect(self, server, username, password=None):
-        options = {'server': server}
+        options = {
+            'max_retries': 1,
+            'server': server}
 
         if password is None:
             # print('getting password stored locally')
