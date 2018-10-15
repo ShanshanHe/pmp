@@ -17,13 +17,13 @@ from jira.client import GreenHopper
 from inspect import getsourcefile
 import os.path
 import sys
-current_path = os.path.abspath(getsourcefile(lambda: 0))
-current_dir = os.path.dirname(current_path)
-parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
-sys.path.insert(0, parent_dir)
+# current_path = os.path.abspath(getsourcefile(lambda: 0))
+# current_dir = os.path.dirname(current_path)
+# parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
+# sys.path.insert(0, parent_dir)
 
-from passwords.encrypted_passwords import passwords_dict
-import keyring
+# from passwords.encrypted_passwords import passwords_dict
+# import keyring
 
 encryption_key_name = 'Jtest1'
 
@@ -37,24 +37,27 @@ class JIRA_wrapper():
         self.max_results_jira_api = 50
 
     def JIRA_connect(self, server, username, password=None):
-        options = {'server': server}
+        options = {
+            'max_retries': 1,
+            'server': server}
 
         if password is None:
-            print('getting password stored locally')
-            # try to get password stored locally
-            if server not in passwords_dict:
-                raise NameError('Server {} is not known'.format(server))
-            if username not in passwords_dict[server]:
-                raise NameError('User {} is not known'.format(username))
+            # print('getting password stored locally')
+            # # try to get password stored locally
+            # if server not in passwords_dict:
+            #     raise NameError('Server {} is not known'.format(server))
+            # if username not in passwords_dict[server]:
+            #     raise NameError('User {} is not known'.format(username))
 
-            encrypted_password = passwords_dict[server][username]
-            # password = input('enter password\n')
-            obj2 = AES.new(
-                keyring.get_password('system', encryption_key_name)[:16],
-                AES.MODE_CBC,
-                'This is an IV456')
-            password = obj2.decrypt(encrypted_password)
-            password = str(password, 'utf-8').replace(' ', '')
+            # encrypted_password = passwords_dict[server][username]
+            # # password = input('enter password\n')
+            # obj2 = AES.new(
+            #     keyring.get_password('system', encryption_key_name)[:16],
+            #     AES.MODE_CBC,
+            #     'This is an IV456')
+            # password = obj2.decrypt(encrypted_password)
+            # password = str(password, 'utf-8').replace(' ', '')
+            raise NameError('JIRA password must be provided')
 
         logging.info('authenticating with JIRA ({}, {})...'.format(
             username, options.get('server', 'unkown server')))
@@ -76,6 +79,7 @@ class JIRA_wrapper():
 
     def get_jira_issues(self, search_string, get_all=True):
         # get jira issues using the search_string
+        logging.debug('jira search_string = "{}"'.format(search_string))
         returned_result_length = 50
         jira_issues = []
         while get_all and returned_result_length == self.max_results_jira_api:

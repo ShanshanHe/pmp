@@ -16,7 +16,9 @@ urlpatterns = [
         include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/get-token/', obtain_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
-    url(r'^api/activate/(?P<token>[0-9A-Za-z]+)/', activate, name='activate'),
+    url(
+        r'^api/activate/(?P<token>[0-9A-Za-z|=]+)/',
+        activate, name='activate'),
 
     # catch-all pattern for compatibility with the Angular routes
     url(r'^(?P<path>.*)/$', index),

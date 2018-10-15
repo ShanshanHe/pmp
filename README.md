@@ -153,3 +153,14 @@ $ python manage.py runserver 0.0.0.0:8000
 Vola! You have django server up and running in development mode. Go to you browser, enter the address below:
 http://app.etabot.ai:8000/index
 You have a sample project management site ready to go!
+
+
+#### Optinal: connecting ETA algorithm instead of a placeholder
+```
+$ cd etabotsite/
+$ git submodule add <your git URL to repo called "etabot_algo">
+$ git reset HEAD -- .gitmodules
+$ git reset HEAD -- etabot_algo
+```
+
+The repo must have module ETApredict.py following pattern ETApredict_placeholder.py

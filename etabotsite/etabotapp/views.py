@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import Project, TMS
 from .permissions import IsOwnerOrReadOnly, IsOwner
-from .TMSlib.TMS import TMSTypes, TMSWrapper
+import TMSlib.TMS as TMSlib
 from .user_activation import ActivationProcessor, ResponseCode
 
 import logging
@@ -29,6 +29,7 @@ def index(request, path='', format=None):
 @authentication_classes([])
 @permission_classes([])
 def activate(request, token):
+    logging.debug('activate API started')
     code = ActivationProcessor.activate_user(token)
 
     if code == ResponseCode.DECRYPTION_ERROR:
@@ -111,8 +112,11 @@ class EstimateTMSView(APIView):
         # here we need to call an estimate method that takes TMS object which
         # includes TMS credentials
         for tms in tms_set:
-            tms_wrapper = TMSWrapper(TMSTypes.JIRA, tms.endpoint, tms.username,
-                                     '')
-            tms_wrapper.estimate_tasks()
+            projects_set = Projects.objects.all().filter(
+                owner=self.request.user, tms_project=tms.tms_id)
 
-        return Response('TMS account to estimate: %s'%tms_set, status=status.HTTP_200_OK)
+            tms_wrapper = TMSlib.TMSWrapper(tms)
+            tms_wrapper.estimate_tasks(projects_set)
+
+        return Response(
+            'TMS account to estimate: %s' % tms_set, status=status.HTTP_200_OK)
