@@ -15,6 +15,10 @@ if [ ! -f $PROJECT_ROOT/.build ]; then
 fi
 
 cd etabotsite
+NUM_WORKERS=3
+TIMEOUT=120
 exec gunicorn etabotsite.wsgi:application \
     --bind 0.0.0.0:8000 \
-    --workers 3
+    --workers $NUM_WORKERS \
+    --worker-class gevent \
+    --timeout $TIMEOUT
