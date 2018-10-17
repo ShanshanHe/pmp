@@ -108,14 +108,31 @@ class EstimateTMSView(APIView):
 
     def get(self, request, format=None):
         tms_id = request.query_params.get('tms', None)
-        tms_set = TMS.objects.all().filter(owner=self.request.user, id=tms_id)
+        if tms_id is not None:
+            try:
+                tms_id = int(tms_id)
+                tms_set = TMS.objects.all().filter(
+                    owner=self.request.user,
+                    id=tms_id)
+            except Exception as e:
+                return Response(
+                    'Invalid tms_id: "{}"'.format(tms_id),
+                    status=status.HTTP_400_BAD_REQUEST)
+        else:
+            tms_set = TMS.objects.all().filter(owner=self.request.user)
+        logging.debug('request.query_params: "{}"'.format(
+            request.query_params))
+        logging.debug('tms_id: "{}"'.format(tms_id))
+
+        logging.debug('found tms: {}'.format(tms_set))
         # here we need to call an estimate method that takes TMS object which
         # includes TMS credentials
         for tms in tms_set:
-            projects_set = Projects.objects.all().filter(
-                owner=self.request.user, tms_project=tms.tms_id)
+            projects_set = Project.objects.all().filter(
+                owner=self.request.user, project_tms_id=tms.id)
 
             tms_wrapper = TMSlib.TMSWrapper(tms)
+            tms_wrapper.init_ETApredict(projects_set)
             tms_wrapper.estimate_tasks(projects_set)
 
         return Response(
