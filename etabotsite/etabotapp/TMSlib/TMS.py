@@ -207,6 +207,7 @@ class TMSWrapper(TMS_JIRA):
         logging.debug('init_ETApredict finished')
 
     def estimate_tasks(self, projects):
-        logging.info('Estimating tasks for JIRA: {}, hold tight!'.format(self))
+        logging.info('Estimating tasks for TMS "{}", \
+projects: "{}", hold tight!'.format(self, projects))
         # TODO Shanshan Implement the method to call estimate algo
         self.ETApredict_obj.generate_task_list_view_with_ETA()
