@@ -24,13 +24,28 @@ logger.setLevel(logging.DEBUG)
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
 LOCAL_MODE = (PLATFORM == 'Darwin')
+
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
+try:
+    with open('custom_settings.json') as f:
+        custom_settings = json.load(f)
+    logging.debug('loaded custom_settings.json: "{}"'.format(custom_settings))
+    if 'local_host_url' in custom_settings:
+        local_host_url = custom_settings['local_host_url']
+
+    if 'prod_host_url' in custom_settings:
+        prod_host_url = custom_settings['prod_host_url']
+
+except Exception as e:
+    logging.warning('cannot load custom_settings.json due to "{}"'.format(
+        e))
+
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
 logging.info('HOST_URL="{}"'.format(HOST_URL))
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
