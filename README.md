@@ -8,14 +8,23 @@ backend data infrastructure and server for Smart project management tool made fo
 #### Prequisites:
 * Have docker, docker compose installed
 * Knowledge of Django and Nginx
-* Add your dns to hosts, for example:
+* Add your dns to hosts for testing with your url locally, for example:
   ``` 
   $ sudo vi /etc/hosts
   ```
   Add the following line to the end of the file:
   ```
-  0.0.0.0 app.etabot.ai
+  0.0.0.0 <your web-app url, e.g. app.etabot.ai>
   ```
+
+* Optionally: create "custom_settings.json" file in /etabotsite with the following
+
+```
+{
+    "local_host_url":"<your local host url for testing, e.g. http://127.0.0.1:8000">,
+    "prod_host_url":"<your production host url for testing, e.g. https://app.etabot.ai>"
+}
+```
 
 #### Bring up pmp services which include nginx and django
 Clone the repo to your server
@@ -140,20 +149,26 @@ To run all the unit tests:
 ```
 $ python manage.py test
 ```
-Before we run the server, we will need to modify the `/static/ng2_app/main.js` static file to point to `http` instead of `https`, to do this, follow the command below:
-```
-$ cd etabotapp/
-$ python set_api_url.py static/ng2_app/ http://app.etabot.ai:8000/api/
-```
+
 To run the backend server:
 ```
-$ python manage.py runserver 0.0.0.0:8000
+$ python manage.py runserver 127.0.0.1:8000
 ```
 
 Vola! You have django server up and running in development mode. Go to you browser, enter the address below:
 http://app.etabot.ai:8000/index
 You have a sample project management site ready to go!
 
+#### Advanced settings
+
+By default, if you run server on MacOS (Darwin), it will detect you are in development mode and set host url to local_host_url (set in custom_settings.json or default value in settings.py) and set it correspondingly in UI API endpoint and email links. If OS other than Darwin, prod_host_url (set to value in custom_settings.json or default value in settings.py) will be used.
+
+
+To modify the `/static/ng2_app/main.js` static file to point to API endpoint other than host urls as described above you can follow the commands below:
+```
+$ cd etabotapp/
+$ python set_api_url.py static/ng2_app/ <end point url, e.g. http://app.etabot.ai:8000/api/>
+```
 
 #### Optinal: connecting ETA algorithm instead of a placeholder
 ```

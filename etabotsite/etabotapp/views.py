@@ -128,12 +128,27 @@ class EstimateTMSView(APIView):
         # here we need to call an estimate method that takes TMS object which
         # includes TMS credentials
         for tms in tms_set:
-            projects_set = Project.objects.all().filter(
-                owner=self.request.user, project_tms_id=tms.id)
-
+            project_id = request.query_params.get('project_id', None)
+            if project_id is not None:
+                project_id = int(project_id)
+                logging.debug('subsetting project_id="{}"'.format(project_id))
+                projects_set = Project.objects.all().filter(
+                    owner=self.request.user,
+                    project_tms_id=tms.id,
+                    id=project_id)
+            else:
+                projects_set = Project.objects.all().filter(
+                    owner=self.request.user,
+                    project_tms_id=tms.id)
+            logging.debug('projects_set: "{}"'.format(projects_set))
             tms_wrapper = TMSlib.TMSWrapper(tms)
             tms_wrapper.init_ETApredict(projects_set)
-            tms_wrapper.estimate_tasks(projects_set)
+
+            project_names = []
+            for project in projects_set:
+                project_names.append(project.name)
+
+            tms_wrapper.estimate_tasks(project_names)
 
         return Response(
             'TMS account to estimate: %s' % tms_set, status=status.HTTP_200_OK)
