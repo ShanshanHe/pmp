@@ -73,6 +73,7 @@ loading default keys in local mode (for production please provide \
         raise NameError('production keys "django_keys_prod.json" not found.\
  Cannot proceed in non-local mode')
 logging.debug('loaded django_keys: "{}"'.format(django_keys.keys()))
+
 SECRET_KEY = django_keys['DJANGO_SECRET_KEY']
 
 # Keys used to encrypt the password for TMS accounts
