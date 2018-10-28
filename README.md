@@ -14,7 +14,7 @@ backend data infrastructure and server for Smart project management tool made fo
   ```
   Add the following line to the end of the file:
   ```
-  0.0.0.0 <your web-app url, e.g. app.etabot.ai>
+  127.0.0.1 <your web-app url, e.g. app.etabot.ai>
   ```
 
 * Optionally: create "custom_settings.json" file in /etabotsite with the following
@@ -104,7 +104,7 @@ Hope you enjoy!
   ```
   Add the following line to the end of the file:
   ```
-  0.0.0.0 app.etabot.ai
+  127.0.0.1 app.etabot.ai
   ```
 
 If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.
