@@ -9,7 +9,7 @@ django-cors-headers==2.1.0
 django-encrypted-model-fields==0.5.3
 djangorestframework==3.7.7
 djangorestframework-expiring-authtoken
-factory-boy=2.11.1
+factory-boy==2.11.1
 gunicorn==19.6.0
 idna==2.5
 jira==1.0.10
