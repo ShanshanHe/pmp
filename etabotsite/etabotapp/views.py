@@ -78,7 +78,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.request.user.is_superuser:
             return Project.objects.all()
-        return Project.objects.filter(owner=self.request.user)
+        objects2return = Project.objects.filter(owner=self.request.user)
+        logging.debug('ProjectViewSet get_queryset:{}'.format(objects2return))
+        for o in objects2return:
+            logging.debug('{}: project_tms_id="{}"'.format(
+                o, o.project_tms_id))
+        return objects2return
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)

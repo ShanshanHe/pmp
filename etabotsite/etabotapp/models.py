@@ -33,7 +33,7 @@ class TMS(models.Model):
     type = models.CharField(max_length=20, choices=TMSlib.TMS_TYPES)
 
     def __str__(self):
-        return self.username
+        return "{}@{}".format(self.username, self.endpoint)
 
 
 class Project(models.Model):
