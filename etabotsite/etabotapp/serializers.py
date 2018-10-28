@@ -66,6 +66,14 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         """Map this serializer to a model and their fields."""
         model = Project
-        fields = ('id', 'name', 'owner', 'mode', 'open_status', 'grace_period',
-                  'work_hours', 'vacation_days')
+        fields = (
+            'id',
+            'project_tms_id',
+            'name',
+            'owner',
+            'mode',
+            'open_status',
+            'grace_period',
+            'work_hours',
+            'vacation_days')
         # read_only_fields = ('mode', 'name')
