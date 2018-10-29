@@ -37,7 +37,7 @@ Add sys_email_settings.json like this to etabotsite directory:
 {
     "DJANGO_SYS_EMAIL": "email",
     "DJANGO_SYS_EMAIL_PWD": "your_password",
-    "DJANGO_EMAIL_HOST":"smtp.your.server",
+    "DJANGO_EMAIL_HOST":"smtp.your.server", # e.g smtp.gmail.com
     "DJANGO_EMAIL_USE_TLS":true,
     "DJANGO_EMAIL_PORT":000,
     "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":86400
