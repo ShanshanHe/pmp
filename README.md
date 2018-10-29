@@ -14,7 +14,7 @@ backend data infrastructure and server for Smart project management tool made fo
   ```
   Add the following line to the end of the file:
   ```
-  0.0.0.0 <your web-app url, e.g. app.etabot.ai>
+  127.0.0.1 <your web-app url, e.g. app.etabot.ai>
   ```
 
 * Optionally: create "custom_settings.json" file in /etabotsite with the following
@@ -37,7 +37,7 @@ Add sys_email_settings.json like this to etabotsite directory:
 {
     "DJANGO_SYS_EMAIL": "email",
     "DJANGO_SYS_EMAIL_PWD": "your_password",
-    "DJANGO_EMAIL_HOST":"smtp.your.server",
+    "DJANGO_EMAIL_HOST":"smtp.your.server", # e.g smtp.gmail.com
     "DJANGO_EMAIL_USE_TLS":true,
     "DJANGO_EMAIL_PORT":000,
     "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":86400
@@ -104,7 +104,7 @@ Hope you enjoy!
   ```
   Add the following line to the end of the file:
   ```
-  0.0.0.0 app.etabot.ai
+  127.0.0.1 app.etabot.ai
   ```
 
 If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.

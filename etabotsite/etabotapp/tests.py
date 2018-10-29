@@ -1,4 +1,6 @@
+import factory
 from django.test import TestCase
+from django.db.models import signals
 from django.contrib.auth.models import User
 from .models import Project, TMS
 from rest_framework.test import APIClient
@@ -50,6 +52,7 @@ class TMSModelTestCase(TestCase):
                        username=self.username, password=self.password,
                        type=self.type)
 
+    @factory.django.mute_signals(signals.pre_save, signals.post_save)
     def test_model_can_create_a_tms(self):
         """Test the user model can create a tms."""
         old_count = TMS.objects.count()
@@ -61,6 +64,7 @@ class TMSModelTestCase(TestCase):
 class TMSViewTestCase(TestCase):
     """Test suite for the api TMS views."""
 
+    @factory.django.mute_signals(signals.pre_save, signals.post_save)
     def setUp(self):
         """Define the TMS test client and other test variables."""
         user = User.objects.create(username="kimchi", email="kimchi@etabot.ai",
