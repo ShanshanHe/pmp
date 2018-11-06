@@ -26,7 +26,7 @@ logging.info("PLATFORM={}".format(PLATFORM))
 LOCAL_MODE = (PLATFORM == 'Darwin')
 
 local_host_url = 'http://127.0.0.1:8000'
-prod_host_url = 'https://app.etabot.ai'
+prod_host_url = 'https://dev.etabot.ai'
 try:
     with open('custom_settings.json') as f:
         custom_settings = json.load(f)
