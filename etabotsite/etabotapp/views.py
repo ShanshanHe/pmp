@@ -1,106 +1,159 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from rest_framework import generics, permissions, status, mixins
+from django.views.decorators.csrf import ensure_csrf_cookie
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.views import APIView
 from rest_framework.response import Response
+
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
-from .models import Project
-from .models import TMS
-from .permissions import IsOwner
+from .models import Project, TMS
+from .permissions import IsOwnerOrReadOnly, IsOwner
+import TMSlib.TMS as TMSlib
+from .user_activation import ActivationProcessor, ResponseCode
 
-class UserCreateView(generics.ListCreateAPIView):
-    """This class defines the create behavior of our rest api."""
+import logging
+logging.getLogger().setLevel(logging.DEBUG)
 
-    queryset = User.objects.all()
-    permission_classes = (permissions.AllowAny,)
+
+@ensure_csrf_cookie
+def index(request, path='', format=None):
+    """
+    Renders the Angular2 SPA
+    """
+    # print('format = "{}"'.format(format))
+    return render(request, 'index.html')
+
+
+@api_view(['GET'])
+@authentication_classes([])
+@permission_classes([])
+def activate(request, token):
+    logging.debug('activate API started')
+    code = ActivationProcessor.activate_user(token)
+
+    if code == ResponseCode.DECRYPTION_ERROR:
+        return Response('Token is invalid. Please contact ETAbot.')
+    elif code == ResponseCode.EXPIRATION_ERROR:
+        return Response('Token already expired!')
+    elif code == ResponseCode.ALREADY_ACTIVATE_ERROR:
+        return Response('The user was already activated!')
+    elif code == ResponseCode.NOT_EXIST_ERROR:
+        return Response('The user does not exist!')
+    elif code == ResponseCode.SUCCESS:
+        return Response('The user is successfully activated!')
+    else:
+        return Response('Something wrong!')
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list` and `detail` actions.
+    """
     serializer_class = UserSerializer
+    permission_classes = (permissions.AllowAny(),)
 
-    def post(self, request, format=None):
-        serializer = UserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return User.objects.all()
+        return User.objects.filter(owner=self.request.user)
 
-    def get_queryset(self, *args, **kwargs):
-        return User.objects.all().filter(username=self.request.user.username)
-
-
-class UserDetailsView(generics.RetrieveUpdateDestroyAPIView):
-    """This class handles the http GET, PUT and DELETE requests."""
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwner)
-
-    def get_queryset(self, *args, **kwargs):
-        return User.objects.all().filter(username=self.request.user.username)
+    def get_permissions(self):
+        # allow non-authenticated user to create via POST
+        return (permissions.AllowAny() if self.request.method == 'POST'
+                else IsOwnerOrReadOnly()),
 
 
-class TMSCreateView(generics.ListCreateAPIView):
-    queryset = TMS.objects.all()
-    serializer_class = TMSSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwner)
+class ProjectViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update` and `destroy` actions.
+
+    Additionally we also provide an extra `highlight` action.
+    """
+    serializer_class = ProjectSerializer
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwner,)
+
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return Project.objects.all()
+        objects2return = Project.objects.filter(owner=self.request.user)
+        logging.debug('ProjectViewSet get_queryset:{}'.format(objects2return))
+        for o in objects2return:
+            logging.debug('{}: project_tms_id="{}"'.format(
+                o, o.project_tms_id))
+        return objects2return
 
     def perform_create(self, serializer):
-        """Save the post data when creating a new TMS account."""
         serializer.save(owner=self.request.user)
 
-    def get_queryset(self, *args, **kwargs):
-        return TMS.objects.all().filter(owner=self.request.user)
 
+class TMSViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update` and `destroy` actions.
 
-class TMSDetailsView(generics.RetrieveUpdateDestroyAPIView):
-    """This class handles the http GET, PUT and DELETE requests."""
-
-    queryset = TMS.objects.all()
+    Additionally we also provide an extra `highlight` action.
+    """
     serializer_class = TMSSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwner)
+    permission_classes = (permissions.IsAuthenticated,
+                          IsOwner,)
 
-    def get_queryset(self, *args, **kwargs):
-        return TMS.objects.all().filter(owner=self.request.user)
-
-class TMSUpdateView(generics.GenericAPIView, mixins.UpdateModelMixin):
-    '''
-    You just need to provide the field which is to be modified.
-    '''
-    queryset = TMS.objects.all()
-    serializer_class = TMSSerializer
-
-    def put(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
-
-
-class ProjectCreateView(generics.ListCreateAPIView):
-    """This class defines the create behavior of our rest api."""
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwner)
+    def get_queryset(self):
+        if self.request.user.is_superuser:
+            return TMS.objects.all()
+        return TMS.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
-        """Save the post data when creating a new user."""
         serializer.save(owner=self.request.user)
 
-    def get_queryset(self, *args, **kwargs):
-        return Project.objects.all().filter(owner=self.request.user)
 
+class EstimateTMSView(APIView):
 
-class ProjectDetailsView(generics.RetrieveUpdateDestroyAPIView):
-    """This class handles the http GET, PUT and DELETE requests."""
+    def get(self, request, format=None):
+        tms_id = request.query_params.get('tms', None)
+        if tms_id is not None:
+            try:
+                tms_id = int(tms_id)
+                tms_set = TMS.objects.all().filter(
+                    owner=self.request.user,
+                    id=tms_id)
+            except Exception as e:
+                return Response(
+                    'Invalid tms_id: "{}"'.format(tms_id),
+                    status=status.HTTP_400_BAD_REQUEST)
+        else:
+            tms_set = TMS.objects.all().filter(owner=self.request.user)
+        logging.debug('request.query_params: "{}"'.format(
+            request.query_params))
+        logging.debug('tms_id: "{}"'.format(tms_id))
 
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-    permission_classes = (permissions.IsAuthenticated, IsOwner)
+        logging.debug('found tms: {}'.format(tms_set))
+        # here we need to call an estimate method that takes TMS object which
+        # includes TMS credentials
+        for tms in tms_set:
+            project_id = request.query_params.get('project_id', None)
+            if project_id is not None:
+                project_id = int(project_id)
+                logging.debug('subsetting project_id="{}"'.format(project_id))
+                projects_set = Project.objects.all().filter(
+                    owner=self.request.user,
+                    project_tms_id=tms.id,
+                    id=project_id)
+            else:
+                projects_set = Project.objects.all().filter(
+                    owner=self.request.user,
+                    project_tms_id=tms.id)
+            logging.debug('projects_set: "{}"'.format(projects_set))
+            tms_wrapper = TMSlib.TMSWrapper(tms)
+            tms_wrapper.init_ETApredict(projects_set)
 
+            project_names = []
+            for project in projects_set:
+                project_names.append(project.name)
 
-    def get_queryset(self, *args, **kwargs):
-        return Project.objects.all().filter(owner=self.request.user)
+            tms_wrapper.estimate_tasks(project_names)
 
-
-class ProjectUpdateView(generics.GenericAPIView, mixins.UpdateModelMixin):
-    '''
-    You just need to provide the field which is to be modified.
-    '''
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
-
-    def put(self, request, *args, **kwargs):
-        return self.partial_update(request, *args, **kwargs)
+        return Response(
+            'TMS account to estimate: %s' % tms_set, status=status.HTTP_200_OK)
