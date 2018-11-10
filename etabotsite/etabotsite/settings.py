@@ -26,11 +26,13 @@ logging.info("PLATFORM={}".format(PLATFORM))
 LOCAL_MODE = (PLATFORM == 'Darwin')
 
 local_host_url = 'http://127.0.0.1:8000'
-prod_host_url = 'https://dev.etabot.ai'
+prod_host_url = 'https://app.etabot.ai'
+custom_settings = {}
 try:
     with open('custom_settings.json') as f:
         custom_settings = json.load(f)
-    logging.debug('loaded custom_settings.json: "{}"'.format(custom_settings))
+    logging.debug('loaded custom_settings.json with keys: \
+"{}"'.format(custom_settings.keys()))
     if 'local_host_url' in custom_settings:
         local_host_url = custom_settings['local_host_url']
 
@@ -179,13 +181,19 @@ WSGI_APPLICATION = 'etabotsite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+local_db = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
+
+DATABASES = {
+    'default': custom_settings.get('db', local_db)
 }
 
+logging.debug('database: Engine={} Name={} Host={}'.format(
+    DATABASES['default']['ENGINE'],
+    DATABASES['default']['NAME'],
+    DATABASES['default'].get('HOST')))
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
