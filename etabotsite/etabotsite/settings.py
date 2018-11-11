@@ -23,7 +23,7 @@ logger.setLevel(logging.DEBUG)
 
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
-LOCAL_MODE = (PLATFORM == 'Darwin')
+LOCAL_MODE = True
 
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
