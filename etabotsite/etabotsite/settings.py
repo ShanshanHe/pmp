@@ -241,8 +241,9 @@ except Exception as e:
     logging.warning('Cannot load sys_email_settings due to "{}". \
 Will use default values'.format(e))
 
-SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
-SYS_EMAIL_PWD = sys_email_settings.get('DJANGO_SYS_EMAIL_PWD', '')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST_USER = SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
+EMAIL_HOST_PASSWORD = SYS_EMAIL_PWD = sys_email_settings.get('DJANGO_SYS_EMAIL_PWD', '')
 EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST', '')
 EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
 EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
