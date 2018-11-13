@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -12,6 +13,7 @@ from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
 from .user_activation import ActivationProcessor, ResponseCode
 
+import json
 import logging
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -25,25 +27,53 @@ def index(request, path='', format=None):
     return render(request, 'index.html')
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @authentication_classes([])
 @permission_classes([])
-def activate(request, token):
+def activate(request):
     logging.debug('activate API started')
-    code = ActivationProcessor.activate_user(token)
+    post_data = json.loads(request.body.decode(encoding='utf-8'))
+    code = ActivationProcessor.activate_user(post_data['token'])
+    body = dict()
+    status_code = 500
 
     if code == ResponseCode.DECRYPTION_ERROR:
-        return Response('Token is invalid. Please contact ETAbot.')
+        body['message'] = 'Token is invalid. Please contact ETAbot.'
+        body['status'] = ResponseCode.DECRYPTION_ERROR
     elif code == ResponseCode.EXPIRATION_ERROR:
-        return Response('Token already expired!')
+        body['message'] = 'Token already expired!'
+        body['status'] = ResponseCode.EXPIRATION_ERROR
     elif code == ResponseCode.ALREADY_ACTIVATE_ERROR:
-        return Response('The user was already activated!')
+        body['message'] = 'The user was already activated!'
+        body['status'] = ResponseCode.ALREADY_ACTIVATE_ERROR
     elif code == ResponseCode.NOT_EXIST_ERROR:
-        return Response('The user does not exist!')
+        body['message'] = 'The user does not exist!'
+        body['status'] = ResponseCode.NOT_EXIST_ERROR
     elif code == ResponseCode.SUCCESS:
-        return Response('The user is successfully activated!')
-    else:
-        return Response('Something wrong!')
+        body['message'] = 'The user is successfully activated!'
+        body['status'] = ResponseCode.SUCCESS
+        status_code = 200
+
+    return HttpResponse(json.dumps(body), content_type='application/json', status=status_code)
+
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def email_verification(request):
+    logging.debug('activate API started')
+    post_data = json.loads(request.body.decode(encoding='utf-8'))
+    user = User.objects.get(pk=post_data['uid'])
+    body = dict()
+
+    try:
+        ActivationProcessor.email_token(user)
+        body['message'] = 'Successfully sent activation email to User {}'.format(user.username)
+        return HttpResponse(json.dumps(body), content_type='application/json', status=200)
+    except Exception as ex:
+        logging.error('Failed to send activation email to User %s: %s' % (user.username, str(ex)))
+        body['message'] = 'Failed to send activation email to User {}'.format(user.username)
+        return HttpResponse(json.dumps(body), content_type='application/json', status=500)
 
 
 class UserViewSet(viewsets.ModelViewSet):
