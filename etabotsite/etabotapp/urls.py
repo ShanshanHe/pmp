@@ -17,7 +17,7 @@ urlpatterns = [
         include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/get-token/', obtain_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
-    url(r'^api/activate/(?P<token>[0-9A-Za-z|=]+)/',
+    url(r'^api/activate/(?P<token>[0-9A-Za-z|=]+)/?',
         activate, name='activate'),
     # password reset
     url(r'^account/password_reset/$',
@@ -43,6 +43,6 @@ urlpatterns = [
         name='password_reset_complete'),
 
     # catch-all pattern for compatibility with the Angular routes
-    url(r'^(?P<path>.*)/$', index),
-    url(r'^$', index)
+    url(r'^(?P<path>.*)$', index),
+    # url(r'^$', index)
 ]
