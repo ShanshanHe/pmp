@@ -17,6 +17,7 @@ import datetime
 import json
 import logging
 import subprocess
+import urllib
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -273,3 +274,24 @@ if LOCAL_MODE:
 else:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+# AWS Credentials
+AWS_ACCESS_KEY_ID = custom_settings['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = custom_settings['AWS_SECRET_ACCESS_KEY']
+
+# Celery Task Scheduling
+BROKER_URL = 'sqs://{0}:{1}@'.format(
+    urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''),
+    urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe='')
+)
+
+BROKER_TRANSPORT_OPTIONS = {
+    'region': 'us-west-2',
+    'polling_interval': 20,
+}
+
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_DEFAULT_QUEUE = 'etabotqueue'
+CELERY_RESULT_BACKEND = None # Disabling the results backend
