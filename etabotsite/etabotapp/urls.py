@@ -17,10 +17,10 @@ urlpatterns = [
     url(r'^api/get-token/', obtain_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
     url(
-        r'^api/activate/(?P<token>[0-9A-Za-z|=]+)/',
+        r'^api/activate/(?P<token>[0-9A-Za-z|=]+)',
         activate, name='activate'),
 
     # catch-all pattern for compatibility with the Angular routes
-    url(r'^(?P<path>.*)/$', index),
-    url(r'^$', index)
+    url(r'^(?P<path>.*)$', index),
+    # url(r'^$', index)
 ]
