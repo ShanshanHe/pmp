@@ -18,9 +18,13 @@ import json
 import logging
 import subprocess
 import urllib
+import mimetypes
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
+
+mimetypes.add_type("text/css", ".css", True)
+logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
@@ -294,4 +298,4 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_DEFAULT_QUEUE = 'etabotqueue'
-CELERY_RESULT_BACKEND = None # Disabling the results backend
+CELERY_RESULT_BACKEND = None  # Disabling the results backend
