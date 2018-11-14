@@ -18,9 +18,12 @@ import json
 import logging
 import subprocess
 import urllib
+import mimetypes
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
+
+mimetypes.add_type("text/css", ".css", True)
 
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
