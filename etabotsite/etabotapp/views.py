@@ -11,7 +11,7 @@ from .models import Project, TMS
 from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
 from .user_activation import ActivationProcessor, ResponseCode
-
+import mimetypes
 import logging
 logging.getLogger().setLevel(logging.DEBUG)
 
