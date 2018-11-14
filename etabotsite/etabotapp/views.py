@@ -155,7 +155,7 @@ class EstimateTMSView(APIView):
             tms_wrapper = TMSlib.TMSWrapper(tms)
             tms_wrapper.init_ETApredict(projects_set)
 
-            project_names = [project.name for project in project_set]
+            project_names = [project.name for project in projects_set]
 
             tms_wrapper.estimate_tasks(project_names)
 
