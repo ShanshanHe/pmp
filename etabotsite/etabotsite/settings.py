@@ -24,6 +24,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 mimetypes.add_type("text/css", ".css", True)
+loggin.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))

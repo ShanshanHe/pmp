@@ -24,7 +24,11 @@ def index(request, path='', format=None):
     logging.debug('format = "{}"'.format(format))
     logging.debug('path = "{}"'.format(path))
     logging.debug('request = "{}"'.format(request))
-    return render(request, 'index.html')
+    loggin.debug('css type guessed: {}'.format(
+        mimetypes.guess_type('test.css')))
+    response = render(request, 'index.html')
+    logging.debug('response: {}'.format(response))
+    return response
 
 
 @api_view(['GET'])
