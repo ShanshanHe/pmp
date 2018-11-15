@@ -39,19 +39,19 @@ def activate(request):
 
     if code == ResponseCode.DECRYPTION_ERROR:
         body['message'] = 'Token is invalid. Please contact ETAbot.'
-        body['status'] = ResponseCode.DECRYPTION_ERROR
+        body['status'] = 1
     elif code == ResponseCode.EXPIRATION_ERROR:
         body['message'] = 'Token already expired!'
-        body['status'] = ResponseCode.EXPIRATION_ERROR
+        body['status'] = 2
     elif code == ResponseCode.ALREADY_ACTIVATE_ERROR:
         body['message'] = 'The user was already activated!'
-        body['status'] = ResponseCode.ALREADY_ACTIVATE_ERROR
+        body['status'] = 3
     elif code == ResponseCode.NOT_EXIST_ERROR:
         body['message'] = 'The user does not exist!'
-        body['status'] = ResponseCode.NOT_EXIST_ERROR
+        body['status'] = 4
     elif code == ResponseCode.SUCCESS:
         body['message'] = 'The user is successfully activated!'
-        body['status'] = ResponseCode.SUCCESS
+        body['status'] = 5
         status_code = 200
 
     return HttpResponse(json.dumps(body), content_type='application/json', status=status_code)
