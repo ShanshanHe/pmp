@@ -14,6 +14,7 @@ import TMSlib.TMS as TMSlib
 from .user_activation import ActivationProcessor, ResponseCode
 
 import json
+import mimetypes
 import logging
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -23,8 +24,12 @@ def index(request, path='', format=None):
     """
     Renders the Angular2 SPA
     """
-    # print('format = "{}"'.format(format))
-    return render(request, 'index.html')
+    logging.debug('format = "{}"'.format(format))
+    logging.debug('path = "{}"'.format(path))
+    logging.debug('request = "{}"'.format(request))
+    response = render(request, 'index.html')
+    logging.debug('response: {}'.format(response))
+    return response
 
 
 @api_view(['POST'])
@@ -179,9 +184,7 @@ class EstimateTMSView(APIView):
             tms_wrapper = TMSlib.TMSWrapper(tms)
             tms_wrapper.init_ETApredict(projects_set)
 
-            project_names = []
-            for project in projects_set:
-                project_names.append(project.name)
+            project_names = [project.name for project in projects_set]
 
             tms_wrapper.estimate_tasks(project_names)
 
