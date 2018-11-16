@@ -4,6 +4,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 from .views import UserViewSet, ProjectViewSet, TMSViewSet, EstimateTMSView
 from .views import index
 from .views import activate
+from .views import email_verification
 from django.contrib.auth import views as auth_views
 
 router = DefaultRouter()
@@ -17,6 +18,10 @@ urlpatterns = [
         include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/get-token/', obtain_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
+
+    url(r'^api/verification/activate/', activate, name='activate'),
+    url(r'^api/verification/send-email/', email_verification, name='email_verification'),
+
     url(r'^api/activate/(?P<token>[0-9A-Za-z|=]+)/?',
         activate, name='activate'),
     # password reset

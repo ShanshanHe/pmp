@@ -22,7 +22,7 @@ EMAIL_PORT = getattr(settings, "EMAIL_PORT", None)
 TOKEN_EXPIRATION_PERIOD = getattr(
     settings, "EMAIL_TOKEN_EXPIRATION_PERIOD_MS", 24 * 60 * 60 * 1000)
 EMAIL_SUBJECT = '[ETAbot] Please verify your email'
-TOKEN_LINK = '{}/api/activate/{}'
+TOKEN_LINK = '{}/verification/activate/{}'
 
 logging.info('SYS_DOMAIN: "{}"'.format(SYS_DOMAIN))
 logging.info('SYS_EMAIL: "{}"'.format(SYS_EMAIL))
@@ -76,10 +76,10 @@ class ActivationProcessor(object):
             logging.debug('token_str: "{}"'.format(token_str))
             ActivationProcessor.send_email(user, token_str)
 
-            logging.info('Successfully send activation email to User %s '
+            logging.info('Successfully sent activation email to User %s '
                          % user.username)
         except Exception as ex:
-            logging.error('Failed to send  activation email to User %s: %s'
+            logging.error('Failed to send activation email to User %s: %s'
                           % (user.username, str(ex)))
             raise ex
 
