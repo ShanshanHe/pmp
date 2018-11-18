@@ -186,7 +186,7 @@ class EstimateTMSView(APIView):
 
             project_names = [project.name for project in projects_set]
 
-            tms_wrapper.estimate_tasks(project_names)
+            tms_wrapper.estimate_tasks(project_names=project_names)
 
         return Response(
             'TMS account to estimate: %s' % tms_set, status=status.HTTP_200_OK)
