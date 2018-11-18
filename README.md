@@ -179,3 +179,14 @@ $ git reset HEAD -- etabot_algo
 ```
 
 The repo must have module ETApredict.py following pattern ETApredict_placeholder.py
+
+#### Periodic tasks with Celery
+in a separate terminal start process with:
+```
+$ celery -A etabotsite worker -l info
+```
+
+in another seprate terminal start a process with:
+```
+celery -A etabotsite beat -l INFO
+```
