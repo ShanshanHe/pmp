@@ -190,3 +190,11 @@ in another seprate terminal start a process with:
 ```
 celery -A etabotsite beat -l INFO
 ```
+
+#### Installation issues
+
+Issue "ImportError: The curl client requires the pycurl library." can be resolved on Mac with:
+```
+pip uninstall pycurl
+pip install --install-option="--with-openssl" --install-option="--openssl-dir=/usr/local/opt/openssl" pycurl
+```
