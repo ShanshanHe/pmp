@@ -157,7 +157,13 @@ class EstimateTMSView(APIView):
                     id=tms_id)
             except Exception as e:
                 return Response(
-                    'Invalid tms_id: "{}"'.format(tms_id),
+                    'Invalid tms_id: "{}". Error: {}'.format(
+                        tms_id, e),
+                    status=status.HTTP_400_BAD_REQUEST)
+            if len(tms_set) == 0:
+                return Response(
+                    'No TMS found with tms_id="{}" for user {}.'.format(
+                        tms_id, self.request.user),
                     status=status.HTTP_400_BAD_REQUEST)
         else:
             tms_set = TMS.objects.all().filter(owner=self.request.user)
@@ -166,6 +172,10 @@ class EstimateTMSView(APIView):
         logging.debug('tms_id: "{}"'.format(tms_id))
 
         logging.debug('found tms: {}'.format(tms_set))
+        if len(tms_set) == 0:
+            return Response(
+                'No TMS found for user {}'.format(self.request.user),
+                status=status.HTTP_400_BAD_REQUEST)
         # here we need to call an estimate method that takes TMS object which
         # includes TMS credentials
         for tms in tms_set:
