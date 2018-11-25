@@ -17,9 +17,14 @@ import datetime
 import json
 import logging
 import subprocess
+import urllib
+import mimetypes
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
+
+mimetypes.add_type("text/css", ".css", True)
+logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
@@ -42,6 +47,7 @@ try:
 except Exception as e:
     logging.warning('cannot load custom_settings.json due to "{}"'.format(
         e))
+CUSTOM_SETTINGS = custom_settings
 
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
 logging.info('HOST_URL="{}"'.format(HOST_URL))
@@ -241,8 +247,9 @@ except Exception as e:
     logging.warning('Cannot load sys_email_settings due to "{}". \
 Will use default values'.format(e))
 
-SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
-SYS_EMAIL_PWD = sys_email_settings.get('DJANGO_SYS_EMAIL_PWD', '')
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST_USER = SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
+EMAIL_HOST_PASSWORD = SYS_EMAIL_PWD = sys_email_settings.get('DJANGO_SYS_EMAIL_PWD', '')
 EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST', '')
 EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
 EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
@@ -272,3 +279,24 @@ if LOCAL_MODE:
 else:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+
+# AWS Credentials
+AWS_ACCESS_KEY_ID = custom_settings['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = custom_settings['AWS_SECRET_ACCESS_KEY']
+
+# Celery Task Scheduling
+BROKER_URL = 'sqs://{0}:{1}@'.format(
+    urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''),
+    urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe='')
+)
+
+BROKER_TRANSPORT_OPTIONS = {
+    'region': 'us-west-2',
+    'polling_interval': 20,
+}
+
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_DEFAULT_QUEUE = 'etabotqueue'
+CELERY_RESULT_BACKEND = None  # Disabling the results backend

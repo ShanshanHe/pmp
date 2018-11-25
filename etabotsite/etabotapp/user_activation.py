@@ -11,6 +11,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum
 
+from requests.utils import quote
+
 logging.getLogger().setLevel(logging.INFO)
 # logging.getLogger().setLevel(logging.DEBUG)
 
@@ -22,7 +24,7 @@ EMAIL_PORT = getattr(settings, "EMAIL_PORT", None)
 TOKEN_EXPIRATION_PERIOD = getattr(
     settings, "EMAIL_TOKEN_EXPIRATION_PERIOD_MS", 24 * 60 * 60 * 1000)
 EMAIL_SUBJECT = '[ETAbot] Please verify your email'
-TOKEN_LINK = '{}/api/activate/{}'
+TOKEN_LINK = '{}/verification/activate/{}'
 
 logging.info('SYS_DOMAIN: "{}"'.format(SYS_DOMAIN))
 logging.info('SYS_EMAIL: "{}"'.format(SYS_EMAIL))
@@ -72,14 +74,14 @@ class ActivationProcessor(object):
             logging.debug('plain_token: "{}"'.format(plain_token))
             encoded_token = base64.urlsafe_b64encode(force_bytes(plain_token))
             logging.debug('encoded_token: "{}"'.format(encoded_token))
-            token_str = encoded_token.decode('utf-8')
+            token_str = quote(encoded_token.decode('utf-8'))
             logging.debug('token_str: "{}"'.format(token_str))
             ActivationProcessor.send_email(user, token_str)
 
-            logging.info('Successfully send activation email to User %s '
+            logging.info('Successfully sent activation email to User %s '
                          % user.username)
         except Exception as ex:
-            logging.error('Failed to send  activation email to User %s: %s'
+            logging.error('Failed to send activation email to User %s: %s'
                           % (user.username, str(ex)))
             raise ex
 
@@ -93,12 +95,14 @@ class ActivationProcessor(object):
             uid_and_time = plain_token.split('/')
             uid = int(uid_and_time[0])
             logging.debug('user id: {}'.format(uid))
+            logging.debug('uid_and_time[1]: {}'.format(uid_and_time[1]))
             email_time = int(uid_and_time[1])
             time_delta = now_millis - email_time
         except (IndexError, UnicodeDecodeError, ValueError) as ex:
             logging.error('Failed to decrypt the token: %s' % str(ex))
             return ResponseCode.DECRYPTION_ERROR
 
+        logging.debug('decrypted uid: {}'.format(uid))
         user = User.objects.get(pk=uid)
 
         if user is not None and user.is_active is False:

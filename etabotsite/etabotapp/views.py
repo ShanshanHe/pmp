@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -12,6 +13,8 @@ from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
 from .user_activation import ActivationProcessor, ResponseCode
 
+import json
+import mimetypes
 import logging
 logging.getLogger().setLevel(logging.DEBUG)
 
@@ -21,29 +24,62 @@ def index(request, path='', format=None):
     """
     Renders the Angular2 SPA
     """
-    # print('format = "{}"'.format(format))
-    return render(request, 'index.html')
+    logging.debug('format = "{}"'.format(format))
+    logging.debug('path = "{}"'.format(path))
+    logging.debug('request = "{}"'.format(request))
+    response = render(request, 'index.html')
+    logging.debug('response: {}'.format(response))
+    return response
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @authentication_classes([])
 @permission_classes([])
-def activate(request, token):
+def activate(request):
     logging.debug('activate API started')
-    code = ActivationProcessor.activate_user(token)
+    post_data = json.loads(request.body.decode(encoding='utf-8'))
+    logging.debug('user activate post_data: "{}"'.format(post_data))
+    code = ActivationProcessor.activate_user(post_data['token'])
+    body = dict()
+    status_code = 500
 
     if code == ResponseCode.DECRYPTION_ERROR:
-        return Response('Token is invalid. Please contact ETAbot.')
+        body['message'] = 'Token is invalid. Please contact ETAbot.'
+        body['status'] = 1
     elif code == ResponseCode.EXPIRATION_ERROR:
-        return Response('Token already expired!')
+        body['message'] = 'Account confirmation link has expired!'
+        body['status'] = 2
     elif code == ResponseCode.ALREADY_ACTIVATE_ERROR:
-        return Response('The user was already activated!')
+        body['message'] = 'You were already activated. Please login with your account!'
+        body['status'] = 3
     elif code == ResponseCode.NOT_EXIST_ERROR:
-        return Response('The user does not exist!')
+        body['message'] = 'The user does not exist!'
+        body['status'] = 4
     elif code == ResponseCode.SUCCESS:
-        return Response('The user is successfully activated!')
-    else:
-        return Response('Something wrong!')
+        body['message'] = 'Thank you for your confirmation. Please login with your account!'
+        body['status'] = 5
+        status_code = 200
+
+    return HttpResponse(json.dumps(body), content_type='application/json', status=status_code)
+
+
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([])
+def email_verification(request):
+    logging.debug('activate API started')
+    post_data = json.loads(request.body.decode(encoding='utf-8'))
+    user = User.objects.get(pk=post_data['uid'])
+    body = dict()
+
+    try:
+        ActivationProcessor.email_token(user)
+        body['message'] = 'Successfully sent activation email to User {}'.format(user.username)
+        return HttpResponse(json.dumps(body), content_type='application/json', status=200)
+    except Exception as ex:
+        logging.error('Failed to send activation email to User %s: %s' % (user.username, str(ex)))
+        body['message'] = 'Failed to send activation email to User {}'.format(user.username)
+        return HttpResponse(json.dumps(body), content_type='application/json', status=500)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -149,11 +185,9 @@ class EstimateTMSView(APIView):
             tms_wrapper = TMSlib.TMSWrapper(tms)
             tms_wrapper.init_ETApredict(projects_set)
 
-            project_names = []
-            for project in projects_set:
-                project_names.append(project.name)
+            project_names = [project.name for project in projects_set]
 
-            tms_wrapper.estimate_tasks(project_names)
+            tms_wrapper.estimate_tasks(project_names=project_names)
 
         return Response(
             'TMS account to estimate: %s' % tms_set, status=status.HTTP_200_OK)
