@@ -26,9 +26,13 @@ following TMS entries ({}): {}'.format(
         if project_set:
             logging.info('generating ETAs for TMS {} Projects: {}'.format(
                 tms, project_set))
-            tms_wrapper = TMSlib.TMSWrapper(tms)
-            tms_wrapper.init_ETApredict(project_set)
-            tms_wrapper.estimate_tasks()
+            try:
+                tms_wrapper = TMSlib.TMSWrapper(tms)
+                tms_wrapper.init_ETApredict(project_set)
+                tms_wrapper.estimate_tasks()
+            except Exception as e:
+                logging.error('Could not generate ETAs for TMS {} \
+Projects {} due to "{}"'.format(tms, project_set, e))
         else:
             logging.info('no projects found for TMS {}'.format(tms))
     return True
