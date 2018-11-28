@@ -76,5 +76,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'open_status',
             'grace_period',
             'work_hours',
-            'vacation_days')
+            'vacation_days',
+            'velocities')
         # read_only_fields = ('mode', 'name')
