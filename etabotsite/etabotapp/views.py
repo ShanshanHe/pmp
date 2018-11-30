@@ -11,7 +11,10 @@ from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import Project, TMS
 from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
+import TMSlib.data_conversion as dc
+
 from .user_activation import ActivationProcessor, ResponseCode
+
 
 import json
 import mimetypes
@@ -194,8 +197,13 @@ class EstimateTMSView(APIView):
             logging.debug('projects_set: "{}"'.format(projects_set))
             tms_wrapper = TMSlib.TMSWrapper(tms)
             tms_wrapper.init_ETApredict(projects_set)
-            # todo: update project velocity in django after this init
-            project_names = [project.name for project in projects_set]
+
+            project_names = []
+            for project in projects_set:
+                project.velocities = dc.get_velocity_json(
+                    tms_wrapper.ETApredict_obj.user_velocity_per_project,
+                    project.name)
+                project_names.append(project.name)
 
             tms_wrapper.estimate_tasks(project_names=project_names)
 

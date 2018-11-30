@@ -6,7 +6,7 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 sys.path.append(os.path.abspath('etabotapp'))
 import TMSlib.TMS as TMSlib
-
+import TMSlib.data_conversion as dc
 sys.path.pop(0)
 
 from django.db import models
@@ -86,15 +86,8 @@ def parse_tms(sender, instance, **kwargs):
     logging.debug('parse_tms: velocities found: {}'.format(velocities))
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
-            velocity = velocities.get(project_name)
-            velocity_json = {}
-            if velocity is not None:
-                velocity_json['mean'] = velocity.value
-                velocity_json['upper_estimate'] = velocity.higher_estimate()
-                velocity_json['lower_estimate'] = velocity.lower_estimate()
-            else:
-                logging.debug('velocity is None for project {}'.format(
-                    project_name))
+            velocity_json = dc.get_velocity_json(
+                velocities, project_name)
             django_project = Project(
                 owner=instance.owner,
                 project_tms=instance,
