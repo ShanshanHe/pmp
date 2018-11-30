@@ -24,11 +24,11 @@ def index(request, path='', format=None):
     """
     Renders the Angular2 SPA
     """
-    logging.debug('format = "{}"'.format(format))
-    logging.debug('path = "{}"'.format(path))
-    logging.debug('request = "{}"'.format(request))
+    # logging.debug('format = "{}"'.format(format))
+    # logging.debug('path = "{}"'.format(path))
+    # logging.debug('request = "{}"'.format(request))
     response = render(request, 'index.html')
-    logging.debug('response: {}'.format(response))
+    # logging.debug('response: {}'.format(response))
     return response
 
 
@@ -194,7 +194,7 @@ class EstimateTMSView(APIView):
             logging.debug('projects_set: "{}"'.format(projects_set))
             tms_wrapper = TMSlib.TMSWrapper(tms)
             tms_wrapper.init_ETApredict(projects_set)
-
+            # todo: update project velocity in django after this init
             project_names = [project.name for project in projects_set]
 
             tms_wrapper.estimate_tasks(project_names=project_names)
