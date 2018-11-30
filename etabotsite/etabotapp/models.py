@@ -6,7 +6,7 @@ logging.getLogger().setLevel(logging.DEBUG)
 
 sys.path.append(os.path.abspath('etabotapp'))
 import TMSlib.TMS as TMSlib
-
+import TMSlib.data_conversion as dc
 sys.path.pop(0)
 
 from django.db import models
@@ -48,6 +48,7 @@ class Project(models.Model):
     grace_period = models.FloatField()
     work_hours = JSONField()
     vacation_days = JSONField()
+    velocities = JSONField(null=True)
 
     def __str__(self):
         return self.name
@@ -81,14 +82,19 @@ def parse_tms(sender, instance, **kwargs):
         projects=Project.objects.filter(project_tms=instance.id))
     TMS_w1.init_ETApredict([])
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
+    velocities = TMS_w1.ETApredict_obj.user_velocity_per_project
+    logging.debug('parse_tms: velocities found: {}'.format(velocities))
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
+            velocity_json = dc.get_velocity_json(
+                velocities, project_name)
             django_project = Project(
                 owner=instance.owner,
                 project_tms=instance,
                 name=project_name,
                 mode=attrs.get('mode', 'unknown mode'),
                 open_status=attrs.get('open_status', ''),
+                velocities=velocity_json,
                 grace_period=attrs.get('grace_period', 12.0),
                 work_hours=attrs.get('work_hours', '{}'),
                 vacation_days=attrs.get('vacation_days', '{}'))

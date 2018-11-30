@@ -63,6 +63,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     work_hours = serializers.JSONField()
     vacation_days = serializers.JSONField()
+    velocities = serializers.JSONField()
 
     class Meta:
         """Map this serializer to a model and their fields."""
@@ -76,5 +77,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'open_status',
             'grace_period',
             'work_hours',
-            'vacation_days')
+            'vacation_days',
+            'velocities')
         # read_only_fields = ('mode', 'name')

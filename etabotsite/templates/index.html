@@ -9,11 +9,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css?family=Josefin+Sans|Julius+Sans+One&amp;subset=latin-ext" rel="stylesheet">  
-<link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.css'>  
+  <link href="https://fonts.googleapis.com/css?family=Josefin+Sans|Julius+Sans+One&amp;subset=latin-ext" rel="stylesheet">  
+  <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.css'>  
 <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"> -->
+<script>
+window['_fs_debug'] = false;
+window['_fs_host'] = 'fullstory.com';
+window['_fs_org'] = 'GPZHX';
+window['_fs_namespace'] = 'FS';
+(function(m,n,e,t,l,o,g,y){
+    if (e in m) {if(m.console && m.console.log) { m.console.log('FullStory namespace conflict. Please set window["_fs_namespace"].');} return;}
+    g=m[e]=function(a,b,s){g.q?g.q.push([a,b,s]):g._api(a,b,s);};g.q=[];
+    o=n.createElement(t);o.async=1;o.src='https://'+_fs_host+'/s/fs.js';
+    y=n.getElementsByTagName(t)[0];y.parentNode.insertBefore(o,y);
+    g.identify=function(i,v,s){g(l,{uid:i},s);if(v)g(l,v,s)};g.setUserVars=function(v,s){g(l,v,s)};g.event=function(i,v,s){g('event',{n:i,p:v},s)};
+    g.shutdown=function(){g("rec",!1)};g.restart=function(){g("rec",!0)};
+    g.consent=function(a){g("consent",!arguments.length||a)};
+    g.identifyAccount=function(i,v){o='account';v=v||{};v.acctId=i;g(o,v)};
+    g.clearUserCookie=function(){};
+})(window,document,window['_fs_namespace'],'script','user');
+</script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-130006699-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-130006699-1');
+</script>
+
 <link rel="stylesheet" href="{% static 'ng2_app/styles.9aadc79d3276018e7c94.css' %}"></head>
 <body>
   <app-root></app-root>
-<script type="text/javascript" src="{% static 'ng2_app/runtime.a66f828dca56eeb90e02.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/polyfills.b7b7642b82b357ed611c.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/main.ed4f52a70c38452a34fa.js' %}"></script></body>
+<script type="text/javascript" src="{% static 'ng2_app/runtime.a66f828dca56eeb90e02.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/polyfills.b7b7642b82b357ed611c.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/main.9313c05f671fd42c67a5.js' %}"></script></body>
 </html>

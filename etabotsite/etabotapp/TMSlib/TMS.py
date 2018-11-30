@@ -209,5 +209,4 @@ class TMSWrapper(TMS_JIRA):
     def estimate_tasks(self, project_names=None):
         logging.info('Estimating tasks for TMS "{}", \
 projects: "{}", hold tight!'.format(self, project_names))
-        # TODO Shanshan Implement the method to call estimate algo
         self.ETApredict_obj.generate_task_list_view_with_ETA(project_names)

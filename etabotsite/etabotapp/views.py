@@ -11,7 +11,10 @@ from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import Project, TMS
 from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
+import TMSlib.data_conversion as dc
+
 from .user_activation import ActivationProcessor, ResponseCode
+
 
 import json
 import mimetypes
@@ -24,11 +27,11 @@ def index(request, path='', format=None):
     """
     Renders the Angular2 SPA
     """
-    logging.debug('format = "{}"'.format(format))
-    logging.debug('path = "{}"'.format(path))
-    logging.debug('request = "{}"'.format(request))
+    # logging.debug('format = "{}"'.format(format))
+    # logging.debug('path = "{}"'.format(path))
+    # logging.debug('request = "{}"'.format(request))
     response = render(request, 'index.html')
-    logging.debug('response: {}'.format(response))
+    # logging.debug('response: {}'.format(response))
     return response
 
 
@@ -195,7 +198,13 @@ class EstimateTMSView(APIView):
             tms_wrapper = TMSlib.TMSWrapper(tms)
             tms_wrapper.init_ETApredict(projects_set)
 
-            project_names = [project.name for project in projects_set]
+            project_names = []
+            for project in projects_set:
+                project.velocities = dc.get_velocity_json(
+                    tms_wrapper.ETApredict_obj.user_velocity_per_project,
+                    project.name)
+                project.save()
+                project_names.append(project.name)
 
             tms_wrapper.estimate_tasks(project_names=project_names)
 
