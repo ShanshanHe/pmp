@@ -203,6 +203,7 @@ class EstimateTMSView(APIView):
                 project.velocities = dc.get_velocity_json(
                     tms_wrapper.ETApredict_obj.user_velocity_per_project,
                     project.name)
+                project.save()
                 project_names.append(project.name)
 
             tms_wrapper.estimate_tasks(project_names=project_names)
