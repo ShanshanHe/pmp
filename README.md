@@ -161,6 +161,32 @@ You have a sample project management site ready to go!
 
 #### Advanced settings
 
+### Settings jsons
+
+## custom_settings.json - general custom settings
+"local_host_url":"server end point in local mode"
+"prod_host_url":"server end point in production mode"
+"db":"Django database definition. If no such key found, a local sqlite3 database will be used."
+"AWS_ACCESS_KEY_ID":"Amazon services access key id for SQS messenging (used in celery periodic tasks)"
+"AWS_SECRET_ACCESS_KEY":"Amazon services access key for SQS messenging (used in celery periodic tasks)"
+
+## django_keys.json - Django encryption keys
+"DJANGO_SECRET_KEY":"Django secret key"
+"DJANGO_FIELD_ENCRYPT_KEY":"Django secret key used for encryption in databased fields"
+
+## django_keys_prod.json
+same as django_keys.json but keys for production. Keys will be checked against exposed dev keys from git repo.
+
+## sys_email_settings.json - used for email communication setup
+"DJANGO_SYS_EMAIL": "username for email server",
+"DJANGO_SYS_EMAIL_PWD": "password for email server",
+"DJANGO_EMAIL_HOST":"email server host, e.g. smtp.sendgrid.net",
+"DJANGO_EMAIL_USE_TLS":bool for TLS,
+"DJANGO_EMAIL_PORT":email server port number port number,
+"DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":Django email token expiration period in seconds (86400 = 24h)
+
+
+### server end-point selection
 By default, if you run server on MacOS (Darwin), it will detect you are in development mode and set host url to local_host_url (set in custom_settings.json or default value in settings.py) and set it correspondingly in UI API endpoint and email links. If OS other than Darwin, prod_host_url (set to value in custom_settings.json or default value in settings.py) will be used.
 
 
@@ -169,6 +195,8 @@ To modify the `/static/ng2_app/main.js` static file to point to API endpoint oth
 $ cd etabotapp/
 $ python set_api_url.py static/ng2_app/ <end point url, e.g. http://app.etabot.ai:8000/api/>
 ```
+
+
 
 #### Optinal: connecting ETA algorithm instead of a placeholder
 ```
