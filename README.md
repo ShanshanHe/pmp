@@ -108,6 +108,7 @@ Hope you enjoy!
   ```
 
 If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.
+
 #### Install `virtualenv` and `virtualenvwrapper` tool to manage python environment
 ```
 $ pip install virtualenv
@@ -209,7 +210,10 @@ $ git reset HEAD -- etabot_algo
 The repo must have module ETApredict.py following pattern ETApredict_placeholder.py
 
 #### Periodic tasks with Celery
-in a separate terminal start process with:
+
+Celery container will start automatically with Docker deployment.
+
+For manual start: in a separate terminal start process with:
 ```
 $ celery -A etabotsite worker -l info
 ```
@@ -225,4 +229,11 @@ Issue "ImportError: The curl client requires the pycurl library." can be resolve
 ```
 pip uninstall pycurl
 pip install --install-option="--with-openssl" --install-option="--openssl-dir=/usr/local/opt/openssl" pycurl
+```
+
+#### Maintenance
+
+To free up space from unused stale containers:
+```
+docker images -q --filter dangling=true | xargs docker rmi
 ```
