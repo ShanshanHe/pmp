@@ -8,7 +8,7 @@ backend data infrastructure and server for Smart project management tool made fo
 #### Prequisites:
 * Have docker, docker compose installed
 * Knowledge of Django and Nginx
-* Add your dns to hosts for testing with your url locally, for example:
+* If needed add your dns to hosts for testing with your url locally, for example:
   ``` 
   $ sudo vi /etc/hosts
   ```
@@ -17,14 +17,12 @@ backend data infrastructure and server for Smart project management tool made fo
   127.0.0.1 <your web-app url, e.g. app.etabot.ai>
   ```
 
-* Optionally: create "custom_settings.json" file in /etabotsite with the following
-
-```
-{
-    "local_host_url":"<your local host url for testing, e.g. http://127.0.0.1:8000">,
-    "prod_host_url":"<your production host url for testing, e.g. https://app.etabot.ai>"
-}
-```
+* Optionally to start, required for full operation:
+- create/get the following json files in/etabotsite (see descriptions in "Settings jsons" section)
+    1. custom_settings.json - general custom settings (end points, database, messenging service, etc)
+    2. django_keys_prod.json - Django encryption keys used in production mode
+    3. sys_email_settings.json - used for email communication setup
+- git http url to an ETA algorithm
 
 #### Bring up pmp services which include nginx and django
 Clone the repo to your server
@@ -32,30 +30,18 @@ Clone the repo to your server
 git clone https://github.com/ShanshanHe/pmp.git
 ```
 
-Add sys_email_settings.json like this to etabotsite directory:
-```
-{
-    "DJANGO_SYS_EMAIL": "email",
-    "DJANGO_SYS_EMAIL_PWD": "your_password",
-    "DJANGO_EMAIL_HOST":"smtp.your.server", # e.g smtp.gmail.com
-    "DJANGO_EMAIL_USE_TLS":true,
-    "DJANGO_EMAIL_PORT":000,
-    "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":86400
-}
-```
+### Configure pmp
+- add custom_settings.json to etabotsite directory
+- add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
+- add sys_email_settings.json to etabotsite directory
+- add ETA algorithm as a git submodule (see section "Optinal: connecting ETA algorithm instead of a placeholder")
 
-Add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
-
+### Build docker images and create volumes
 At the root directory, run the following commands:
 ```
 $ docker-compose build --no-cache
 $ docker-compose up --no-start --force-recreate
 ```
-add the following lines in case you run into Networking errors:
-Edit /etc/default/docker and add your DNS server to the following line:
-
-Example 
-DOCKER_OPTS="--dns 8.8.8.8 --dns 10.252.252.252"
 
 The two commands above will build two docker images: `pmp-nginx` and `pmp-django`, and then run both images as two containers. At the same time, they create two docker local volumes, you can check the volumes using the following command:
 
@@ -79,6 +65,7 @@ $ docker cp nginx/certs/cert.pem temp-volume:/etc/ssl/certs/cert.pem
 $ docker cp nginx/certs/key.pem temp-volume:/etc/ssl/certs/key.pem
 ```
 
+### Running docker containers
 Now we run the following commands again:
 ```
 $ docker-compose build --no-cache
@@ -88,7 +75,18 @@ Ensure all containers are up and running by:
 ```
 $ docker ps
 ```
-And you should see two containers running.
+And you should see three containers running.
+
+if you do not want celery container that runs periodic tasks - stop it by:
+```
+docker stop <container_id>
+```
+where <container_id> can be found from the earlier docker ps command
+
+if you want to start the celery container on another machine, run this after images are built instead of docker-compose up
+```
+docker run pmp_celery
+```
 
 Vola, you successfully deployed your `pmp` project! Type the ip address of your server in your browser to visit the default `pmp` webpage. 
 
@@ -109,7 +107,12 @@ Hope you enjoy!
 
 If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.
 
-#### Install `virtualenv` and `virtualenvwrapper` tool to manage python environment
+#### Install virtual environment management tool
+E.g. virtualenv or conda
+
+### virtualenv option
+
+Install `virtualenv` and `virtualenvwrapper` tool to manage python environment
 ```
 $ pip install virtualenv
 $ pip install virtualenvwrapper
@@ -132,6 +135,10 @@ To create a virtual environment for the project, follow the command below:
 ```
 $ mkvirtualenv --python=python3 <name_of_the_virtual_environment>
 ```
+
+### conda option
+follow https://docs.conda.io/projects/conda/en/latest/user-guide/install/
+
 #### Run django server locally
 Suppose you're already in a virtual environemnt, go to our project root directory,install the dependencies:
 ```
@@ -141,6 +148,9 @@ Go the etabotsite directory:
 ```
 $ cd etabotsite/
 ```
+
+Follow instructions in section "Configure pmp" above
+
 If this is your first time running the project in development mode, you want to create the database table by running the following command:
 ```
 $ python manage.py migrate
@@ -157,7 +167,7 @@ $ python manage.py runserver 127.0.0.1:8000
 ```
 
 Vola! You have django server up and running in development mode. Go to you browser, enter the address below:
-http://app.etabot.ai:8000/index
+http://<url you set in etc/hosts>:8000/index
 You have a sample project management site ready to go!
 
 #### Advanced settings
@@ -165,26 +175,42 @@ You have a sample project management site ready to go!
 ### Settings jsons
 
 ## custom_settings.json - general custom settings
-"local_host_url":"server end point in local mode"
-"prod_host_url":"server end point in production mode"
-"db":"Django database definition. If no such key found, a local sqlite3 database will be used."
-"AWS_ACCESS_KEY_ID":"Amazon services access key id for SQS messenging (used in celery periodic tasks)"
-"AWS_SECRET_ACCESS_KEY":"Amazon services access key for SQS messenging (used in celery periodic tasks)"
+```
+{
+    "local_host_url":"<your local host url for testing, e.g. http://127.0.0.1:8000">,
+    "prod_host_url":"<your production host url for testing, e.g. https://app.etabot.ai>"
+    "db":"Django database definition. If no such key found, a local sqlite3 database will be used."
+    "AWS_ACCESS_KEY_ID":"Amazon services access key id for SQS messenging (used in celery periodic tasks)"
+    "AWS_SECRET_ACCESS_KEY":"Amazon services access key for SQS messenging (used in celery periodic tasks)"
+    "eta_crontab_args":<dictionary with crontab settings for example: 'eta_crontab_args':{'hour': 8}
+                        see celery.schedules.crontab documentation for details>
+}
+```
 
-## django_keys.json - Django encryption keys
-"DJANGO_SECRET_KEY":"Django secret key"
-"DJANGO_FIELD_ENCRYPT_KEY":"Django secret key used for encryption in databased fields"
+## django_keys.json - Django encryption keys used in development mode
+```
+{
+    "DJANGO_SECRET_KEY":"Django secret key"
+    "DJANGO_FIELD_ENCRYPT_KEY":"Django secret key used for encryption in databased fields"
+}
+```
+run this from /etabotsite to generate a key:
+```
+$ python generate_key.py
+```
 
 ## django_keys_prod.json
 same as django_keys.json but keys for production. Keys will be checked against exposed dev keys from git repo.
 
 ## sys_email_settings.json - used for email communication setup
-"DJANGO_SYS_EMAIL": "username for email server",
-"DJANGO_SYS_EMAIL_PWD": "password for email server",
-"DJANGO_EMAIL_HOST":"email server host, e.g. smtp.sendgrid.net",
-"DJANGO_EMAIL_USE_TLS":bool for TLS,
-"DJANGO_EMAIL_PORT":email server port number port number,
-"DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":Django email token expiration period in seconds (86400 = 24h)
+```
+    "DJANGO_SYS_EMAIL": "username for email server",
+    "DJANGO_SYS_EMAIL_PWD":"password for email server",
+    "DJANGO_EMAIL_HOST":"email server host, e.g. smtp.sendgrid.net",
+    "DJANGO_EMAIL_USE_TLS":bool for TLS,
+    "DJANGO_EMAIL_PORT":email server port number port number,
+    "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":Django email token expiration period in seconds (86400 = 24h)
+```
 
 
 ### server end-point selection
@@ -223,13 +249,23 @@ in another seprate terminal start a process with:
 celery -A etabotsite beat -l INFO
 ```
 
+
 #### Installation issues
 
-Issue "ImportError: The curl client requires the pycurl library." can be resolved on Mac with:
+### Issue "ImportError: The curl client requires the pycurl library." 
+can be resolved on Mac with:
 ```
 pip uninstall pycurl
 pip install --install-option="--with-openssl" --install-option="--openssl-dir=/usr/local/opt/openssl" pycurl
 ```
+
+### Networking errors
+add the following lines in case you run into Networking errors:
+Edit /etc/default/docker and add your DNS server to the following line:
+
+Example 
+DOCKER_OPTS="--dns 8.8.8.8 --dns 10.252.252.252"
+
 
 #### Maintenance
 
