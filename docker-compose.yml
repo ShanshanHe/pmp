@@ -12,6 +12,14 @@ services:
     ports:
       - 8000:8000
 
+  celery:
+    container_name: pmp-celery
+    build:
+      context: .
+      dockerfile: ./celery/Dockerfile
+    networks:
+      - pmp-django-nginx
+
   nginx:
     container_name: pmp-nginx
     build:

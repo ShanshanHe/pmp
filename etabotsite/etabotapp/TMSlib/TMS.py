@@ -125,39 +125,40 @@ AND sprint in openSprints() ORDER BY Rank ASC'.format(assignee=assignee))
             logging.debug(in_progress_issues_current_sprint[0])
             logging.debug(in_progress_issues_current_sprint[0].fields.summary)
 
-        in_progress_issues = self.jira.get_jira_issues(
-            'assignee={assignee} AND status="In Progress" \
-ORDER BY Rank ASC'.format(assignee=assignee))
-
-        if len(open_status_values_css) > 0:
-            open_issues_current_sprint = self.jira.get_jira_issues(
-                    'assignee={assignee} AND status in ({open_status_values}) \
-    AND sprint in openSprints()  ORDER BY Rank ASC'.format(
-                        assignee=assignee,
-                        open_status_values=open_status_values_css))
-
-            open_issues = self.jira.get_jira_issues(
-                'assignee={assignee} AND status in ({open_status_values}) \
-    ORDER BY Rank ASC'.format(
+        open_issues_current_sprint = self.jira.get_jira_issues(
+                'assignee={assignee} AND status not in ("In Progress", "Done") \
+AND sprint in openSprints() ORDER BY Rank ASC'.format(
                     assignee=assignee,
                     open_status_values=open_status_values_css))
-        else:
-            open_issues_current_sprint = []
-            open_issues = []
+
+        in_progress_issues = self.jira.get_jira_issues(
+            'assignee={assignee} AND status="In Progress" \
+AND sprint not in openSprints() ORDER BY Rank ASC'.format(assignee=assignee))
+
+        # if len(open_status_values_css) > 0:
+
+        open_issues = self.jira.get_jira_issues(
+            'assignee={assignee} AND status not in ("In Progress", "Done") \
+AND sprint not in openSprints() ORDER BY Rank ASC'.format(
+                assignee=assignee,
+                open_status_values=open_status_values_css))
+        # else:
+        #     open_issues_current_sprint = []
+        #     open_issues = []
 
         logging.debug("""acquired open tasks counts:
 in_progress_issues_current_sprint: {},
-in_progress_issues: {},
 open_issues_current_sprint: {},
+in_progress_issues: {},
 open_issues: {}""".format(
                     len(in_progress_issues_current_sprint),
-                    len(in_progress_issues),
                     len(open_issues_current_sprint),
+                    len(in_progress_issues),
                     len(open_issues)))
 
         return in_progress_issues_current_sprint \
-            + in_progress_issues \
             + open_issues_current_sprint \
+            + in_progress_issues \
             + open_issues
 
 
