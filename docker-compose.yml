@@ -28,6 +28,18 @@ services:
     depends_on:
       - django
 
+  rabbitmq:
+    container_name: pmp-rabbitmq
+    build:
+      context: .
+      dockerfile: ./rabbitmq/Dockerfile
+    # We only want rabbit exposed to the pmp network, not publicly
+    #ports:
+    #  - "15672:15672"
+    #  - "5672:5672"
+    networks:
+      - pmp-django-nginx
+
 volumes:
   pmp-django-static:
   pmp-nginx-cert:
