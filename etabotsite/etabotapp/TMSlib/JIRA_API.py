@@ -63,7 +63,7 @@ class JIRA_wrapper():
             username, options.get('server', 'unkown server')))
 
         try:
-            logging.info('"{}" connecting to JIRA with options:'.format(
+            logging.info('"{}" connecting to JIRA with options: {}'.format(
                 username, options))
             jira = JIRA(basic_auth=(username, password), options=options)
             print('authenticated. ')

@@ -3,6 +3,8 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
 from .models import Project, TMS
 from django.conf import settings
+import logging
+import TMSlib.TMS as TMSlib
 
 LOCAL_MODE = getattr(settings, "LOCAL_MODE", False)
 
@@ -56,6 +58,26 @@ class TMSSerializer(serializers.ModelSerializer):
         """Map this serializer to a model and their fields."""
         model = TMS
         fields = ('id', 'owner', 'endpoint', 'username', 'password', 'type')
+
+    def validate_password(self, password):
+        logging.debug('validate_tms_credential started')
+        instance = TMS(**self.initial_data)
+        TMS_w1 = TMSlib.TMSWrapper(instance)
+        error = TMS_w1.connect_to_TMS(instance.password)
+        if error is not None:
+            if 'Unauthorized (401)' in error:
+                raise serializers.ValidationError('Unable to log in due to "Unauthorized (401)"\
+ error - please check username/email and password')
+            elif 'cannot connnect to TMS JIRA' in error:
+                raise serializers.ValidationError('cannot connnect to TMS JIRA - please check\
+ inputs and try again. If the issue persists, please report the issue to \
+hello@etabot.ai')
+            else:
+                raise serializers.ValidationError('Unrecognized error has occurred - please check\
+inputs and try again. If the issue persists, please report the issue to \
+hello@etabot.ai')
+        logging.debug('validate_tms_credential finished')
+        return password
 
 
 class ProjectSerializer(serializers.ModelSerializer):

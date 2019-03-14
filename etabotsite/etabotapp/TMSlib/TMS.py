@@ -77,15 +77,15 @@ class TMS_JIRA(ProtoTMS):
         logging.debug('TMS_JIRA initalized')
 
     def connect_to_TMS(self, password):
+        """Return None if connected or error string otherwise."""
         try:
             self.jira = JIRA_API.JIRA_wrapper(
                 self.server_end_point,
                 self.username_login,
                 password=password)
         except Exception as e:
-            raise NameError("cannot connnect to TMS JIRA due to {}".format(e))
-
-        # all_issues = jira.get_jira_issues('assignee={username} ORDER BY Rank ASC'.format(username = self.username))
+            return "cannot connnect to TMS JIRA due to {}".format(e)
+        return None
 
     def get_all_done_tasks_ranked(self, assignee=None):
         if assignee is None:
