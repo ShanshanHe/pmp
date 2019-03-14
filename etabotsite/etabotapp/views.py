@@ -12,10 +12,10 @@ from .models import Project, TMS
 from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
 import TMSlib.data_conversion as dc
-
+import eta_tasks
 from .user_activation import ActivationProcessor, ResponseCode
 
-
+import threading
 import json
 import mimetypes
 import logging
@@ -151,6 +151,8 @@ class TMSViewSet(viewsets.ModelViewSet):
 class EstimateTMSView(APIView):
 
     def get(self, request, format=None):
+        # Triggers ETA updates for a particular tms_id or all
+
         tms_id = request.query_params.get('tms', None)
         if tms_id is not None:
             try:
@@ -181,6 +183,7 @@ class EstimateTMSView(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
         # here we need to call an estimate method that takes TMS object which
         # includes TMS credentials
+        threads = []
         for tms in tms_set:
             project_id = request.query_params.get('project_id', None)
             if project_id is not None:
@@ -195,18 +198,13 @@ class EstimateTMSView(APIView):
                     owner=self.request.user,
                     project_tms_id=tms.id)
             logging.debug('projects_set: "{}"'.format(projects_set))
-            tms_wrapper = TMSlib.TMSWrapper(tms)
-            tms_wrapper.init_ETApredict(projects_set)
-
-            project_names = []
-            for project in projects_set:
-                project.velocities = dc.get_velocity_json(
-                    tms_wrapper.ETApredict_obj.user_velocity_per_project,
-                    project.name)
-                project.save()
-                project_names.append(project.name)
-
-            tms_wrapper.estimate_tasks(project_names=project_names)
+            eta_thread = threading.Thread(
+                target=eta_tasks.estimate_ETA_for_TMS,
+                args=(tms, projects_set))
+            threads.append(eta_thread)
+            eta_thread.start()
 
         return Response(
-            'TMS account to estimate: %s' % tms_set, status=status.HTTP_200_OK)
+            'TMS account to estimate:{}. Number of threads started:{}'.format(
+                tms_set, len(threads)),
+            status=status.HTTP_200_OK)

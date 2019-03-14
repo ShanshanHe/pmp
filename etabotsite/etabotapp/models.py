@@ -7,10 +7,12 @@ logging.getLogger().setLevel(logging.DEBUG)
 sys.path.append(os.path.abspath('etabotapp'))
 import TMSlib.TMS as TMSlib
 import TMSlib.data_conversion as dc
+
 sys.path.pop(0)
 
 from django.db import models
 from jsonfield import JSONField
+
 
 from django.db.models.signals import post_save, pre_save
 from django.contrib.auth.models import User
@@ -21,6 +23,23 @@ from .user_activation import ActivationProcessor
 
 from encrypted_model_fields.fields import EncryptedCharField
 from django.utils.translation import gettext as _
+
+
+# class ValidatorTMScredentials(object):
+#     def __init__(self):
+#         pass
+
+#     def set_context(self, *args, **kwargs):
+#         # Determine if this is an update or a create operation.
+#         # In `__call__` we can then use that information to modify the validation behavior.
+#         logging.debug('set_context args: {}'.format(args))
+#         logging.debug('set_context kwargs: {}'.format(kwargs))
+#         self.is_update = serializer_field.parent.instance is not None
+#         self.serializer_field = serializer_field
+#         logging.debug("serializer_field: {}".format(serializer_field))
+#         logging.debug("serializer_field.parent: {}".format(serializer_field.parent))
+
+#     def __call__(self, password):
 
 
 class TMS(models.Model):
@@ -66,13 +85,6 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
         ActivationProcessor.email_token(user)
 
 
-# This receiver handles TMS credential check before saving it.
-@receiver(pre_save, sender=TMS)
-def validate_tms_credential(sender, instance, **kwargs):
-    logging.debug('validate_tms_credential started')
-    TMS_w1 = TMSlib.TMSWrapper(instance)
-    TMS_w1.connect_to_TMS(instance.password)
-    logging.debug('validate_tms_credential finished')
 
 @receiver(post_save, sender=TMS)
 def parse_tms(sender, instance, **kwargs):

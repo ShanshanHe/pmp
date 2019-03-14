@@ -255,7 +255,7 @@ EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
 EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
 EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
     'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
-
+DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
