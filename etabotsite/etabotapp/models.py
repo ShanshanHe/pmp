@@ -43,7 +43,9 @@ from django.utils.translation import gettext as _
 
 
 class TMS(models.Model):
-    """This class represents the TMS account model."""
+    """This class represents the TMS account model.
+
+    TODO: avoid duplicate endpoint/password combinations."""
     owner = models.ForeignKey('auth.User', related_name='TMSAccounts',
                               on_delete=models.CASCADE)
     endpoint = models.CharField(max_length=60)
@@ -68,6 +70,7 @@ class Project(models.Model):
     work_hours = JSONField()
     vacation_days = JSONField()
     velocities = JSONField(null=True)
+    project_settings = JSONField(null=True)
 
     def __str__(self):
         return self.name
@@ -85,9 +88,14 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
         ActivationProcessor.email_token(user)
 
 
-
 @receiver(post_save, sender=TMS)
 def parse_tms(sender, instance, **kwargs):
+    """Parse projects for the given TMS.
+
+    Creates new Django model projects objects with parsed data.
+
+    TODO: if possible update existing projects instead of creating new ones.
+    """
     logging.debug('parse_tms started')
     TMS_w1 = TMSlib.TMSWrapper(
         instance,
@@ -96,10 +104,12 @@ def parse_tms(sender, instance, **kwargs):
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
     velocities = TMS_w1.ETApredict_obj.user_velocity_per_project
     logging.debug('parse_tms: velocities found: {}'.format(velocities))
+
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
             velocity_json = dc.get_velocity_json(
                 velocities, project_name)
+
             django_project = Project(
                 owner=instance.owner,
                 project_tms=instance,
@@ -109,7 +119,8 @@ def parse_tms(sender, instance, **kwargs):
                 velocities=velocity_json,
                 grace_period=attrs.get('grace_period', 12.0),
                 work_hours=attrs.get('work_hours', '{}'),
-                vacation_days=attrs.get('vacation_days', '{}'))
+                vacation_days=attrs.get('vacation_days', '{}'),
+                project_settings=attrs.get('project_settings', '{}'))
             django_project.save()
 
     logging.debug('parse_tms has finished')
