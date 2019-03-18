@@ -78,7 +78,7 @@ class JIRA_wrapper():
         return gh
 
     def get_jira_issues(self, search_string, get_all=True):
-        # get jira issues using the search_string
+        # Return list of jira issues using the search_string.
         logging.debug('jira search_string = "{}"'.format(search_string))
         returned_result_length = 50
         jira_issues = []
