@@ -104,21 +104,12 @@ def parse_tms(sender, instance, **kwargs):
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
     velocities = TMS_w1.ETApredict_obj.user_velocity_per_project
     logging.debug('parse_tms: velocities found: {}'.format(velocities))
-    scope_field_dict = TMS_w1.ETApredict_obj.task_system_schema.get(
-        'scope_fields_dict')
-
-    sprint_field_name = TMS_w1.ETApredict_obj.task_system_schema.get(
-        'sprint_field_name')
 
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
             velocity_json = dc.get_velocity_json(
                 velocities, project_name)
-            # scope_field_name_message = scope_field_dict.get(project_name)
-            # project_settings = {
-            #     'scope_field_name_message': scope_field_name_message,
-            #     'sprint_field_name': sprint_field_name
-            # }
+
             django_project = Project(
                 owner=instance.owner,
                 project_tms=instance,

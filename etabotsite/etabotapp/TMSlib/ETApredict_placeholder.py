@@ -1,5 +1,5 @@
 """ETApredict placeholder."""
-uncomment for syntax error for ensuring placeholder is not used 
+# uncomment for syntax error for ensuring placeholder is not used 
 
 import logging
 # import TMSlib.TMS_project as TMS_project
