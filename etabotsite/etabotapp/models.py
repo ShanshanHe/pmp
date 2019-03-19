@@ -46,8 +46,10 @@ class TMS(models.Model):
     """This class represents the TMS account model.
 
     TODO: avoid duplicate endpoint/password combinations."""
-    owner = models.ForeignKey('auth.User', related_name='TMSAccounts',
-                              on_delete=models.CASCADE)
+    owner = models.ForeignKey(
+        'auth.User',
+        related_name='TMSAccounts',
+        on_delete=models.CASCADE)
     endpoint = models.CharField(max_length=60)
     username = models.CharField(max_length=60)
     password = EncryptedCharField(max_length=60)
@@ -71,6 +73,7 @@ class Project(models.Model):
     vacation_days = JSONField()
     velocities = JSONField(null=True)
     project_settings = JSONField(null=True)
+    # jobs = JSONField(null=True)
 
     def __str__(self):
         return self.name

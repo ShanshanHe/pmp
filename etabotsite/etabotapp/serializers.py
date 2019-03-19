@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from rest_framework.validators import UniqueTogetherValidator
 from django.contrib.auth.models import User
 from .models import Project, TMS
 from django.conf import settings
@@ -54,13 +55,34 @@ class TMSSerializer(serializers.ModelSerializer):
     """Serializer to map the model instance into json format."""
     owner = serializers.ReadOnlyField(source='owner.username')
 
+    logging.debug('TMSSerializer owner: {}'.format(owner))
+
     class Meta:
         """Map this serializer to a model and their fields."""
         model = TMS
         fields = ('id', 'owner', 'endpoint', 'username', 'password', 'type')
 
-    def validate_password(self, password):
+    def validate(self, val_input):
+        """Validate credentials and endpont result in successful login."""
         logging.debug('validate_tms_credential started')
+        logging.debug('self.initial_data: {}'.format(self.initial_data))
+        logging.debug('val_input: {}'.format(val_input))
+        logging.debug('context: {}'.format(self.context))
+        owner = self.context['request'].user
+        logging.debug('owner: {}'.format(owner))
+
+        endpoint = self.initial_data['endpoint']
+        username = self.initial_data['username']
+        if TMS.objects.filter(
+                    endpoint=endpoint,
+                    owner=owner,
+                    username=username).exists():
+            raise serializers.ValidationError(
+                    'Combination {}@{} already exists for this user'.format(
+                        username, endpoint))
+        logging.debug(
+            'validated username/endpoint combination uniqueness current user')
+
         instance = TMS(**self.initial_data)
         TMS_w1 = TMSlib.TMSWrapper(instance)
         error = TMS_w1.connect_to_TMS(instance.password)
@@ -76,8 +98,9 @@ hello@etabot.ai')
                 raise serializers.ValidationError('Unrecognized error has occurred - please check\
 inputs and try again. If the issue persists, please report the issue to \
 hello@etabot.ai')
+
         logging.debug('validate_tms_credential finished')
-        return password
+        return val_input
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -86,6 +109,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     work_hours = serializers.JSONField()
     vacation_days = serializers.JSONField()
     velocities = serializers.JSONField()
+    project_settings = serializers.JSONField()
 
     class Meta:
         """Map this serializer to a model and their fields."""
@@ -100,5 +124,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'grace_period',
             'work_hours',
             'vacation_days',
-            'velocities')
+            'velocities',
+            'project_settings')
         # read_only_fields = ('mode', 'name')
