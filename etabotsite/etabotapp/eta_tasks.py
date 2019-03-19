@@ -12,7 +12,8 @@ def estimate_ETA_for_TMS(tms, projects_set):
     add an option not to refresh velocities
     https://etabot.atlassian.net/browse/ET-521
     """
-    logging.debug('estimate_ETA_for_TMS started')
+    logging.debug(
+        'estimate_ETA_for_TMS started for projects: {}'.format(projects_set))
     tms_wrapper = TMSlib.TMSWrapper(tms)
     tms_wrapper.init_ETApredict(projects_set)
 
