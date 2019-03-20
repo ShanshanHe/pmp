@@ -88,6 +88,9 @@ class TMS_JIRA(ProtoTMS):
         return None
 
     def get_all_done_tasks_ranked(self, assignee=None):
+        if self.jira is None:
+            raise NameError('not connected to JIRA')
+
         if assignee is None:
             assignee = 'currentUser()'
 
@@ -103,6 +106,9 @@ ORDER BY Rank ASC'.format(
         return done_issues
 
     def get_all_open_tasks_ranked(self, assignee=None):
+        if self.jira is None:
+            raise NameError('not connected to JIRA')
+
         if assignee is None:
             assignee = 'currentUser()'
 
@@ -174,6 +180,8 @@ class TMSWrapper(TMS_JIRA):
 projects: {}'.format(tms_config, projects))
         self.tms_config = tms_config
         self.TMS_type = tms_config.type
+        logging.debug('tms_config.type: "{}" of type "{}"'.format(
+            tms_config.type, type(tms_config.type)))
         self.ETApredict_obj = None
 
         task_system_schema = {}

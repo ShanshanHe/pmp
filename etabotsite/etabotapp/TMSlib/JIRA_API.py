@@ -27,7 +27,7 @@ import threading
 # import keyring
 
 encryption_key_name = 'Jtest1'
-jira_timout_seconds = 5.
+jira_timout_seconds = 10.
 
 
 class JIRA_wrapper():
