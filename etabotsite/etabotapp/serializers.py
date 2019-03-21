@@ -66,8 +66,8 @@ class TMSSerializer(serializers.ModelSerializer):
     def validate(self, val_input):
         """Validate credentials and endpont result in successful login."""
         logging.debug('validate_tms_credential started')
-        logging.debug('self.initial_data: {}'.format(self.initial_data))
-        logging.debug('val_input: {}'.format(val_input))
+        # logging.debug('self.initial_data: {}'.format(self.initial_data))
+        # logging.debug('val_input: {}'.format(val_input))
         logging.debug('context: {}'.format(self.context))
         owner = self.context['request'].user
         logging.debug('owner: {}'.format(owner))
