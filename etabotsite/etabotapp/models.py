@@ -99,31 +99,42 @@ def parse_tms(sender, instance, **kwargs):
 
     TODO: if possible update existing projects instead of creating new ones.
     """
-    logging.debug('parse_tms started')
+    logging.debug('parse_tms started with kwargs: {}'.format(kwargs))
+    existing_projects = Project.objects.filter(project_tms=instance.id)
     TMS_w1 = TMSlib.TMSWrapper(
         instance,
-        projects=Project.objects.filter(project_tms=instance.id))
+        projects=existing_projects)
     TMS_w1.init_ETApredict([])
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
     velocities = TMS_w1.ETApredict_obj.user_velocity_per_project
     logging.debug('parse_tms: velocities found: {}'.format(velocities))
+
+    existing_projects_dict = {}
+    for p in existing_projects:
+        existing_projects_dict[p.name] = p
 
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
             velocity_json = dc.get_velocity_json(
                 velocities, project_name)
 
-            django_project = Project(
-                owner=instance.owner,
-                project_tms=instance,
-                name=project_name,
-                mode=attrs.get('mode', 'unknown mode'),
-                open_status=attrs.get('open_status', ''),
-                velocities=velocity_json,
-                grace_period=attrs.get('grace_period', 12.0),
-                work_hours=attrs.get('work_hours', '{}'),
-                vacation_days=attrs.get('vacation_days', '{}'),
-                project_settings=attrs.get('project_settings', '{}'))
-            django_project.save()
-
+            if project_name not in existing_projects_dict:
+                new_django_project = Project(
+                    owner=instance.owner,
+                    project_tms=instance,
+                    name=project_name,
+                    mode=attrs.get('mode', 'unknown mode'),
+                    open_status=attrs.get('open_status', ''),
+                    velocities=velocity_json,
+                    grace_period=attrs.get('grace_period', 12.0),
+                    work_hours=attrs.get('work_hours', '{}'),
+                    vacation_days=attrs.get('vacation_days', '{}'),
+                    project_settings=attrs.get('project_settings', '{}'))
+                new_django_project.save()
+            else:
+                p.velocities = velocity_json
+                p.project_settings = attrs.get(
+                    'project_settings', p.project_settings)
+                p.mode = attrs.get('mode', p.mode)
+                p.save()
     logging.debug('parse_tms has finished')
