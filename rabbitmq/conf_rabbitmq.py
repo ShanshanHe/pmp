@@ -1,7 +1,7 @@
 import sys
 import json
 
-with open('/custom_settings.py') as f:
+with open('/custom_settings.json') as f:
   settings = json.load(f)
 
 rmq_user = settings['RMQ_USER']
