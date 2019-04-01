@@ -19,6 +19,8 @@ import threading
 import json
 import mimetypes
 import logging
+import celery as clry
+
 logging.getLogger().setLevel(logging.DEBUG)
 
 
@@ -183,7 +185,11 @@ class EstimateTMSView(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
         # here we need to call an estimate method that takes TMS object which
         # includes TMS credentials
-        threads = []
+        # threads = []
+        tasks_count = 0
+        celery = clry.Celery()
+        celery.config_from_object('django.conf:settings')
+
         for tms in tms_set:
             project_id = request.query_params.get('project_id', None)
             if project_id is not None:
@@ -198,13 +204,21 @@ class EstimateTMSView(APIView):
                     owner=self.request.user,
                     project_tms_id=tms.id)
             logging.debug('projects_set: "{}"'.format(projects_set))
-            eta_thread = threading.Thread(
-                target=eta_tasks.estimate_ETA_for_TMS,
-                args=(tms, projects_set))
-            threads.append(eta_thread)
-            eta_thread.start()
+            # eta_thread = threading.Thread(
+            #     target=eta_tasks.estimate_ETA_for_TMS,
+            #     args=(tms, projects_set))
+            # threads.append(eta_thread)
+            # eta_thread.start()
 
+            celery.send_task(
+                'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
+                (tms.id,
+                 [p.id for p in projects_set]))
+            tasks_count += 1
+        # response_message = 'TMS account to estimate:{}. Number of threads started:{}'.format(
+        #         tms_set, len(threads))
+        response_message = 'TMS account to estimate:{}. \
+Number of tasks sent: {}'.format(tms_set, tasks_count)
         return Response(
-            'TMS account to estimate:{}. Number of threads started:{}'.format(
-                tms_set, len(threads)),
+            response_message,
             status=status.HTTP_200_OK)
