@@ -7,10 +7,12 @@ logging.getLogger().setLevel(logging.DEBUG)
 sys.path.append(os.path.abspath('etabotapp'))
 import TMSlib.TMS as TMSlib
 import TMSlib.data_conversion as dc
+
 sys.path.pop(0)
 
 from django.db import models
 from jsonfield import JSONField
+
 
 from django.db.models.signals import post_save, pre_save
 from django.contrib.auth.models import User
@@ -23,10 +25,31 @@ from encrypted_model_fields.fields import EncryptedCharField
 from django.utils.translation import gettext as _
 
 
+# class ValidatorTMScredentials(object):
+#     def __init__(self):
+#         pass
+
+#     def set_context(self, *args, **kwargs):
+#         # Determine if this is an update or a create operation.
+#         # In `__call__` we can then use that information to modify the validation behavior.
+#         logging.debug('set_context args: {}'.format(args))
+#         logging.debug('set_context kwargs: {}'.format(kwargs))
+#         self.is_update = serializer_field.parent.instance is not None
+#         self.serializer_field = serializer_field
+#         logging.debug("serializer_field: {}".format(serializer_field))
+#         logging.debug("serializer_field.parent: {}".format(serializer_field.parent))
+
+#     def __call__(self, password):
+
+
 class TMS(models.Model):
-    """This class represents the TMS account model."""
-    owner = models.ForeignKey('auth.User', related_name='TMSAccounts',
-                              on_delete=models.CASCADE)
+    """This class represents the TMS account model.
+
+    TODO: avoid duplicate endpoint/password combinations."""
+    owner = models.ForeignKey(
+        'auth.User',
+        related_name='TMSAccounts',
+        on_delete=models.CASCADE)
     endpoint = models.CharField(max_length=60)
     username = models.CharField(max_length=60)
     password = EncryptedCharField(max_length=60)
@@ -49,6 +72,8 @@ class Project(models.Model):
     work_hours = JSONField()
     vacation_days = JSONField()
     velocities = JSONField(null=True)
+    project_settings = JSONField(null=True)
+    # jobs = JSONField(null=True)
 
     def __str__(self):
         return self.name
@@ -66,38 +91,50 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
         ActivationProcessor.email_token(user)
 
 
-# This receiver handles TMS credential check before saving it.
-@receiver(pre_save, sender=TMS)
-def validate_tms_credential(sender, instance, **kwargs):
-    logging.debug('validate_tms_credential started')
-    TMS_w1 = TMSlib.TMSWrapper(instance)
-    TMS_w1.connect_to_TMS(instance.password)
-    logging.debug('validate_tms_credential finished')
-
 @receiver(post_save, sender=TMS)
 def parse_tms(sender, instance, **kwargs):
-    logging.debug('parse_tms started')
+    """Parse projects for the given TMS.
+
+    Creates new Django model projects objects with parsed data.
+
+    TODO: if possible update existing projects instead of creating new ones.
+    """
+    logging.debug('parse_tms started with kwargs: {}'.format(kwargs))
+    existing_projects = Project.objects.filter(project_tms=instance.id)
     TMS_w1 = TMSlib.TMSWrapper(
         instance,
-        projects=Project.objects.filter(project_tms=instance.id))
+        projects=existing_projects)
     TMS_w1.init_ETApredict([])
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
     velocities = TMS_w1.ETApredict_obj.user_velocity_per_project
     logging.debug('parse_tms: velocities found: {}'.format(velocities))
+
+    existing_projects_dict = {}
+    for p in existing_projects:
+        existing_projects_dict[p.name] = p
+
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
             velocity_json = dc.get_velocity_json(
                 velocities, project_name)
-            django_project = Project(
-                owner=instance.owner,
-                project_tms=instance,
-                name=project_name,
-                mode=attrs.get('mode', 'unknown mode'),
-                open_status=attrs.get('open_status', ''),
-                velocities=velocity_json,
-                grace_period=attrs.get('grace_period', 12.0),
-                work_hours=attrs.get('work_hours', '{}'),
-                vacation_days=attrs.get('vacation_days', '{}'))
-            django_project.save()
 
+            if project_name not in existing_projects_dict:
+                new_django_project = Project(
+                    owner=instance.owner,
+                    project_tms=instance,
+                    name=project_name,
+                    mode=attrs.get('mode', 'unknown mode'),
+                    open_status=attrs.get('open_status', ''),
+                    velocities=velocity_json,
+                    grace_period=attrs.get('grace_period', 12.0),
+                    work_hours=attrs.get('work_hours', '{}'),
+                    vacation_days=attrs.get('vacation_days', '{}'),
+                    project_settings=attrs.get('project_settings', '{}'))
+                new_django_project.save()
+            else:
+                p.velocities = velocity_json
+                p.project_settings = attrs.get(
+                    'project_settings', p.project_settings)
+                p.mode = attrs.get('mode', p.mode)
+                p.save()
     logging.debug('parse_tms has finished')

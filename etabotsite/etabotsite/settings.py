@@ -255,7 +255,7 @@ EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
 EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
 EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
     'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
-
+DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
@@ -280,27 +280,29 @@ else:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_DEFAULT_QUEUE = 'etabotqueue'
+CELERY_RESULT_BACKEND = None  # Disabling the results backend
+
 # Configuring the message broker for Celery Task Scheduling
 if custom_settings['MESSAGE_BROKER'].lower() == 'aws':
     # AWS Credentials
-    AWS_ACCESS_KEY_ID = custom_settings['AWS_ACCESS_KEY_ID']
-    AWS_SECRET_ACCESS_KEY = custom_settings['AWS_SECRET_ACCESS_KEY']
-     
-    BROKER_URL = 'sqs://{access_key}:{secret_key}@'.format(
-        access_key = urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''),
-        secret_key = urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe='')
-    )
+    if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
+        logging.warning(
+            'AWS credentials not found. Skipping Celery settings setup.')
+    else:
+        # Celery Task Scheduling
+        BROKER_URL = 'sqs://{0}:{1}@'.format(
+            urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''),
+            urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe='')
+        )
 
-    BROKER_TRANSPORT_OPTIONS = {
-        'region': 'us-west-2',
-        'polling_interval': 20,
-    }
-
-    CELERY_ACCEPT_CONTENT = ['application/json']
-    CELERY_RESULT_SERIALIZER = 'json'
-    CELERY_TASK_SERIALIZER = 'json'
-    CELERY_DEFAULT_QUEUE = 'etabotqueue'
-    CELERY_RESULT_BACKEND = None  # Disabling the results backend
+        BROKER_TRANSPORT_OPTIONS = {
+            'region': 'us-west-2',
+            'polling_interval': 20,
+        }
 
 elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
 
@@ -316,3 +318,6 @@ elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
         host=urllib.parse.quote(RMQ_HOST, safe=''),
         vhost=urllib.parse.quote(RMQ_VHOST, safe='')
     )
+
+    logging.debug('celery settings setup complete')
+logging.debug('setting.py is done')

@@ -77,17 +77,20 @@ class TMS_JIRA(ProtoTMS):
         logging.debug('TMS_JIRA initalized')
 
     def connect_to_TMS(self, password):
+        """Return None if connected or error string otherwise."""
         try:
             self.jira = JIRA_API.JIRA_wrapper(
                 self.server_end_point,
                 self.username_login,
                 password=password)
         except Exception as e:
-            raise NameError("cannot connnect to TMS JIRA due to {}".format(e))
-
-        # all_issues = jira.get_jira_issues('assignee={username} ORDER BY Rank ASC'.format(username = self.username))
+            return "cannot connnect to TMS JIRA due to {}".format(e)
+        return None
 
     def get_all_done_tasks_ranked(self, assignee=None):
+        if self.jira is None:
+            raise NameError('not connected to JIRA')
+
         if assignee is None:
             assignee = 'currentUser()'
 
@@ -103,6 +106,9 @@ ORDER BY Rank ASC'.format(
         return done_issues
 
     def get_all_open_tasks_ranked(self, assignee=None):
+        if self.jira is None:
+            raise NameError('not connected to JIRA')
+
         if assignee is None:
             assignee = 'currentUser()'
 
@@ -170,10 +176,12 @@ class TMSWrapper(TMS_JIRA):
         """
         Arguments:
             tms_config - Django model of TMS"""
-        logging.debug('initializing TMSWrapper with "{}"'.format(
-            tms_config))
+        logging.debug('initializing TMSWrapper with tms_config "{}", \
+projects: {}'.format(tms_config, projects))
         self.tms_config = tms_config
         self.TMS_type = tms_config.type
+        logging.debug('tms_config.type: "{}" of type "{}"'.format(
+            tms_config.type, type(tms_config.type)))
         self.ETApredict_obj = None
 
         task_system_schema = {}
@@ -205,7 +213,7 @@ class TMSWrapper(TMS_JIRA):
         logging.debug('init_ETApredict started')
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
         self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)
-        logging.debug('init_ETApredict finished')
+        logging.debug('TMSwrapper: init_ETApredict finished')
 
     def estimate_tasks(self, project_names=None):
         logging.info('Estimating tasks for TMS "{}", \
