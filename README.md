@@ -179,13 +179,27 @@ You have a sample project management site ready to go!
 {
     "local_host_url":"<your local host url for testing, e.g. http://127.0.0.1:8000">,
     "prod_host_url":"<your production host url for testing, e.g. https://app.etabot.ai>"
+
     "db":"Django database definition. If no such key found, a local sqlite3 database will be used."
-    "AWS_ACCESS_KEY_ID":"Amazon services access key id for SQS messenging (used in celery periodic tasks)"
-    "AWS_SECRET_ACCESS_KEY":"Amazon services access key for SQS messenging (used in celery periodic tasks)"
+
+    "MESSAGE_BROKER":"rabbitmq" or "aws",
+    # in case of rabbitmq:
+    "RMQ_USER" : "username",
+    "RMQ_PASS" : "password",
+    "RMQ_HOST" : "host, e.g. host.docker.internal or 127.0.0.1 or other",
+    "RMQ_VHOST" : "e.g. etabotvhost",
+    # in case of aws:
+    "AWS_ACCESS_KEY_ID":"Amazon services access key id for SQS messenging"
+    "AWS_SECRET_ACCESS_KEY":"Amazon services access key for SQS messenging"
+
     "eta_crontab_args":<dictionary with crontab settings for example: 'eta_crontab_args':{'hour': 8}
                         see celery.schedules.crontab documentation for details>
 }
 ```
+
+Note: for accessing services on the same host as the docker container, use "host.docker.internal" for MacOS and Windows.
+For Linux, until this is fixed (https://github.com/docker/libnetwork/pull/2348), use --network="host" in your docker run command, then 127.0.0.1 in your docker container will point to your docker host.
+
 
 ## django_keys.json - Django encryption keys used in development mode
 ```

@@ -36,6 +36,17 @@ services:
     depends_on:
       - django
 
+  rabbitmq:
+    container_name: pmp-rabbitmq
+    build:
+      context: .
+      dockerfile: ./rabbitmq/Dockerfile
+    networks:
+      - pmp-django-nginx
+    ports:
+      - 15672:15672
+      - 5672:5672
+
 volumes:
   pmp-django-static:
   pmp-nginx-cert:

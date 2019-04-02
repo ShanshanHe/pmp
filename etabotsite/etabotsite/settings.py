@@ -280,29 +280,44 @@ else:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-# AWS Credentials
-AWS_ACCESS_KEY_ID = custom_settings.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = custom_settings.get('AWS_SECRET_ACCESS_KEY')
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_DEFAULT_QUEUE = 'etabotqueue'
+CELERY_RESULT_BACKEND = None  # Disabling the results backend
 
-if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
-    logging.warning(
-        'AWS credentials not found. Skipping Celery settings setup.')
-else:
-    # Celery Task Scheduling
-    BROKER_URL = 'sqs://{0}:{1}@'.format(
-        urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''),
-        urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe='')
+# Configuring the message broker for Celery Task Scheduling
+if custom_settings['MESSAGE_BROKER'].lower() == 'aws':
+    # AWS Credentials
+    if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
+        logging.warning(
+            'AWS credentials not found. Skipping Celery settings setup.')
+    else:
+        # Celery Task Scheduling
+        BROKER_URL = 'sqs://{0}:{1}@'.format(
+            urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''),
+            urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe='')
+        )
+
+        BROKER_TRANSPORT_OPTIONS = {
+            'region': 'us-west-2',
+            'polling_interval': 20,
+        }
+
+elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
+
+    # RabbitMQ Credentials
+    RMQ_USER = custom_settings['RMQ_USER']
+    RMQ_PASS = custom_settings['RMQ_PASS']
+    RMQ_HOST = custom_settings['RMQ_HOST']
+    RMQ_VHOST = custom_settings['RMQ_VHOST']
+
+    BROKER_URL = 'amqp://{user}:{pw}@{host}:5672/{vhost}'.format(
+        user=urllib.parse.quote(RMQ_USER, safe=''),
+        pw=urllib.parse.quote(RMQ_PASS, safe=''),
+        host=urllib.parse.quote(RMQ_HOST, safe=''),
+        vhost=urllib.parse.quote(RMQ_VHOST, safe='')
     )
 
-    BROKER_TRANSPORT_OPTIONS = {
-        'region': 'us-west-2',
-        'polling_interval': 20,
-    }
-
-    CELERY_ACCEPT_CONTENT = ['application/json']
-    CELERY_RESULT_SERIALIZER = 'json'
-    CELERY_TASK_SERIALIZER = 'json'
-    CELERY_DEFAULT_QUEUE = 'etabotqueue'
-    CELERY_RESULT_BACKEND = None  # Disabling the results backend
-    logging.debug('celerty settings setup complete')
+    logging.debug('celery settings setup complete')
 logging.debug('setting.py is done')
