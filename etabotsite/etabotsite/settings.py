@@ -289,6 +289,8 @@ CELERY_RESULT_BACKEND = None  # Disabling the results backend
 # Configuring the message broker for Celery Task Scheduling
 if custom_settings['MESSAGE_BROKER'].lower() == 'aws':
     # AWS Credentials
+    AWS_ACCESS_KEY_ID = custom_settings.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = custom_settings.get('AWS_SECRET_ACCESS_KEY')
     if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
         logging.warning(
             'AWS credentials not found. Skipping Celery settings setup.')

@@ -2,6 +2,7 @@ from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token
 from .views import UserViewSet, ProjectViewSet, TMSViewSet, EstimateTMSView
+from .views import ParseTMSprojects
 from .views import index
 from .views import activate
 from .views import email_verification
@@ -18,6 +19,7 @@ urlpatterns = [
         include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/get-token/', obtain_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
+    url(r'^api/parse_projects/', ParseTMSprojects.as_view(), name="estimate_tms"),
 
     url(r'^api/verification/activate/', activate, name='activate'),
     url(r'^api/verification/send-email/', email_verification, name='email_verification'),

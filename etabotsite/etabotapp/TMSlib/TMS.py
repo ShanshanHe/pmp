@@ -212,6 +212,8 @@ projects: {}'.format(tms_config, projects))
     def init_ETApredict(self, projects):
         logging.debug('init_ETApredict started')
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
+        logging.debug('user_velocity_per_project: {}'.format(
+            self.ETApredict_obj.user_velocity_per_project))
         self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)
         logging.debug('TMSwrapper: init_ETApredict finished')
 

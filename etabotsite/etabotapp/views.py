@@ -8,7 +8,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
-from .models import Project, TMS
+from .models import TMS, Project
+from .models import parse_projects_for_TMS
 from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
 import TMSlib.data_conversion as dc
@@ -150,33 +151,65 @@ class TMSViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
 
+class ParseTMSprojects(APIView):
+
+    def get(self, request, format=None):
+        logging.debug('request.query_params: "{}"'.format(
+            request.query_params))
+
+        try:
+            tms_set = get_tms_set_by_id(request)
+        except Exception as e:
+            response_message = 'Failed to parse tms id due to "{}"'.format(e)
+            return Response(
+                response_message,
+                status=status.HTTP_400_BAD_REQUEST)
+        logging.debug('starting projects parsing for tms_set: {}'.format(
+            tms_set))
+        for tms in tms_set:
+            parse_projects_for_TMS(tms)
+
+        response_message = 'parsed'
+        return Response(
+            response_message,
+            status=status.HTTP_200_OK)
+
+
+def get_tms_set_by_id(request):
+    """Return tms_set on success or request Response"""
+    tms_id = request.query_params.get('tms')
+
+    tms_id = int(tms_id)
+    logging.debug('int tms_id: "{}"'.format(tms_id))
+    tms_set = TMS.objects.all().filter(
+        owner=request.user,
+        id=tms_id)
+    if len(tms_set) == 0:
+        raise NameError('No TMS found with tms_id={} for user {}'.format(
+            tms_id, request.user))
+
+    return tms_set
+
+
 class EstimateTMSView(APIView):
 
     def get(self, request, format=None):
         # Triggers ETA updates for a particular tms_id or all
-
-        tms_id = request.query_params.get('tms', None)
-        if tms_id is not None:
-            try:
-                tms_id = int(tms_id)
-                tms_set = TMS.objects.all().filter(
-                    owner=self.request.user,
-                    id=tms_id)
-            except Exception as e:
-                return Response(
-                    'Invalid tms_id: "{}". Error: {}'.format(
-                        tms_id, e),
-                    status=status.HTTP_400_BAD_REQUEST)
-            if len(tms_set) == 0:
-                return Response(
-                    'No TMS found with tms_id="{}" for user {}.'.format(
-                        tms_id, self.request.user),
-                    status=status.HTTP_400_BAD_REQUEST)
-        else:
-            tms_set = TMS.objects.all().filter(owner=self.request.user)
         logging.debug('request.query_params: "{}"'.format(
             request.query_params))
-        logging.debug('tms_id: "{}"'.format(tms_id))
+
+        if request.query_params.get('tms') is None:
+            # no tms id given, estimate for all TMS for this user
+            tms_set = TMS.objects.all().filter(owner=self.request.user)
+        else:
+            try:
+                tms_set = get_tms_set_by_id(request)
+            except Exception as e:
+                return Response(
+                    'No TMS found with tms_id="{}" \
+for user {} due to: {}'.format(
+                        request.query_params.get('tms'), self.request.user, e),
+                    status=status.HTTP_400_BAD_REQUEST)
 
         logging.debug('found tms: {}'.format(tms_set))
         if len(tms_set) == 0:
