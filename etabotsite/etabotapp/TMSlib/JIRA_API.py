@@ -67,15 +67,24 @@ class JIRA_wrapper():
         jira = None
         try:
             jira_place = []
+            errors_place = {}
 
-            def get_jira_object(target_list):
+            def get_jira_object(target_list, errors_dict):
                 logging.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
-                jira = JIRA(basic_auth=(username, password), options=options)
-                logging.debug('Authenticated with JIRA.')
-                target_list.append(jira)
+                try:
+                    jira = JIRA(
+                        basic_auth=(username, password),
+                        options=options)
+                    logging.debug('Authenticated with JIRA.')
+                    target_list.append(jira)
+                except Exception as e:
+                    error_message = str(e)
+                    logging.debug(error_message)
+                    errors_dict['error_message'] = error_message
+
             auth_thread = threading.Thread(
-                target=get_jira_object, args=(jira_place,))
+                target=get_jira_object, args=(jira_place, errors_place))
             auth_thread.start()
             logging.debug('waiting for {} seconds before checking for thread \
 status'.format(jira_timout_seconds))
@@ -87,8 +96,16 @@ status'.format(jira_timout_seconds))
 check the team name with credentials and try again')
             else:
                 logging.debug('thread is done, getting jira object')
-                jira = jira_place[0]
-                logging.debug('jira object: {}'.format(jira))
+                if len(jira_place) > 0:
+                    jira = jira_place[0]
+                    logging.debug('jira object acquired: {}. \
+Errors: "{}"'.format(jira, errors_place))
+                else:
+                    logging.debug('no JIRA object passed, rasing error.')
+                    raise NameError(errors_place.get(
+                        'error_message',
+                        'Unknown error while authenticating with JIRA'))
+
         except Exception as e:
             raise NameError('JIRA error: {}'.format(e))
         return jira

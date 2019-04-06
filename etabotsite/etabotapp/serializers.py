@@ -7,6 +7,7 @@ from django.conf import settings
 import logging
 import TMSlib.TMS as TMSlib
 from copy import copy
+import response_regex as rr
 
 LOCAL_MODE = getattr(settings, "LOCAL_MODE", False)
 
@@ -55,13 +56,20 @@ class UserSerializer(serializers.ModelSerializer):
 class TMSSerializer(serializers.ModelSerializer):
     """Serializer to map the model instance into json format."""
     owner = serializers.ReadOnlyField(source='owner.username')
-
+    connectivity_status = serializers.JSONField()
     logging.debug('TMSSerializer owner: {}'.format(owner))
 
     class Meta:
         """Map this serializer to a model and their fields."""
         model = TMS
-        fields = ('id', 'owner', 'endpoint', 'username', 'password', 'type')
+        fields = (
+            'id',
+            'owner',
+            'endpoint',
+            'username',
+            'password',
+            'type',
+            'connectivity_status')
 
     def validate(self, val_input):
         """Validate credentials and endpont result in successful login."""
@@ -99,13 +107,34 @@ class TMSSerializer(serializers.ModelSerializer):
         TMS_w1 = TMSlib.TMSWrapper(instance)
         error = TMS_w1.connect_to_TMS(instance.password)
         if error is not None:
+            logging.debug('Error in validation: {}'.format(error))
             if 'Unauthorized (401)' in error:
                 raise serializers.ValidationError('Unable to log in due to "Unauthorized (401)"\
  error - please check username/email and password')
             elif 'cannot connnect to TMS JIRA' in error:
-                raise serializers.ValidationError('cannot connnect to TMS JIRA - please check\
- inputs and try again. If the issue persists, please report the issue to \
-hello@etabot.ai')
+                logging.debug('cannot connnect to TMS JIRA error.')
+                captcha_sig = \
+                    "'X-Authentication-Denied-Reason': 'CAPTCHA_CHALLENGE"
+                if captcha_sig in error:
+                    message = 'Need to pass CAPTCHA challenge first. '
+                    login_urls = rr.get_login_url(error)
+                    if len(login_urls) > 0:
+                        login_url = login_urls[0]
+                        logging.debug('login_url: {}'.format(login_url))
+                    else:
+                        logging.debug(
+                            'No login url detected, using TMS endpoint.')
+                        login_url = instance.endpoint
+                    message += 'Please login at <a href="{login_url}">{login_url}</a> \
+first and then try again. '.format(login_url=login_url)
+                    message += 'If the issue persists, please ask your \
+administrator to disable CAPTCHA.'
+                    raise serializers.ValidationError(message)
+                else:
+                    logging.debug('generic connectivity issue.')
+                    raise serializers.ValidationError('cannot connnect to TMS JIRA - please check\
+     inputs and try again. If the issue persists, please report the issue to \
+    hello@etabot.ai')
             else:
                 raise serializers.ValidationError('Unrecognized error has occurred - please check\
 inputs and try again. If the issue persists, please report the issue to \

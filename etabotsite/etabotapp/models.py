@@ -54,6 +54,7 @@ class TMS(models.Model):
     username = models.CharField(max_length=60)
     password = EncryptedCharField(max_length=60)
     type = models.CharField(max_length=20, choices=TMSlib.TMS_TYPES)
+    connectivity_status = JSONField(null=True)
 
     def __str__(self):
         return "{}@{}".format(self.username, self.endpoint)
@@ -92,8 +93,12 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 
 @receiver(post_save, sender=TMS)
-def parse_tms(sender, instance, **kwargs):
-    parse_projects_for_TMS(instance, **kwargs)
+def parse_tms(sender, instance, created, **kwargs):
+    if created:
+        logging.debug('new TMS instance created - parsing projects')
+        parse_projects_for_TMS(instance, **kwargs)
+    else:
+        logging.debug('saving existing TMS - no need to parse projects')
 
 
 def parse_projects_for_TMS(instance, **kwargs):
