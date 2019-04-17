@@ -115,6 +115,7 @@ def parse_projects_for_TMS(instance, **kwargs):
         instance,
         projects=existing_projects)
     TMS_w1.init_ETApredict([])
+
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
     velocities = TMS_w1.ETApredict_obj.user_velocity_per_project
     logging.debug('parse_tms: velocities found: {}'.format(velocities))

@@ -166,8 +166,19 @@ class ParseTMSprojects(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
         logging.debug('starting projects parsing for tms_set: {}'.format(
             tms_set))
-        for tms in tms_set:
-            parse_projects_for_TMS(tms)
+        try:
+            for tms in tms_set:
+                parse_projects_for_TMS(tms)
+        except Exception as e:
+            if 'not connected to JIRA' in str(e):
+                response_message = 'Issue with connecting to JIRA. \
+Please update your login credentials.'
+            else:
+                response_message = 'unknown error. If the issue persists, \
+please contact us at hello@etabot.ai.'
+            return Response(
+                response_message,
+                status=status.HTTP_400_BAD_REQUEST)
 
         response_message = 'parsed'
         return Response(
