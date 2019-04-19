@@ -96,10 +96,9 @@ class TMSSerializer(serializers.ModelSerializer):
 
         if self.context['request'].method == 'PATCH':
             tms = self.instance
-            logging.debug(tms.password)
+            # logging.debug(tms.password)
             for k, v in self.initial_data.items():
                 setattr(tms, k, v)
-            logging.debug(tms.password)
             # logging.debug(tms.password)
             instance = tms
         else:

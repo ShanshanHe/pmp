@@ -99,13 +99,13 @@ JIRA_wrapper: {}'.format(e))
                 'description': 'connectivity issue: {}'.format(e)}
             result = "cannot connnect to TMS JIRA due to {}".format(e)
 
-        if self.tms_config.owner_id:
-            logging.debug('saving connectivity status')
-            self.tms_config.save()
-            logging.debug('saved connectivity status')
-        else:
-            logging.debug('owner_id {} is null - \
-skipping saving connectivity status'.format(self.tms_config.owner_id))
+#         if self.tms_config.owner_id:
+#             logging.debug('saving connectivity status')
+#             self.tms_config.save()
+#             logging.debug('saved connectivity status')
+#         else:
+#             logging.debug('owner_id {} is null - \
+# skipping saving connectivity status'.format(self.tms_config.owner_id))
 
         return result
 
