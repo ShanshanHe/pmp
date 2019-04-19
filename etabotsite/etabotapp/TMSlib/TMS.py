@@ -12,6 +12,7 @@ from enum import Enum
 import TMSlib.JIRA_API as JIRA_API
 import logging
 import sys
+import datetime
 
 try:
     sys.path.append('etabot_algo/')
@@ -39,6 +40,7 @@ class ProtoTMS():
         self.server_end_point = server_end_point
         self.username_login = username_login
         self.task_system_schema = task_system_schema
+        # self.connectivity_status = None
 
     def get_projects(self):
         raise NotImplementedError('default get_projects is not implemented')
@@ -78,14 +80,34 @@ class TMS_JIRA(ProtoTMS):
 
     def connect_to_TMS(self, password):
         """Return None if connected or error string otherwise."""
+        result = None
         try:
             self.jira = JIRA_API.JIRA_wrapper(
                 self.server_end_point,
                 self.username_login,
                 password=password)
+            logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
+            self.tms_config.connectivity_status = {
+                'status': 'connected',
+                'description': 'connectivity last successfull connection: {}\
+'.format(datetime.datetime.utcnow().isoformat())}
         except Exception as e:
-            return "cannot connnect to TMS JIRA due to {}".format(e)
-        return None
+            logging.debug('error in creating JIRA object with \
+JIRA_wrapper: {}'.format(e))
+            self.tms_config.connectivity_status = {
+                'status': 'error',
+                'description': 'connectivity issue: {}'.format(e)}
+            result = "cannot connnect to TMS JIRA due to {}".format(e)
+
+#         if self.tms_config.owner_id:
+#             logging.debug('saving connectivity status')
+#             self.tms_config.save()
+#             logging.debug('saved connectivity status')
+#         else:
+#             logging.debug('owner_id {} is null - \
+# skipping saving connectivity status'.format(self.tms_config.owner_id))
+
+        return result
 
     def get_all_done_tasks_ranked(self, assignee=None):
         if self.jira is None:
@@ -175,7 +197,12 @@ class TMSWrapper(TMS_JIRA):
             projects=None):
         """
         Arguments:
-            tms_config - Django model of TMS"""
+            tms_config - Django model of TMS.
+
+        Todo:
+            figure out how to subclass from ProtoTMS to
+            support multiple TMS types
+        """
         logging.debug('initializing TMSWrapper with tms_config "{}", \
 projects: {}'.format(tms_config, projects))
         self.tms_config = tms_config
@@ -209,11 +236,18 @@ projects: {}'.format(tms_config, projects))
                 "TMS_type {} is not supported at this time".format(
                     self.TMS_type))
 
+        logging.debug('TMSWrapper initialized with:\n\
+server_end_point: {}, username_login: {}'.format(
+            self.server_end_point, self.username_login))
+
     def init_ETApredict(self, projects):
         logging.debug('init_ETApredict started')
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
+        logging.debug('user_velocity_per_project: {}'.format(
+            self.ETApredict_obj.user_velocity_per_project))
         self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)
-        logging.debug('TMSwrapper: init_ETApredict finished')
+        logging.debug('TMSwrapper: init_ETApredict finished. \
+Connectivity status: {}'.format(self.tms_config.connectivity_status))
 
     def estimate_tasks(self, project_names=None):
         logging.info('Estimating tasks for TMS "{}", \

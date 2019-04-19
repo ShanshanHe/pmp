@@ -19,7 +19,7 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
-from .user_activation import ActivationProcessor
+from user_activation import ActivationProcessor
 
 from encrypted_model_fields.fields import EncryptedCharField
 from django.utils.translation import gettext as _
@@ -54,6 +54,7 @@ class TMS(models.Model):
     username = models.CharField(max_length=60)
     password = EncryptedCharField(max_length=60)
     type = models.CharField(max_length=20, choices=TMSlib.TMS_TYPES)
+    connectivity_status = JSONField(null=True)
 
     def __str__(self):
         return "{}@{}".format(self.username, self.endpoint)
@@ -92,12 +93,21 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 
 @receiver(post_save, sender=TMS)
-def parse_tms(sender, instance, **kwargs):
+def parse_tms(sender, instance, created, **kwargs):
+    if created:
+        logging.debug('new TMS instance created - parsing projects')
+        parse_projects_for_TMS(instance, **kwargs)
+    else:
+        logging.debug('saving existing TMS - no need to parse projects')
+
+
+def parse_projects_for_TMS(instance, **kwargs):
     """Parse projects for the given TMS.
 
     Creates new Django model projects objects with parsed data.
 
-    TODO: if possible update existing projects instead of creating new ones.
+    Arguments:
+        instance - Django TMS object instance
     """
     logging.debug('parse_tms started with kwargs: {}'.format(kwargs))
     existing_projects = Project.objects.filter(project_tms=instance.id)
@@ -105,6 +115,7 @@ def parse_tms(sender, instance, **kwargs):
         instance,
         projects=existing_projects)
     TMS_w1.init_ETApredict([])
+
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
     velocities = TMS_w1.ETApredict_obj.user_velocity_per_project
     logging.debug('parse_tms: velocities found: {}'.format(velocities))
@@ -113,6 +124,8 @@ def parse_tms(sender, instance, **kwargs):
     for p in existing_projects:
         existing_projects_dict[p.name] = p
 
+    new_projects = []
+    updted_projects = []
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
             velocity_json = dc.get_velocity_json(
@@ -131,10 +144,16 @@ def parse_tms(sender, instance, **kwargs):
                     vacation_days=attrs.get('vacation_days', '{}'),
                     project_settings=attrs.get('project_settings', '{}'))
                 new_django_project.save()
+                new_projects.append(project_name)
             else:
                 p.velocities = velocity_json
                 p.project_settings = attrs.get(
                     'project_settings', p.project_settings)
                 p.mode = attrs.get('mode', p.mode)
                 p.save()
+                updted_projects.append(project_name)
     logging.debug('parse_tms has finished')
+    return "New projects found and parsed: {}. \
+ Updated existing projects: {}".format(
+        ', '.join(new_projects),
+        ', '.join(updted_projects))
