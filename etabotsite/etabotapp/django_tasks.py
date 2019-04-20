@@ -45,7 +45,8 @@ following TMS entries ({}): {}'.format(
 @shared_task
 def estimate_ETA_for_TMS_project_set_ids(
         tms_id,
-        projects_set_ids):
+        projects_set_ids,
+        params):
     logging.info('searching for TMS with id: {}'.format(tms_id))
     tms_list = TMS.objects.all().filter(
             pk=tms_id)
@@ -60,4 +61,4 @@ def estimate_ETA_for_TMS_project_set_ids(
 
     projects_set = Project.objects.all().filter(pk__in=projects_set_ids)
     logging.info('found projects_set: {}'.format(projects_set))
-    et.estimate_ETA_for_TMS(tms, projects_set)
+    et.estimate_ETA_for_TMS(tms, projects_set, **params)

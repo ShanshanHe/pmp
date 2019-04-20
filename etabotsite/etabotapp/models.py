@@ -140,9 +140,9 @@ def parse_projects_for_TMS(instance, **kwargs):
                     open_status=attrs.get('open_status', ''),
                     velocities=velocity_json,
                     grace_period=attrs.get('grace_period', 12.0),
-                    work_hours=attrs.get('work_hours', '{}'),
-                    vacation_days=attrs.get('vacation_days', '{}'),
-                    project_settings=attrs.get('project_settings', '{}'))
+                    work_hours=attrs.get('work_hours', {}),
+                    vacation_days=attrs.get('vacation_days', {}),
+                    project_settings=attrs.get('project_settings', {}))
                 new_django_project.save()
                 new_projects.append(project_name)
             else:
