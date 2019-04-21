@@ -5,7 +5,7 @@ import TMSlib.TMS as TMSlib
 import logging
 
 
-def estimate_ETA_for_TMS(tms, projects_set):
+def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     """Estimates ETA for a given TMS and projects_set.
 
     Todo:
@@ -37,5 +37,6 @@ def estimate_ETA_for_TMS(tms, projects_set):
         project_names.append(project.name)
 
     tms_wrapper.estimate_tasks(
-        project_names=project_names)
+        project_names=project_names,
+        **kwargs)
     logging.debug('estimate_ETA_for_TMS finished')

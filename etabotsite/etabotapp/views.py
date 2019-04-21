@@ -204,8 +204,12 @@ def get_tms_set_by_id(request):
 
 class EstimateTMSView(APIView):
 
-    def get(self, request, format=None):
-        # Triggers ETA updates for a particular tms_id or all
+    def post(self, request, format=None):
+        """Triggers ETA updates for a particular tms_id or all.
+
+        TODO: implement params per project."""
+        post_data = json.loads(request.body.decode(encoding='utf-8'))
+        logging.debug('post_data: {}'.format(post_data))
         logging.debug('request.query_params: "{}"'.format(
             request.query_params))
 
@@ -230,6 +234,8 @@ for user {} due to: {}'.format(
         # here we need to call an estimate method that takes TMS object which
         # includes TMS credentials
         # threads = []
+        global_params = post_data.get('params', {})
+        logging.debug('estimate call global_params: {}'.format(global_params))
         tasks_count = 0
         celery = clry.Celery()
         celery.config_from_object('django.conf:settings')
@@ -257,7 +263,8 @@ for user {} due to: {}'.format(
             celery.send_task(
                 'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
                 (tms.id,
-                 [p.id for p in projects_set]))
+                 [p.id for p in projects_set],
+                 global_params))
             tasks_count += 1
         # response_message = 'TMS account to estimate:{}. Number of threads started:{}'.format(
         #         tms_set, len(threads))

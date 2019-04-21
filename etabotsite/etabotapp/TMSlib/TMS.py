@@ -109,7 +109,27 @@ JIRA_wrapper: {}'.format(e))
 
         return result
 
-    def get_all_done_tasks_ranked(self, assignee=None):
+    def construct_extra_filter(self, project_names=None):
+        extra_filter = ' AND type != "Epic" '
+        project_filter_string = ''
+        if project_names is not None and len(project_names) > 0:
+            project_filter_string = ' AND project in ({})'.format(
+                ', '.join(["'{}'".format(p) for p in project_names]))
+        # open_status_values = self.task_system_schema.get(
+        #         'open_status_values',
+        #         self.default_open_status_values)
+        # if len(open_status_values) == 0:
+        #     open_status_values = self.default_open_status_values
+        # open_status_vals_list = [
+        #     '"{}"'.format(x)
+        #     for x in open_status_values]
+        # open_status_values_css = ', '.join(open_status_vals_list)
+
+        extra_filter = project_filter_string
+        return extra_filter
+
+    def get_all_done_tasks_ranked(self, assignee=None, project_names=None):
+        extra_filter = self.construct_extra_filter(project_names=project_names)
         if self.jira is None:
             raise NameError('not connected to JIRA')
 
@@ -127,26 +147,25 @@ ORDER BY Rank ASC'.format(
             len(done_issues)))
         return done_issues
 
-    def get_all_open_tasks_ranked(self, assignee=None):
+    def get_all_open_tasks_ranked(self, assignee=None, project_names=None):
+        """Get all open tasks sorted by rank.
+
+        Sort buckets:
+            In progress open sprint
+            open in open sprint
+            in progress not open sprint
+            open not open sprint
+            backlog"""
         if self.jira is None:
             raise NameError('not connected to JIRA')
 
         if assignee is None:
             assignee = 'currentUser()'
-
-        open_status_values = self.task_system_schema.get(
-                'open_status_values',
-                self.default_open_status_values)
-        if len(open_status_values) == 0:
-            open_status_values = self.default_open_status_values
-        open_status_vals_list = [
-            '"{}"'.format(x)
-            for x in open_status_values]
-        open_status_values_css = ', '.join(open_status_vals_list)
-
+        extra_filter = self.construct_extra_filter(project_names=project_names)
         in_progress_issues_current_sprint = self.jira.get_jira_issues(
             'assignee={assignee} AND status="In Progress" \
-AND sprint in openSprints() ORDER BY Rank ASC'.format(assignee=assignee))
+AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
+                assignee=assignee, extra_filter=extra_filter))
 
         if len(in_progress_issues_current_sprint) > 0:
             logging.debug('task sample')
@@ -154,22 +173,28 @@ AND sprint in openSprints() ORDER BY Rank ASC'.format(assignee=assignee))
             logging.debug(in_progress_issues_current_sprint[0].fields.summary)
 
         open_issues_current_sprint = self.jira.get_jira_issues(
-                'assignee={assignee} AND status not in ("In Progress", "Done") \
-AND sprint in openSprints() ORDER BY Rank ASC'.format(
-                    assignee=assignee,
-                    open_status_values=open_status_values_css))
+            'assignee={assignee} AND status not in ("In Progress", "Done") \
+AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
+                assignee=assignee,
+                extra_filter=extra_filter))
 
         in_progress_issues = self.jira.get_jira_issues(
             'assignee={assignee} AND status="In Progress" \
-AND sprint not in openSprints() ORDER BY Rank ASC'.format(assignee=assignee))
-
-        # if len(open_status_values_css) > 0:
+AND sprint not in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
+                assignee=assignee, extra_filter=extra_filter))
 
         open_issues = self.jira.get_jira_issues(
             'assignee={assignee} AND status not in ("In Progress", "Done") \
-AND sprint not in openSprints() ORDER BY Rank ASC'.format(
+AND sprint not in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
                 assignee=assignee,
-                open_status_values=open_status_values_css))
+                extra_filter=extra_filter))
+
+        backlog_issues = self.jira.get_jira_issues(
+            'assignee={assignee} AND sprint = null \
+{extra_filter} ORDER BY Rank ASC'.format(
+                assignee=assignee,
+                extra_filter=extra_filter))
+
         # else:
         #     open_issues_current_sprint = []
         #     open_issues = []
@@ -178,16 +203,19 @@ AND sprint not in openSprints() ORDER BY Rank ASC'.format(
 in_progress_issues_current_sprint: {},
 open_issues_current_sprint: {},
 in_progress_issues: {},
-open_issues: {}""".format(
+open_issues: {}
+backlog_issues: {}""".format(
                     len(in_progress_issues_current_sprint),
                     len(open_issues_current_sprint),
                     len(in_progress_issues),
-                    len(open_issues)))
+                    len(open_issues),
+                    len(backlog_issues)))
 
         return in_progress_issues_current_sprint \
             + open_issues_current_sprint \
             + in_progress_issues \
-            + open_issues
+            + open_issues \
+            + backlog_issues
 
 
 class TMSWrapper(TMS_JIRA):
@@ -249,7 +277,8 @@ server_end_point: {}, username_login: {}'.format(
         logging.debug('TMSwrapper: init_ETApredict finished. \
 Connectivity status: {}'.format(self.tms_config.connectivity_status))
 
-    def estimate_tasks(self, project_names=None):
+    def estimate_tasks(self, project_names=None, **kwargs):
         logging.info('Estimating tasks for TMS "{}", \
 projects: "{}", hold tight!'.format(self, project_names))
-        self.ETApredict_obj.generate_task_list_view_with_ETA(project_names)
+        self.ETApredict_obj.generate_task_list_view_with_ETA(
+            project_names, **kwargs)
