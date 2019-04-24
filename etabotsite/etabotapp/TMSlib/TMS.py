@@ -89,7 +89,7 @@ class TMS_JIRA(ProtoTMS):
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             self.tms_config.connectivity_status = {
                 'status': 'connected',
-                'description': 'connectivity last successfull connection: {}\
+                'description': 'connectivity last successful connection: {}\
 '.format(datetime.datetime.utcnow().isoformat())}
         except Exception as e:
             logging.debug('error in creating JIRA object with \
