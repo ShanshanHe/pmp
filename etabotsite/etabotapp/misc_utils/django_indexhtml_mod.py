@@ -35,7 +35,7 @@ def html_to_django_template(
     logging.info('replacing <filename> with pattern: ' + static_prefix +
                  '<filename>' + static_suffix)
 
-    pattern = r'(src="|href=")((?!http)(?!/).+?)(">)'
+    pattern = r'(src="|href=")((?!http)(?!\/).+?)(">)'
     logging.debug('loading: "{}"'.format(src_html))
     with open(src_html) as f:
         s = ''.join(f.readlines())
