@@ -13,6 +13,9 @@ import TMSlib.JIRA_API as JIRA_API
 import logging
 import sys
 import datetime
+import user_activation
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 try:
     sys.path.append('etabot_algo/')
@@ -78,8 +81,9 @@ class TMS_JIRA(ProtoTMS):
         self.jira = None
         logging.debug('TMS_JIRA initalized')
 
-    def connect_to_TMS(self, password):
+    def connect_to_TMS(self, password, update_tms=True):
         """Return None if connected or error string otherwise."""
+        logging.debug('connect_to_TMS started.')
         result = None
         try:
             self.jira = JIRA_API.JIRA_wrapper(
@@ -98,7 +102,25 @@ JIRA_wrapper: {}'.format(e))
                 'status': 'error',
                 'description': 'connectivity issue: {}'.format(e)}
             result = "cannot connnect to TMS JIRA due to {}".format(e)
+            if update_tms:
+                logging.info(
+                    'sending email about connectivity issue to: "{}".'.format(
+                        self.username_login))
 
+                msg = MIMEMultipart()
+                msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
+                msg['To'] = self.username_login  # TODO: user.email
+                msg['Subject'] = 'Account {} needs attention.'.format(
+                    self.server_end_point)
+                msg_body = '<html><body><h3>Please log in to https://app.etabot.ai/login \
+    and fix credentials for account {}</h3></body></html>'.format(
+                    self.server_end_point)
+                msg.attach(MIMEText(msg_body, 'html'))
+                user_activation.ActivationProcessor.send_email(msg)
+        if update_tms:
+            logging.debug('saving connectivity status')
+            self.tms_config.save()
+            logging.debug('saved connectivity status')
 #         if self.tms_config.owner_id:
 #             logging.debug('saving connectivity status')
 #             self.tms_config.save()
@@ -106,7 +128,6 @@ JIRA_wrapper: {}'.format(e))
 #         else:
 #             logging.debug('owner_id {} is null - \
 # skipping saving connectivity status'.format(self.tms_config.owner_id))
-
         return result
 
     def construct_extra_filter(self, project_names=None):

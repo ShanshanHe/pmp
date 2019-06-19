@@ -44,26 +44,17 @@ class ResponseCode(Enum):
 
 class ActivationProcessor(object):
     @staticmethod
-    def send_email(user, token):
+    def send_email(msg):
+        logging.debug('starting send_email.')
         server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
         server.set_debuglevel(1)
         server.ehlo()
         server.starttls()
-        # logging.debug('login("{}","{}")'.format(SYS_EMAIL, SYS_EMAIL_PWD))
+        logging.debug('login("{}","***")'.format(SYS_EMAIL))
         server.login(SYS_EMAIL, SYS_EMAIL_PWD)
 
-        msg = MIMEMultipart()
-        msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
-        msg['To'] = user.email
-        msg['Subject'] = EMAIL_SUBJECT
-        hyper_link = TOKEN_LINK.format(SYS_DOMAIN, token)
-        msg_body = render_to_string('acc_active_email.html', {
-            'username': user.username,
-            'link': hyper_link,
-        })
-        msg.attach(MIMEText(msg_body, 'html'))
-
         server.send_message(msg)
+        logging.info('email sent.')
         del server
 
     @staticmethod
@@ -76,7 +67,19 @@ class ActivationProcessor(object):
             logging.debug('encoded_token: "{}"'.format(encoded_token))
             token_str = quote(encoded_token.decode('utf-8'))
             logging.debug('token_str: "{}"'.format(token_str))
-            ActivationProcessor.send_email(user, token_str)
+
+            msg = MIMEMultipart()
+            msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
+            msg['To'] = user.email
+            msg['Subject'] = EMAIL_SUBJECT
+            hyper_link = TOKEN_LINK.format(SYS_DOMAIN, token)
+            msg_body = render_to_string('acc_active_email.html', {
+                'username': user.username,
+                'link': hyper_link,
+            })
+            msg.attach(MIMEText(msg_body, 'html'))
+
+            ActivationProcessor.send_email(msg)
 
             logging.info('Successfully sent activation email to User %s '
                          % user.username)
