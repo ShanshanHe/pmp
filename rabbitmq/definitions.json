@@ -1,0 +1,37 @@
+{
+  "rabbit_version": "3.6.6",
+  "users": [
+    {
+      "name": "etabotdev",
+      "password": "etabot2018",
+      "tags": ""
+    },
+    {
+      "name": "adminuser",
+      "password": "etabot2018",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "\/etabotvhost"
+    },
+    {
+      "name": "\/vhost2"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "etabotdev",
+      "vhost": "\/etabotvhost",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "parameters": [],
+  "policies": [],
+  "queues": [],
+  "exchanges": [],
+  "bindings": []
+}
