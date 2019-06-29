@@ -186,8 +186,22 @@ please contact us at hello@etabot.ai.'
             status=status.HTTP_200_OK)
 
 
+class JIRA_callback(APIView):
+    """JIRA OAUTH callback."""
+
+    def get(self, request):
+        """Receieve authorization code."""
+        """Provided as a query parameter called code. This code can be
+        exchanged for an access token"""
+        logging.info(request.query_params)
+        logging.debug(request.query_params)
+        return Response(
+            "OK",
+            status=status.HTTP_200_OK)
+
+
 def get_tms_set_by_id(request):
-    """Return tms_set on success or request Response"""
+    """Return tms_set on success or request Response."""
     tms_id = request.query_params.get('tms')
 
     tms_id = int(tms_id)
