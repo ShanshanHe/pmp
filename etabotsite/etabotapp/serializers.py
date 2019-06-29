@@ -104,7 +104,7 @@ class TMSSerializer(serializers.ModelSerializer):
         else:
             instance = TMS(**self.initial_data)
         TMS_w1 = TMSlib.TMSWrapper(instance)
-        error = TMS_w1.connect_to_TMS(instance.password)
+        error = TMS_w1.connect_to_TMS(instance.password, update_tms=False)
         if error is not None:
             logging.debug('Error in validation: {}'.format(error))
             if 'Unauthorized (401)' in error:
