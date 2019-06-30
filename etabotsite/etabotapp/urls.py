@@ -9,6 +9,8 @@ from .views import email_verification
 from .views import jira_callback
 from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+import logging
+
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, base_name='users')
@@ -16,6 +18,7 @@ router.register(r'projects', ProjectViewSet, base_name='projects')
 router.register(r'tms', TMSViewSet, base_name='tms')
 
 urlpatterns = staticfiles_urlpatterns()
+logging.debug('static urlpatterns: "{}"'.format(urlpatterns))
 
 urlpatterns += [
     url(r'^api/', include(router.urls)),
