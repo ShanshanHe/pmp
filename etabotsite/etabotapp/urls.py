@@ -44,7 +44,7 @@ urlpatterns = [
     url(r'^account/password_reset/complete/$',
         auth_views.PasswordResetCompleteView.as_view(),
         name='password_reset_complete'),
-    url(r'^jira_callback', JIRA_callback.as_view(), name='jira_callback')
+    url(r'^jira_callback', JIRA_callback.as_view(), name='jira_callback'),
     # catch-all pattern for compatibility with the Angular routes
     url(r'^(?P<path>.*)$', index),
     url(r'^$', index)
