@@ -186,18 +186,13 @@ please contact us at hello@etabot.ai.'
             status=status.HTTP_200_OK)
 
 
-class JIRA_callback(APIView):
-    """JIRA OAUTH callback."""
-
-    def get(self, request):
-        """Receieve authorization code."""
-        """Provided as a query parameter called code. This code can be
-        exchanged for an access token"""
-        logging.info(request.query_params)
-        logging.debug(request.query_params)
-        return Response(
-            "OK",
-            status=status.HTTP_200_OK)
+def jira_callback(request):
+    """Receieve authorization code from JIRA OAuth."""
+    """Provided as a query parameter called code. This code can be
+    exchanged for an access token"""
+    logging.info(request.GET)
+    # logging.info(request.GET.get('code'))
+    return render(request, 'jira_callback.html')
 
 
 def get_tms_set_by_id(request):
