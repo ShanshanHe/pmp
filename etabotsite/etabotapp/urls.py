@@ -15,7 +15,9 @@ router.register(r'users', UserViewSet, base_name='users')
 router.register(r'projects', ProjectViewSet, base_name='projects')
 router.register(r'tms', TMSViewSet, base_name='tms')
 
-urlpatterns = [
+urlpatterns = staticfiles_urlpatterns()
+
+urlpatterns += [
     url(r'^api/', include(router.urls)),
     url(r'^api/auth/',
         include('rest_framework.urls', namespace='rest_framework')),
@@ -50,5 +52,3 @@ urlpatterns = [
     url(r'^(?P<path>.*)$', index),
     url(r'^$', index)
 ]
-
-urlpatterns += staticfiles_urlpatterns()
