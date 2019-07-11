@@ -72,7 +72,7 @@ class ActivationProcessor(object):
             msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
             msg['To'] = user.email
             msg['Subject'] = EMAIL_SUBJECT
-            hyper_link = TOKEN_LINK.format(SYS_DOMAIN, token)
+            hyper_link = TOKEN_LINK.format(SYS_DOMAIN, token_str)
             msg_body = render_to_string('acc_active_email.html', {
                 'username': user.username,
                 'link': hyper_link,
