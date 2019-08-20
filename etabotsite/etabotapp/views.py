@@ -189,7 +189,9 @@ please contact us at hello@etabot.ai.'
 def jira_callback(request):
     """Receieve authorization code from JIRA OAuth."""
     """Provided as a query parameter called code. This code can be
-    exchanged for an access token"""
+    exchanged for an access token.
+
+    TODO: setup framework for getting access token and storing it."""
     logging.info(request.GET)
     # logging.info(request.GET.get('code'))
     return render(request, 'jira_callback.html')
