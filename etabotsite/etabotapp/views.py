@@ -30,11 +30,11 @@ def index(request, path='', format=None):
     """
     Renders the Angular2 SPA
     """
-    # logging.debug('format = "{}"'.format(format))
-    # logging.debug('path = "{}"'.format(path))
-    # logging.debug('request = "{}"'.format(request))
+    logging.debug('format = "{}"'.format(format))
+    logging.debug('path = "{}"'.format(path))
+    logging.debug('request = "{}"'.format(request))
     response = render(request, 'index.html')
-    # logging.debug('response: {}'.format(response))
+    logging.debug('response: {}'.format(response))
     return response
 
 
@@ -186,8 +186,19 @@ please contact us at hello@etabot.ai.'
             status=status.HTTP_200_OK)
 
 
+def jira_callback(request):
+    """Receieve authorization code from JIRA OAuth."""
+    """Provided as a query parameter called code. This code can be
+    exchanged for an access token.
+
+    TODO: setup framework for getting access token and storing it."""
+    logging.info(request.GET)
+    # logging.info(request.GET.get('code'))
+    return render(request, 'jira_callback.html')
+
+
 def get_tms_set_by_id(request):
-    """Return tms_set on success or request Response"""
+    """Return tms_set on success or request Response."""
     tms_id = request.query_params.get('tms')
 
     tms_id = int(tms_id)

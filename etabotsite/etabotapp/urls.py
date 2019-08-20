@@ -6,14 +6,21 @@ from .views import ParseTMSprojects
 from .views import index
 from .views import activate
 from .views import email_verification
+from .views import jira_callback
 from django.contrib.auth import views as auth_views
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+import logging
+
 
 router = DefaultRouter()
 router.register(r'users', UserViewSet, base_name='users')
 router.register(r'projects', ProjectViewSet, base_name='projects')
 router.register(r'tms', TMSViewSet, base_name='tms')
 
-urlpatterns = [
+urlpatterns = staticfiles_urlpatterns()
+logging.debug('static urlpatterns: "{}"'.format(urlpatterns))
+
+urlpatterns += [
     url(r'^api/', include(router.urls)),
     url(r'^api/auth/',
         include('rest_framework.urls', namespace='rest_framework')),
@@ -43,7 +50,7 @@ urlpatterns = [
     url(r'^account/password_reset/complete/$',
         auth_views.PasswordResetCompleteView.as_view(),
         name='password_reset_complete'),
-
+    url(r'^jira_callback', jira_callback, name='jira_callback'),
     # catch-all pattern for compatibility with the Angular routes
     url(r'^(?P<path>.*)$', index),
     url(r'^$', index)

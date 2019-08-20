@@ -220,6 +220,28 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# OAuth
+AUTHLIB_OAUTH_CLIENTS = {}
+JIRA_OAUTH = custom_settings.get('JIRA_APP_OAUTH')
+if JIRA_OAUTH is not None:
+    AUTHLIB_OAUTH_CLIENTS['jira'] = {
+        'client_id': JIRA_OAUTH.get('client_id'),
+        'client_secret': JIRA_OAUTH.get('secret'),
+        'request_token_url': 'https://auth.atlassian.com/authorize',
+        'request_token_params':
+            {
+                'audience': 'api.atlassian.com'
+            },
+        'access_token_url': 'https://auth.atlassian.com/oauth/token',
+        'access_token_params': None,
+        'refresh_token_url': None,
+        'authorize_url': 'https://auth.atlassian.com/authorize',
+        'api_base_url': 'https://api.atlassian.com/ex/jira/',
+        'client_kwargs': {
+            'scope': 'read:jira-work&read:jira-user&write:jira-work'
+        }
+    }
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
