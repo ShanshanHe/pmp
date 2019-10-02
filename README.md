@@ -273,6 +273,32 @@ pip uninstall pycurl
 pip install --install-option="--with-openssl" --install-option="--openssl-dir=/usr/local/opt/openssl" pycurl
 ```
 
+### Cannot uninstall XXX. It is a distutils installed project ...
+E.g.: Cannot uninstall 'certifi'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall.
+
+solution
+
+```
+pip install -r requirements.txt --ignore-installed
+```
+Or per package:
+
+```
+pip install --ignore-installed ${PACKAGE_NAME}
+```
+
+E.g.
+```
+pip install --ignore-installed certifi
+```
+
+### celery issue with pycurl
+start python and make sure you can import pycurl
+if not, try 
+```
+conda install pycurl
+```
+
 ### Networking errors
 add the following lines in case you run into Networking errors:
 Edit /etc/default/docker and add your DNS server to the following line:
