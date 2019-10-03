@@ -1,0 +1,8 @@
+version: '2'
+services:
+
+  celery:
+    container_name: pmp-celery
+    build:
+      context: .
+      dockerfile: ./celery/Dockerfile

@@ -1,0 +1,57 @@
+version: '2'
+services:
+
+  django:
+    container_name: pmp-django
+    build:
+      context: .
+    networks:
+      - pmp-django-nginx
+    volumes:
+      - pmp-django-static:/usr/src/app/static
+    ports:
+      - 8000:8000
+
+  celery:
+    container_name: pmp-celery
+    build:
+      context: .
+      dockerfile: ./celery/Dockerfile
+    networks:
+      - pmp-django-nginx
+
+  nginx:
+    container_name: pmp-nginx
+    build:
+      context: ./nginx
+      dockerfile: nginx.dockerfile
+    networks:
+      - pmp-django-nginx
+    volumes:
+      - pmp-django-static:/usr/src/app/static
+      - pmp-nginx-cert:/etc/ssl/certs:ro
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - django
+
+  rabbitmq:
+    container_name: pmp-rabbitmq
+    hostname: pmp-rabbitmq
+    build:
+      context: .
+      dockerfile: ./rabbitmq/Dockerfile
+    networks:
+      - pmp-django-nginx
+    ports:
+      - 15672:15672
+      - 5672:5672
+
+volumes:
+  pmp-django-static:
+  pmp-nginx-cert:
+
+networks:
+  pmp-django-nginx:
+    driver: bridge
