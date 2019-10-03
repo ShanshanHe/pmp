@@ -319,6 +319,7 @@ if custom_settings['MESSAGE_BROKER'].lower() == 'aws':
     # AWS Credentials
     AWS_ACCESS_KEY_ID = custom_settings.get('AWS_ACCESS_KEY_ID')
     AWS_SECRET_ACCESS_KEY = custom_settings.get('AWS_SECRET_ACCESS_KEY')
+    CELERY_DEFAULT_QUEUE = custom_settings.get('CELERY_DEFAULT_QUEUE', 'etabotqueue')
     if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
         logging.warning(
             'AWS credentials not found. Skipping Celery settings setup.')
@@ -330,7 +331,7 @@ if custom_settings['MESSAGE_BROKER'].lower() == 'aws':
         )
 
         BROKER_TRANSPORT_OPTIONS = {
-            'region': 'us-west-2',
+            'region': custom_settings.get('AWS_SQS_REGION', 'us-west-2'),
             'polling_interval': 20,
         }
 
@@ -350,4 +351,6 @@ elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
     )
 
     logging.debug('celery settings setup complete')
+logging.info('BROKER_URL: {}'.format(BROKER_URL))
+logging.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
 logging.debug('setting.py is done')

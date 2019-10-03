@@ -203,7 +203,8 @@ You have a sample project management site ready to go!
     # in case of aws:
     "AWS_ACCESS_KEY_ID":"Amazon services access key id for SQS messenging"
     "AWS_SECRET_ACCESS_KEY":"Amazon services access key for SQS messenging"
-
+    "AWS_SQS_REGION": "region, e.g. us-west-1",
+    "CELERY_DEFAULT_QUEUE": "SQS queue name in AWS",
     "eta_crontab_args":<dictionary with crontab settings for example: 'eta_crontab_args':{'hour': 8}
                         see celery.schedules.crontab documentation for details>
 }
