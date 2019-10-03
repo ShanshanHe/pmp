@@ -54,8 +54,8 @@ CUSTOM_SETTINGS = custom_settings
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
 logging.info('HOST_URL="{}"'.format(HOST_URL))
 
-mimetypes.add_type("text/css", ".css", True)
-logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
+# mimetypes.add_type("text/css", ".css", True)
+# logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
