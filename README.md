@@ -3,9 +3,14 @@
 backend data infrastructure and server for Smart project management tool made for teams to meet their deadline
 
 
-## To deploy pmp, please follow the instructions below:
+## To deploy pmp, you have two choices:
+- Docker version (typically used in production)
+- non-Docker version (typically used for development to allow faster iterations)
 
-#### Prequisites:
+### Docker version deployment
+please follow these steps:
+
+#### Docker deployment Prequisites:
 * Have docker, docker compose installed
 * Knowledge of Django and Nginx
 * If needed add your dns to hosts for testing with your url locally, for example:
@@ -30,11 +35,7 @@ Clone the repo to your server
 git clone https://github.com/ShanshanHe/pmp.git
 ```
 
-### Configure pmp
-- add custom_settings.json to etabotsite directory
-- add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
-- add sys_email_settings.json to etabotsite directory
-- add ETA algorithm as a git submodule (see section "Optinal: connecting ETA algorithm instead of a placeholder")
+### Follow steps in "Configure pmp" section in appendix
 
 ### Build docker images and create volumes
 At the root directory, run the following commands:
@@ -92,7 +93,8 @@ Vola, you successfully deployed your `pmp` project! Type the ip address of your 
 
 Hope you enjoy!
 
-## To run django seperately for development, please follow the process below:
+## non-Docker version deployment
+### To run django seperately for development, please follow the process below:
 
 #### Prerequisite:
 * Have python 3.6 installed on your development machine
@@ -108,7 +110,10 @@ Hope you enjoy!
 If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.
 
 #### Install virtual environment management tool
-E.g. virtualenv or conda
+### Choose between virtualenv or conda:
+
+### conda option (recommended)
+follow https://docs.conda.io/projects/conda/en/latest/user-guide/install/
 
 ### virtualenv option
 
@@ -136,8 +141,6 @@ To create a virtual environment for the project, follow the command below:
 $ mkvirtualenv --python=python3 <name_of_the_virtual_environment>
 ```
 
-### conda option
-follow https://docs.conda.io/projects/conda/en/latest/user-guide/install/
 
 #### Run django server locally
 Suppose you're already in a virtual environemnt, go to our project root directory,install the dependencies:
@@ -149,9 +152,9 @@ Go the etabotsite directory:
 $ cd etabotsite/
 ```
 
-Follow instructions in section "Configure pmp" above
+Follow instructions in section "Configure pmp" below
 
-If this is your first time running the project in development mode, you want to create the database table by running the following command:
+If this is your first time running the project in development mode and you are using local database, you want to create the database table by running the following command:
 ```
 $ python manage.py migrate
 $ python manage.py makemigrations
@@ -169,6 +172,15 @@ $ python manage.py runserver 127.0.0.1:8000
 Vola! You have django server up and running in development mode. Go to you browser, enter the address below:
 http://<url you set in etc/hosts>:8000/index
 You have a sample project management site ready to go!
+
+
+
+### Configure pmp
+(see Advanced settings for details of file definitions)
+- add custom_settings.json to etabotsite directory 
+- add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
+- add sys_email_settings.json to etabotsite directory
+- add ETA algorithm as a git submodule (see section "Optinal: connecting ETA algorithm instead of a placeholder")
 
 #### Advanced settings
 
@@ -273,10 +285,12 @@ pip uninstall pycurl
 pip install --install-option="--with-openssl" --install-option="--openssl-dir=/usr/local/opt/openssl" pycurl
 ```
 
-### Cannot uninstall XXX. It is a distutils installed project ...
-E.g.: Cannot uninstall 'certifi'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall.
+### Issue "ERROR: Cannot uninstall 'certifi'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall."
+can be resolved with 
+```
+pip install -r requirements.txt --ignore-installed certifi
 
-solution
+solution for all such packages:
 
 ```
 pip install -r requirements.txt --ignore-installed
@@ -291,8 +305,7 @@ E.g.
 ```
 pip install --ignore-installed certifi
 ```
-
-### celery issue with pycurl
+### Celery issue with pycurl.
 start python and make sure you can import pycurl
 if not, try 
 ```
