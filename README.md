@@ -289,6 +289,27 @@ pip install --install-option="--with-openssl" --install-option="--openssl-dir=/u
 can be resolved with 
 ```
 pip install -r requirements.txt --ignore-installed certifi
+
+solution for all such packages:
+
+```
+pip install -r requirements.txt --ignore-installed
+```
+Or per package:
+
+```
+pip install --ignore-installed ${PACKAGE_NAME}
+```
+
+E.g.
+```
+pip install --ignore-installed certifi
+```
+### Celery issue with pycurl.
+start python and make sure you can import pycurl
+if not, try 
+```
+conda install pycurl
 ```
 
 ### Networking errors
