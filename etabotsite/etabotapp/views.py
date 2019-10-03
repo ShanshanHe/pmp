@@ -8,14 +8,20 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
-from .models import Project, TMS
+from .models import TMS, Project
+from .models import parse_projects_for_TMS
 from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
+import TMSlib.data_conversion as dc
+import eta_tasks
 from .user_activation import ActivationProcessor, ResponseCode
 
+import threading
 import json
 import mimetypes
 import logging
+import celery as clry
+
 logging.getLogger().setLevel(logging.DEBUG)
 
 
@@ -145,29 +151,106 @@ class TMSViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
 
-class EstimateTMSView(APIView):
+class ParseTMSprojects(APIView):
 
     def get(self, request, format=None):
-        tms_id = request.query_params.get('tms', None)
-        if tms_id is not None:
-            try:
-                tms_id = int(tms_id)
-                tms_set = TMS.objects.all().filter(
-                    owner=self.request.user,
-                    id=tms_id)
-            except Exception as e:
-                return Response(
-                    'Invalid tms_id: "{}"'.format(tms_id),
-                    status=status.HTTP_400_BAD_REQUEST)
-        else:
-            tms_set = TMS.objects.all().filter(owner=self.request.user)
         logging.debug('request.query_params: "{}"'.format(
             request.query_params))
-        logging.debug('tms_id: "{}"'.format(tms_id))
+
+        try:
+            tms_set = get_tms_set_by_id(request)
+        except Exception as e:
+            response_message = 'Failed to parse tms id due to "{}"'.format(e)
+            return Response(
+                response_message,
+                status=status.HTTP_400_BAD_REQUEST)
+        logging.debug('starting projects parsing for tms_set: {}'.format(
+            tms_set))
+        try:
+            for tms in tms_set:
+                parse_projects_for_TMS(tms)
+        except Exception as e:
+            if 'not connected to JIRA' in str(e):
+                response_message = 'Issue with connecting to JIRA. \
+Please update your login credentials.'
+            else:
+                response_message = 'unknown error. If the issue persists, \
+please contact us at hello@etabot.ai.'
+            return Response(
+                response_message,
+                status=status.HTTP_400_BAD_REQUEST)
+
+        response_message = 'parsed'
+        return Response(
+            response_message,
+            status=status.HTTP_200_OK)
+
+
+def jira_callback(request):
+    """Receieve authorization code from JIRA OAuth."""
+    """Provided as a query parameter called code. This code can be
+    exchanged for an access token.
+
+    TODO: setup framework for getting access token and storing it."""
+    logging.info(request.GET)
+    # logging.info(request.GET.get('code'))
+    return render(request, 'jira_callback.html')
+
+
+def get_tms_set_by_id(request):
+    """Return tms_set on success or request Response."""
+    tms_id = request.query_params.get('tms')
+
+    tms_id = int(tms_id)
+    logging.debug('int tms_id: "{}"'.format(tms_id))
+    tms_set = TMS.objects.all().filter(
+        owner=request.user,
+        id=tms_id)
+    if len(tms_set) == 0:
+        raise NameError('No TMS found with tms_id={} for user {}'.format(
+            tms_id, request.user))
+
+    return tms_set
+
+
+class EstimateTMSView(APIView):
+
+    def post(self, request, format=None):
+        """Triggers ETA updates for a particular tms_id or all.
+
+        TODO: implement params per project."""
+        post_data = json.loads(request.body.decode(encoding='utf-8'))
+        logging.debug('post_data: {}'.format(post_data))
+        logging.debug('request.query_params: "{}"'.format(
+            request.query_params))
+
+        if request.query_params.get('tms') is None:
+            # no tms id given, estimate for all TMS for this user
+            tms_set = TMS.objects.all().filter(owner=self.request.user)
+        else:
+            try:
+                tms_set = get_tms_set_by_id(request)
+            except Exception as e:
+                return Response(
+                    'No TMS found with tms_id="{}" \
+for user {} due to: {}'.format(
+                        request.query_params.get('tms'), self.request.user, e),
+                    status=status.HTTP_400_BAD_REQUEST)
 
         logging.debug('found tms: {}'.format(tms_set))
+        if len(tms_set) == 0:
+            return Response(
+                'No TMS found for user {}'.format(self.request.user),
+                status=status.HTTP_400_BAD_REQUEST)
         # here we need to call an estimate method that takes TMS object which
         # includes TMS credentials
+        # threads = []
+        global_params = post_data.get('params', {})
+        logging.debug('estimate call global_params: {}'.format(global_params))
+        tasks_count = 0
+        celery = clry.Celery()
+        celery.config_from_object('django.conf:settings')
+
         for tms in tms_set:
             project_id = request.query_params.get('project_id', None)
             if project_id is not None:
@@ -182,12 +265,22 @@ class EstimateTMSView(APIView):
                     owner=self.request.user,
                     project_tms_id=tms.id)
             logging.debug('projects_set: "{}"'.format(projects_set))
-            tms_wrapper = TMSlib.TMSWrapper(tms)
-            tms_wrapper.init_ETApredict(projects_set)
+            # eta_thread = threading.Thread(
+            #     target=eta_tasks.estimate_ETA_for_TMS,
+            #     args=(tms, projects_set))
+            # threads.append(eta_thread)
+            # eta_thread.start()
 
-            project_names = [project.name for project in projects_set]
-
-            tms_wrapper.estimate_tasks(project_names=project_names)
-
+            celery.send_task(
+                'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
+                (tms.id,
+                 [p.id for p in projects_set],
+                 global_params))
+            tasks_count += 1
+        # response_message = 'TMS account to estimate:{}. Number of threads started:{}'.format(
+        #         tms_set, len(threads))
+        response_message = 'TMS account to estimate:{}. \
+Number of tasks sent: {}'.format(tms_set, tasks_count)
         return Response(
-            'TMS account to estimate: %s' % tms_set, status=status.HTTP_200_OK)
+            response_message,
+            status=status.HTTP_200_OK)

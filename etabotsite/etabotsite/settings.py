@@ -21,14 +21,15 @@ import urllib
 import mimetypes
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-
-mimetypes.add_type("text/css", ".css", True)
-logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
 LOCAL_MODE = (PLATFORM == 'Darwin')
+
+if LOCAL_MODE:
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
 
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
@@ -49,8 +50,12 @@ except Exception as e:
         e))
 CUSTOM_SETTINGS = custom_settings
 
+
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
 logging.info('HOST_URL="{}"'.format(HOST_URL))
+
+# mimetypes.add_type("text/css", ".css", True)
+# logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -220,6 +225,28 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# OAuth
+AUTHLIB_OAUTH_CLIENTS = {}
+JIRA_OAUTH = custom_settings.get('JIRA_APP_OAUTH')
+if JIRA_OAUTH is not None:
+    AUTHLIB_OAUTH_CLIENTS['jira'] = {
+        'client_id': JIRA_OAUTH.get('client_id'),
+        'client_secret': JIRA_OAUTH.get('secret'),
+        'request_token_url': 'https://auth.atlassian.com/authorize',
+        'request_token_params':
+            {
+                'audience': 'api.atlassian.com'
+            },
+        'access_token_url': 'https://auth.atlassian.com/oauth/token',
+        'access_token_params': None,
+        'refresh_token_url': None,
+        'authorize_url': 'https://auth.atlassian.com/authorize',
+        'api_base_url': 'https://api.atlassian.com/ex/jira/',
+        'client_kwargs': {
+            'scope': 'read:jira-work&read:jira-user&write:jira-work'
+        }
+    }
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -249,13 +276,14 @@ Will use default values'.format(e))
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST_USER = SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
-EMAIL_HOST_PASSWORD = SYS_EMAIL_PWD = sys_email_settings.get('DJANGO_SYS_EMAIL_PWD', '')
+EMAIL_HOST_PASSWORD = SYS_EMAIL_PWD = sys_email_settings.get(
+    'DJANGO_SYS_EMAIL_PWD', '')
 EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST', '')
 EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
 EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
 EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
     'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
-
+DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
@@ -280,23 +308,49 @@ else:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
-# AWS Credentials
-AWS_ACCESS_KEY_ID = custom_settings['AWS_ACCESS_KEY_ID']
-AWS_SECRET_ACCESS_KEY = custom_settings['AWS_SECRET_ACCESS_KEY']
-
-# Celery Task Scheduling
-BROKER_URL = 'sqs://{0}:{1}@'.format(
-    urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''),
-    urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe='')
-)
-
-BROKER_TRANSPORT_OPTIONS = {
-    'region': 'us-west-2',
-    'polling_interval': 20,
-}
-
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_DEFAULT_QUEUE = 'etabotqueue'
 CELERY_RESULT_BACKEND = None  # Disabling the results backend
+
+# Configuring the message broker for Celery Task Scheduling
+if custom_settings['MESSAGE_BROKER'].lower() == 'aws':
+    # AWS Credentials
+    AWS_ACCESS_KEY_ID = custom_settings.get('AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = custom_settings.get('AWS_SECRET_ACCESS_KEY')
+    CELERY_DEFAULT_QUEUE = custom_settings.get('CELERY_DEFAULT_QUEUE', 'etabotqueue')
+    if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
+        logging.warning(
+            'AWS credentials not found. Skipping Celery settings setup.')
+    else:
+        # Celery Task Scheduling
+        BROKER_URL = 'sqs://{0}:{1}@'.format(
+            urllib.parse.quote(AWS_ACCESS_KEY_ID, safe=''),
+            urllib.parse.quote(AWS_SECRET_ACCESS_KEY, safe='')
+        )
+
+        BROKER_TRANSPORT_OPTIONS = {
+            'region': custom_settings.get('AWS_SQS_REGION', 'us-west-2'),
+            'polling_interval': 20,
+        }
+
+elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
+
+    # RabbitMQ Credentials
+    RMQ_USER = custom_settings['RMQ_USER']
+    RMQ_PASS = custom_settings['RMQ_PASS']
+    RMQ_HOST = custom_settings['RMQ_HOST']
+    RMQ_VHOST = custom_settings['RMQ_VHOST']
+
+    BROKER_URL = 'amqp://{user}:{pw}@{host}:5672/{vhost}'.format(
+        user=urllib.parse.quote(RMQ_USER, safe=''),
+        pw=urllib.parse.quote(RMQ_PASS, safe=''),
+        host=urllib.parse.quote(RMQ_HOST, safe=''),
+        vhost=urllib.parse.quote(RMQ_VHOST, safe='')
+    )
+
+    logging.debug('celery settings setup complete')
+logging.info('BROKER_URL: {}'.format(BROKER_URL))
+logging.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
+logging.debug('setting.py is done')
