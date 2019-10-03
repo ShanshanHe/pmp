@@ -21,14 +21,15 @@ import urllib
 import mimetypes
 
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-
-mimetypes.add_type("text/css", ".css", True)
-logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
 LOCAL_MODE = (PLATFORM == 'Darwin')
+
+if LOCAL_MODE:
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
 
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
@@ -49,8 +50,12 @@ except Exception as e:
         e))
 CUSTOM_SETTINGS = custom_settings
 
+
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
 logging.info('HOST_URL="{}"'.format(HOST_URL))
+
+mimetypes.add_type("text/css", ".css", True)
+logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

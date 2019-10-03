@@ -32,6 +32,7 @@ following TMS entries ({}): {}'.format(
                     tms_wrapper = TMSlib.TMSWrapper(tms)
                     tms_wrapper.init_ETApredict(project_set)
                     tms_wrapper.estimate_tasks()
+                    del tms_wrapper
                 except Exception as e:
                     logging.error('Could not generate ETAs for TMS {} \
     Projects {} due to "{}"'.format(tms, project_set, e))
