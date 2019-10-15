@@ -51,6 +51,7 @@ class TMS(models.Model):
         related_name='TMSAccounts',
         on_delete=models.CASCADE)
     endpoint = models.CharField(max_length=60)
+    atlassian_cloudid = models.CharField(max_length=200, null=True)
     username = models.CharField(max_length=60)
     password = EncryptedCharField(max_length=60)
     type = models.CharField(max_length=20, choices=TMSlib.TMS_TYPES)
@@ -91,6 +92,46 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
         ActivationProcessor.email_token(user)
 
+class OAuth1Token(models.Model):
+    owner = models.ForeignKey('auth.User', related_name='OAuth1Tokens',
+                              on_delete=models.CASCADE)    
+    name = models.CharField(max_length=40)
+    oauth_token = models.CharField(max_length=200)
+    oauth_token_secret = models.CharField(max_length=200)
+    
+
+    def to_token(self):
+        return dict(
+            oauth_token=self.access_token,
+            oauth_token_secret=self.alt_token,
+        )
+
+class OAuth2CodeRequest(models.Model):
+    """Model for Stracking OAuth2 states and users."""
+    owner = models.ForeignKey('auth.User', related_name='OAuth2CodeRequests',
+                              on_delete=models.CASCADE)    
+    name = models.CharField(max_length=40)
+    state = models.CharField(max_length=200)
+    timestamp = models.DateTimeField()
+
+class OAuth2Token(models.Model):
+    """Model for Storing tokens from OAuth2."""
+    owner = models.ForeignKey('auth.User', related_name='OAuth2Tokens',
+                              on_delete=models.CASCADE)    
+    name = models.CharField(max_length=40)
+    token_type = models.CharField(max_length=20)
+    access_token = models.CharField(max_length=2048)
+    refresh_token = models.CharField(max_length=200)
+    expires_at = models.DateTimeField()
+
+
+    def to_token(self):
+        return dict(
+            access_token=self.access_token,
+            token_type=self.token_type,
+            refresh_token=self.refresh_token,
+            expires_at=self.expires_at,
+        )
 
 @receiver(post_save, sender=TMS)
 def parse_tms(sender, instance, created, **kwargs):

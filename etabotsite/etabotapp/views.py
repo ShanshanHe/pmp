@@ -2,12 +2,14 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.shortcuts import redirect
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
+from .models import OAuth1Token, OAuth2Token, OAuth2CodeRequest
 from .models import TMS, Project
 from .models import parse_projects_for_TMS
 from .permissions import IsOwnerOrReadOnly, IsOwner
@@ -21,9 +23,39 @@ import json
 import mimetypes
 import logging
 import celery as clry
+# from authlib.django.client import OAuth
+from authlib.integrations.django_client import OAuth
+from django.conf import settings
+import datetime
+import pytz
+import hashlib
+import TMSlib.Atlassian_API as Atlassian_API
 
-logging.getLogger().setLevel(logging.DEBUG)
+logger = logging.getLogger()
 
+LOCAL_MODE = getattr(settings, "LOCAL_MODE", False)
+if LOCAL_MODE:
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
+
+def fetch_token(name, request):
+    if name in OAUTH1_SERVICES:
+        model = OAuth1Token
+    else:
+        model = OAuth2Token
+
+    token = model.find(
+        name=name,
+        owner=request.user
+    )
+    return token.to_token()
+
+oauth = OAuth(fetch_token=fetch_token)
+
+oauth.register(name='atlassian')
+logging.debug('oauth registered: {}'.format(oauth.atlassian))
+AUTHLIB_OAUTH_CLIENTS = getattr(settings, "AUTHLIB_OAUTH_CLIENTS", None)
 
 @ensure_csrf_cookie
 def index(request, path='', format=None):
@@ -185,8 +217,48 @@ please contact us at hello@etabot.ai.'
             response_message,
             status=status.HTTP_200_OK)
 
+class AtlassianOAuth(APIView):
+    def get(self, request):
+        """Redirect to Atlassian for granting access to user data."""
+        # logging.debug(vars(request))
+        oauth_name = 'atlassian'
+        redirect_uri = 'https://dev.etabot.ai/atlassian_callback'
+        logging.debug('redirect_uri: "{}"'.format(redirect_uri))
 
-def jira_callback(request):
+        timestamp = pytz.utc.localize(datetime.datetime.utcnow())
+        state = hashlib.sha256(('{}{}'.format(request.user, timestamp)).encode('utf-8')).hexdigest()
+        logging.debug('state={}'.format(state))
+        resp = oauth.atlassian.authorize_redirect(
+            request, redirect_uri,
+            state=state,
+            audience=AUTHLIB_OAUTH_CLIENTS.get(
+                oauth_name, {}).get(
+                'client_kwargs', {}).get(
+                'audience'))
+        logging.debug(resp)
+        logging.debug(vars(resp))
+        # logging.debug(vars(oauth.atlassian))
+        # logging.debug(vars(oauth.atlassian.oauth2_client_cls))
+        oa2cr = OAuth2CodeRequest(
+            owner=request.user,
+            name=oauth_name,
+            timestamp=timestamp,
+            state=state)
+        oa2cr.save()
+
+        # resp["Access-Control-Allow-Origin"] = "*, null, localhost:4200, localhost:8000"
+
+        # # resp["Access-Control-Allow-Credentials"] = "true"
+        # resp["Access-Control-Allow-Methods"] = "GET,HEAD,OPTIONS,POST,PUT"
+        # resp["Access-Control-Allow-Headers"] = "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Allow-Origin, Access-Control-Request-Origin"
+        # logging.debug(resp)
+        # logging.debug(vars(resp))
+        # logging.debug('url={}'.format(resp.url))
+        return Response(
+            json.dumps({'redirect_url': resp.url}),
+            status=status.HTTP_200_OK)
+
+def atlassian_callback(request):
     """Receieve authorization code from JIRA OAuth."""
     """Provided as a query parameter called code. This code can be
     exchanged for an access token.
@@ -194,11 +266,55 @@ def jira_callback(request):
     TODO: setup framework for getting access token and storing it."""
     logging.info(request.GET)
     # logging.info(request.GET.get('code'))
-    return render(request, 'jira_callback.html')
+    logging.debug(oauth.atlassian.__dict__)
+    state = request.GET.get('state')
+    logging.debug('state={}'.format(state))
+    token = oauth.atlassian.authorize_access_token(
+        request, redirect_uri='https://dev.etabot.ai/atlassian_callback')
+    logging.debug('token={}'.format(token))
+
+    if token.get('expires_in') is not None:
+        try:
+            token['expires_in'] = int(token['expires_in'])
+        except Exception as e:
+            token['expires_in'] = 3600*24*30
+    else:
+        token['expires_in'] = 3600*24*365
+    
+    users_set = OAuth2CodeRequest.objects.all().filter(
+        state=state)
+    if len(users_set)==0:
+        return Response('no user found with such auth code request. please try again.', HTTP_400_BAD_REQUEST)
+    elif len(users_set) > 1:
+        return Response('Auth code request collision. please try again.', HTTP_400_BAD_REQUEST)
+    else:
+        pass
+    user=users_set[0].owner
+    logging.debug('user: {}, username {}'.format(
+        user, user.username))
+    token_item=OAuth2Token(
+        owner=user,
+        name='atlassian',
+        token_type=token['token_type'],
+        access_token=token['access_token'],
+        refresh_token=token['refresh_token'],
+        expires_at=pytz.utc.localize(datetime.datetime.utcnow()) +
+            datetime.timedelta(seconds=token['expires_in'])
+        )
+    token_item.save()
+    logging.debug('token saved: {}'.format(vars(token_item)))
+
+    atlassian = Atlassian_API.AtlassianAPI(token['access_token'])
+    resources = atlassian.get_accessible_resources()
+    logging.debug(resources)
+    # for resource in resources:
+    #     new_TMS TMS()
+    return redirect('/projects')
 
 
 def get_tms_set_by_id(request):
     """Return tms_set on success or request Response."""
+    logging.debug(request.user)
     tms_id = request.query_params.get('tms')
 
     tms_id = int(tms_id)
@@ -219,6 +335,14 @@ class EstimateTMSView(APIView):
         """Triggers ETA updates for a particular tms_id or all.
 
         TODO: implement params per project."""
+
+
+        logging.debug('request.user: {}, username {}'.format(
+        request.user, request.user.username))
+
+        logging.debug('self.request.user: {}, self.username {}'.format(
+        self.request.user, self.request.user.username))
+
         post_data = json.loads(request.body.decode(encoding='utf-8'))
         logging.debug('post_data: {}'.format(post_data))
         logging.debug('request.query_params: "{}"'.format(

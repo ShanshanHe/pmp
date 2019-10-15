@@ -53,6 +53,32 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
+class OAuth2TokenSerializer(serializers.ModelSerializer):
+    """Serializer to map the model instance into json format."""
+    owner = serializers.ReadOnlyField(source='owner.username')
+
+#     class Meta:
+#         """Map this serializer to a model and their fields."""
+#         model = OAuth2Token
+#         fields = (
+#             'id',
+#             'owner',
+#             'name',
+#             'token_type',
+#             'access_token',
+#             'refresh_token',
+#             'expires_at')
+
+#     # def create(self, validated_data):
+#     #     token = OAuth2Token.objects.create_token(
+#     #         validated_data['username'],
+#     #         validated_data['email'],
+#     #         validated_data['password'])
+#     #     user.is_active = False
+#     #     return user
+
+
+
 class TMSSerializer(serializers.ModelSerializer):
     """Serializer to map the model instance into json format."""
     owner = serializers.ReadOnlyField(source='owner.username')
@@ -86,15 +112,14 @@ class TMSSerializer(serializers.ModelSerializer):
             username = self.initial_data['username']
             if TMS.objects.filter(
                         endpoint=endpoint,
-                        owner=owner,
-                        username=username).exists():
+                        owner=owner).exists():
                 raise serializers.ValidationError(
                         'Combination {}@{} already exists for this user'.format(
-                            username, endpoint))
+                            owner, endpoint))
             logging.debug(
                 'validated username/endpoint combination uniqueness current user')
-
-        if self.context['request'].method == 'PATCH':
+            instance = TMS(**self.initial_data)
+        elif self.context['request'].method == 'PATCH':
             tms = self.instance
             # logging.debug(tms.password)
             for k, v in self.initial_data.items():
@@ -102,7 +127,15 @@ class TMSSerializer(serializers.ModelSerializer):
             # logging.debug(tms.password)
             instance = tms
         else:
-            instance = TMS(**self.initial_data)
+            raise serializers.ValidationError('unsupported method {}'.format(
+                self.context['request'].method))
+        self.validate_Atlassian_API_key(instance)
+        logging.debug('validate_tms_credential finished')
+        return val_input
+
+
+
+    def validate_Atlassian_API_key(self, instance):
         TMS_w1 = TMSlib.TMSWrapper(instance)
         error = TMS_w1.connect_to_TMS(instance.password, update_tms=False)
         if error is not None:
@@ -138,10 +171,6 @@ administrator to disable CAPTCHA.'
                 raise serializers.ValidationError('Unrecognized error has occurred - please check\
 inputs and try again. If the issue persists, please report the issue to \
 hello@etabot.ai')
-
-        logging.debug('validate_tms_credential finished')
-        return val_input
-
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Serializer to map the model instance into json format."""

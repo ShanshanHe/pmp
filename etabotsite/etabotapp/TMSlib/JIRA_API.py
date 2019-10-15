@@ -29,7 +29,6 @@ import threading
 encryption_key_name = 'Jtest1'
 jira_timout_seconds = 10.
 
-
 class JIRA_wrapper():
     # handles communication with JIRA API
     def __init__(self, server, username, password=None):
