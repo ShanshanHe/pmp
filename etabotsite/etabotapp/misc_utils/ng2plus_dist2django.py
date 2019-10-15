@@ -32,6 +32,7 @@ def deploy_ng2plus(
     django_template_path - path to where modified index.html is placed
     django_angular_static_subpath - location of angular files
         with respect to Django static dir (e.g. 'ng_app/')"""
+    logging.debug('deploying UI from "{}"'.format(source_dir))
     results = []
     ui_target_dir = django_static_dir + '/' + django_angular_static_subpath
     results.append(os.system("rm -rf {}".format(ui_target_dir)))
