@@ -6,7 +6,8 @@ from .views import ParseTMSprojects
 from .views import index
 from .views import activate
 from .views import email_verification
-from .views import jira_callback
+from .views import atlassian_callback
+from .views import AtlassianOAuth
 from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 import logging
@@ -27,7 +28,7 @@ urlpatterns += [
     url(r'^api/get-token/', obtain_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
     url(r'^api/parse_projects/', ParseTMSprojects.as_view(), name="estimate_tms"),
-
+    url(r'^api/atlassian_oauth', AtlassianOAuth.as_view(), name='atlassian_oauth'),
     url(r'^api/verification/activate/', activate, name='activate'),
     url(r'^api/verification/send-email/', email_verification, name='email_verification'),
 
@@ -50,7 +51,8 @@ urlpatterns += [
     url(r'^account/password_reset/complete/$',
         auth_views.PasswordResetCompleteView.as_view(),
         name='password_reset_complete'),
-    url(r'^jira_callback', jira_callback, name='jira_callback'),
+    
+    url(r'^atlassian_callback', atlassian_callback, name='atlassian_callback'),
     # catch-all pattern for compatibility with the Angular routes
     url(r'^(?P<path>.*)$', index),
     url(r'^$', index)

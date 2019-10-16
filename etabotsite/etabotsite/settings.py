@@ -19,8 +19,10 @@ import logging
 import subprocess
 import urllib
 import mimetypes
+# from authlib.django.client import OAuth
 
 logger = logging.getLogger()
+# oauth = OAuth()
 
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
@@ -126,7 +128,7 @@ INSTALLED_APPS = [
     'etabotapp',
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_framework_expiring_authtoken',
+    # 'rest_framework_expiring_authtoken',
     'corsheaders',
     'encrypted_model_fields',
 ]
@@ -164,6 +166,24 @@ else:
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
     ]
+
+# CORS_ORIGIN_WHITELIST = (
+#     'google.com',
+#     'auth.atlassian.com',
+#     'localhost:4200'
+# )
+
+# CORS_ALLOW_HEADERS = (
+#     'accept',
+#     'accept-encoding',
+#     'authorization',
+#     'content-type',
+#     'dnt',
+#     'origin',
+#     'user-agent',
+#     'x-csrftoken',
+#     'x-requested-with',
+# )
 
 ROOT_URLCONF = 'etabotsite.urls'
 
@@ -226,26 +246,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # OAuth
-AUTHLIB_OAUTH_CLIENTS = {}
-JIRA_OAUTH = custom_settings.get('JIRA_APP_OAUTH')
-if JIRA_OAUTH is not None:
-    AUTHLIB_OAUTH_CLIENTS['jira'] = {
-        'client_id': JIRA_OAUTH.get('client_id'),
-        'client_secret': JIRA_OAUTH.get('secret'),
-        'request_token_url': 'https://auth.atlassian.com/authorize',
-        'request_token_params':
-            {
-                'audience': 'api.atlassian.com'
-            },
-        'access_token_url': 'https://auth.atlassian.com/oauth/token',
-        'access_token_params': None,
-        'refresh_token_url': None,
-        'authorize_url': 'https://auth.atlassian.com/authorize',
-        'api_base_url': 'https://api.atlassian.com/ex/jira/',
-        'client_kwargs': {
-            'scope': 'read:jira-work&read:jira-user&write:jira-work'
-        }
-    }
+AUTHLIB_OAUTH_CLIENTS = custom_settings.get('AUTHLIB_OAUTH_CLIENTS')
+logging.debug('loaded AUTHLIB_OAUTH_CLIENTS={}'.format(AUTHLIB_OAUTH_CLIENTS))
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
