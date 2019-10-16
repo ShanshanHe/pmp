@@ -139,7 +139,7 @@ class TMSSerializer(serializers.ModelSerializer):
 
     def validate_Atlassian_API_key(self, instance):
         TMS_w1 = TMSlib.TMSWrapper(instance)
-        error = TMS_w1.connect_to_TMS(instance.password, update_tms=False)
+        error = TMS_w1.connect_to_TMS(update_tms=False)
         if error is not None:
             logging.debug('Error in validation: {}'.format(error))
             if 'Unauthorized (401)' in error:
