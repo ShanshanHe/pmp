@@ -51,11 +51,13 @@ class TMS(models.Model):
         related_name='TMSAccounts',
         on_delete=models.CASCADE)
     endpoint = models.CharField(max_length=60)
-    atlassian_cloudid = models.CharField(max_length=200, null=True)
-    username = models.CharField(max_length=60)
-    password = EncryptedCharField(max_length=60)
+    username = models.CharField(max_length=60, null=True)
+    password = EncryptedCharField(max_length=60, null=True)
+    access_token = EncryptedCharField(max_length=2048, null=True)
     type = models.CharField(max_length=20, choices=TMSlib.TMS_TYPES)
     connectivity_status = JSONField(null=True)
+    name = models.CharField(max_length=60, null=True)
+    params = JSONField(null=True)
 
     def __str__(self):
         return "{}@{}".format(self.username, self.endpoint)

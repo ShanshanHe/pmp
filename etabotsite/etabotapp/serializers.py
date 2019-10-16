@@ -95,6 +95,8 @@ class TMSSerializer(serializers.ModelSerializer):
             'username',
             'password',
             'type',
+            'params',
+            'name',
             'connectivity_status')
 
     def validate(self, val_input):

@@ -202,6 +202,7 @@ class ParseTMSprojects(APIView):
             for tms in tms_set:
                 parse_projects_for_TMS(tms)
         except Exception as e:
+            logging.debug('parse_projects_for_TMS failed due to {}'.format(e))
             if 'not connected to JIRA' in str(e):
                 response_message = 'Issue with connecting to JIRA. \
 Please update your login credentials.'
@@ -269,10 +270,12 @@ def atlassian_callback(request):
     logging.debug(oauth.atlassian.__dict__)
     state = request.GET.get('state')
     logging.debug('state={}'.format(state))
-    token = oauth.atlassian.authorize_access_token(
-        request, redirect_uri='https://dev.etabot.ai/atlassian_callback')
-    logging.debug('token={}'.format(token))
-
+    try:
+        token = oauth.atlassian.authorize_access_token(
+            request, redirect_uri='https://dev.etabot.ai/atlassian_callback')
+        logging.debug('token={}'.format(token))
+    except Exception as e:
+        return redirect('/error_page')
     if token.get('expires_in') is not None:
         try:
             token['expires_in'] = int(token['expires_in'])
@@ -304,13 +307,43 @@ def atlassian_callback(request):
     token_item.save()
     logging.debug('token saved: {}'.format(vars(token_item)))
 
-    atlassian = Atlassian_API.AtlassianAPI(token['access_token'])
+
+    add_update_atlassian_tms(user, token['access_token'])
+    return redirect('/tmss')
+
+
+def add_update_atlassian_tms(owner, access_token):
+    atlassian = Atlassian_API.AtlassianAPI(access_token)
     resources = atlassian.get_accessible_resources()
     logging.debug(resources)
-    # for resource in resources:
-    #     new_TMS TMS()
-    return redirect('/projects')
 
+    for resource in resources:
+        TMSs = TMS.objects.all().filter(
+            endpoint=resource['url'],
+            owner=owner)
+        logging.debug('found TMSs with endpoint {}: {}'.format(
+            resource['url'], TMSs))
+        if len(TMSs) == 0:
+            logging.debug('creating new TMS for {}'.format(resource['url']))
+            new_TMS = TMS(
+                owner=owner,
+                endpoint=resource['url'],
+                type='JI',
+                name=resource.get('name'),
+                params=resource,
+                access_token=access_token)
+            new_TMS.save()
+            logging.debug('created new TMS {}'.format(new_TMS))
+        else:
+            for existing_TMS in TMSs:
+                logging.debug('updating {}'.format(existing_TMS))
+                existing_TMS.params=resource
+                existing_TMS.endpoint=resource['url']
+                existing_TMS.name=resource.get('name')
+                existing_TMS.access_token=access_token
+                existing_TMS.save()
+                logging.debug('updated {}'.format(existing_TMS))
+    logging.debug('add_update_atlassian_tms is done')
 
 def get_tms_set_by_id(request):
     """Return tms_set on success or request Response."""
