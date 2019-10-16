@@ -83,22 +83,18 @@ class TMS_JIRA(ProtoTMS):
 
     def connect_to_TMS(self, update_tms=True):
         """Create self.jira object, Return None if connected or error string otherwise.
+        s
         TODO: move tms_config - Django model with credentials (password or token)
         from implicit access from child class to init params
         """
         logging.debug('connect_to_TMS started.')
         result = None
-        if self.tms_config is not None:
-            if password is None:
-                password = self.tms_config.password
-            if token is None:
-                token=self.tms_config.access_token        
         try:
             self.jira = JIRA_API.JIRA_wrapper(
                 self.server_end_point,
                 self.username_login,
-                password=password,
-                token=token)
+                password=self.tms_config.password,
+                token=self.tms_config.access_token)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             self.tms_config.connectivity_status = {
                 'status': 'connected',
