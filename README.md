@@ -207,6 +207,33 @@ You have a sample project management site ready to go!
     "CELERY_DEFAULT_QUEUE": "SQS queue name in AWS",
     "eta_crontab_args":<dictionary with crontab settings for example: 'eta_crontab_args':{'hour': 8}
                         see celery.schedules.crontab documentation for details>
+
+    "AUTHLIB_OAUTH_CLIENTS": {
+        "some_platform": {
+            "client_id": "your_client_id_from_3dparty",
+            "client_secret": "your_client_secret_from_3dparty",
+            "access_token_url": "something_3dparty_token",
+            "authorize_url": "something_3dparty_authorize",
+            "client_kwargs": {
+                "audience": "extra_params_if_needed",
+                "scope": "extra_params_if_needed",
+                "token_endpoint_auth_method": "extra_params_if_needed",
+                "token_placement": "extra_params_if_needed",
+                "prompt": "extra_params_if_needed"}
+
+        "atlassian": {
+            "client_id": "example",
+            "client_secret": "example",
+            "access_token_url": "https://auth.atlassian.com/oauth/token",
+            "authorize_url": "https://auth.atlassian.com/authorize",
+            "client_kwargs": {
+                "audience": "api.atlassian.com",
+                "scope": "read:jira-work read:jira-user write:jira-work offline_access",
+                "token_endpoint_auth_method": "client_secret_post",
+                "token_placement": "header",
+                "prompt": "consent"}
+        }            
+
 }
 ```
 
