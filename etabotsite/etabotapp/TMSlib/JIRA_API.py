@@ -25,43 +25,29 @@ import threading
 
 # from passwords.encrypted_passwords import passwords_dict
 # import keyring
+JIRA_CLOUD_API = "https://api.atlassian.com/ex/jira/"
 
-encryption_key_name = 'Jtest1'
 jira_timout_seconds = 10.
-
 
 class JIRA_wrapper():
     # handles communication with JIRA API
-    def __init__(self, server, username, password=None):
+    def __init__(self, server, username, password=None, token=None):
         self.gh = None
-        self.jira = self.JIRA_connect(server, username, password=password)
+        self.jira = self.JIRA_connect(server, username, password=password, token=token)
         self.username = username
         self.max_results_jira_api = 50
 
-    def JIRA_connect(self, server, username, password=None):
+    def JIRA_connect(self, server, username, password=None, token=None):
+
+
+        if password is None and token is None:
+            raise NameError('JIRA API key or token must be provided')
+
         options = {
             'max_retries': 1,
             'server': server}
 
-        if password is None:
-            # print('getting password stored locally')
-            # # try to get password stored locally
-            # if server not in passwords_dict:
-            #     raise NameError('Server {} is not known'.format(server))
-            # if username not in passwords_dict[server]:
-            #     raise NameError('User {} is not known'.format(username))
-
-            # encrypted_password = passwords_dict[server][username]
-            # # password = input('enter password\n')
-            # obj2 = AES.new(
-            #     keyring.get_password('system', encryption_key_name)[:16],
-            #     AES.MODE_CBC,
-            #     'This is an IV456')
-            # password = obj2.decrypt(encrypted_password)
-            # password = str(password, 'utf-8').replace(' ', '')
-            raise NameError('JIRA password must be provided')
-
-        logging.info('authenticating with JIRA ({}, {})...'.format(
+        logging.debug('authenticating with JIRA ({}, {})...'.format(
             username, options.get('server', 'unkown server')))
 
         jira = None
@@ -73,10 +59,22 @@ class JIRA_wrapper():
                 logging.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
-                    jira = JIRA(
-                        basic_auth=(username, password),
-                        options=options)
-                    logging.debug('Authenticated with JIRA.')
+                    if token is None:
+                        logging.debug('token is None, using basic auth with password')
+                        jira = JIRA(
+                            basic_auth=(username, password),
+                            options=options)
+                    else:
+                        options['headers'] = {
+                            'Authorization': 'Bearer {}'.format(token)}     
+                        logging.debug('connecting with options: {}'.format(options))                      
+                        jira = JIRA(options=options)
+                        search_string = 'assignee=currentUser() ORDER BY Rank ASC'
+                        logging.debug('test jira query with search string: {}'.format(search_string))
+                        res =jira.search_issues(search_string) 
+                        logging.debug('search result: {}'.format(res))
+                        logging.info('found {} issues'.format(len(res)))
+                    logging.debug('Authenticated with JIRA. {}'.format(jira))
                     target_list.append(jira)
                 except Exception as e:
                     error_message = str(e)
@@ -110,11 +108,6 @@ Errors: "{}"'.format(jira, errors_place))
             raise NameError('JIRA error: {}'.format(e))
         return jira
 
-    def GreenHopper_connect(self, username, password, options):
-        print('authenticating with JIRA Greenhopper...')
-        gh = GreenHopper(basic_auth=(username, password), options=options)
-        print('authenticated with GreenHopper. ')
-        return gh
 
     def get_jira_issues(self, search_string, get_all=True):
         # Return list of jira issues using the search_string.

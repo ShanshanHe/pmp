@@ -81,15 +81,20 @@ class TMS_JIRA(ProtoTMS):
         self.jira = None
         logging.debug('TMS_JIRA initalized')
 
-    def connect_to_TMS(self, password, update_tms=True):
-        """Return None if connected or error string otherwise."""
+    def connect_to_TMS(self, update_tms=True):
+        """Create self.jira object, Return None if connected or error string otherwise.
+        s
+        TODO: move tms_config - Django model with credentials (password or token)
+        from implicit access from child class to init params
+        """
         logging.debug('connect_to_TMS started.')
         result = None
         try:
             self.jira = JIRA_API.JIRA_wrapper(
                 self.server_end_point,
                 self.username_login,
-                password=password)
+                password=self.tms_config.password,
+                token=self.tms_config.access_token)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             self.tms_config.connectivity_status = {
                 'status': 'connected',
@@ -274,9 +279,14 @@ projects: {}'.format(tms_config, projects))
         logging.debug('allowed TMS types: "{}"'.format(TMS_TYPES))
         if self.TMS_type == TMS_TYPES[0][0]:
             logging.debug('initalizing TMS JIRA class')
+            cloudid = tms_config.params.get('id')
+            if cloudid is not None:
+                server = JIRA_API.JIRA_CLOUD_API + cloudid
+            else:
+                server = tms_config.endpoint
             TMS_JIRA.__init__(
                 self,
-                tms_config.endpoint,
+                server,
                 tms_config.username,
                 task_system_schema)
             # self.TMS = TMS_JIRA()
@@ -292,8 +302,11 @@ server_end_point: {}, username_login: {}'.format(
     def init_ETApredict(self, projects):
         logging.debug('init_ETApredict started')
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
-        logging.debug('user_velocity_per_project: {}'.format(
-            self.ETApredict_obj.user_velocity_per_project))
+        try:
+            logging.debug('user_velocity_per_project: {}'.format(
+                self.ETApredict_obj.user_velocity_per_project))
+        except Exception as e:
+            logging.warning('user_velocity_per_project error: {}'.format(e))
         self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)
         logging.debug('TMSwrapper: init_ETApredict finished. \
 Connectivity status: {}'.format(self.tms_config.connectivity_status))
