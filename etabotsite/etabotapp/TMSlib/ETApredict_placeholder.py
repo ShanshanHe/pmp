@@ -15,8 +15,9 @@ class ETApredict():
             self,
             TMS_interface=None):
         self.TMS_interface = TMS_interface
+        self.user_velocity_per_project = {}
         self.eta_engine = ETAengine()
-        logging.debug('ETApredict initialized')
+        logging.debug('ETApredict placeholder initialized')
 
     def init_with_Django_models(
             self,
@@ -29,14 +30,12 @@ class ETApredict():
 
     def generate_task_list_view_with_ETA(
             self, project_names=None):
-        self.TMS_interface.connect_to_TMS(
-            self.TMS_interface.tms_config.password)
+        self.TMS_interface.connect_to_TMS()
         logging.info('placeholder ETAs have been generated')
 
     def get_projects(self):
         logging.debug('get_projects started')
-        self.TMS_interface.connect_to_TMS(
-            self.TMS_interface.tms_config.password)
+        self.TMS_interface.connect_to_TMS()
 
         self.eta_engine.projects['Project Buckwheat'] = {}
         self.eta_engine.projects['Project Buckwheat']['work_hours'] = {
