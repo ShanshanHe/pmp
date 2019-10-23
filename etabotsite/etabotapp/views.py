@@ -23,8 +23,8 @@ import json
 import mimetypes
 import logging
 import celery as clry
-# from authlib.django.client import OAuth
-from authlib.integrations.django_client import OAuth
+from authlib.django.client import OAuth
+# from authlib.integrations.django_client import OAuth
 from django.conf import settings
 import datetime
 import pytz
@@ -231,11 +231,15 @@ class AtlassianOAuth(APIView):
         logging.debug('state={}'.format(state))
         resp = oauth.atlassian.authorize_redirect(
             request, redirect_uri,
-            state=state,
-            audience=AUTHLIB_OAUTH_CLIENTS.get(
-                oauth_name, {}).get(
-                'client_kwargs', {}).get(
-                'audience'))
+            state=state)
+
+        # resp = oauth.atlassian.authorize_redirect(
+        #     request, redirect_uri,
+        #     state=state,
+        #     audience=AUTHLIB_OAUTH_CLIENTS.get(
+        #         oauth_name, {}).get(
+        #         'client_kwargs', {}).get(
+        #         'audience'))        
         logging.debug(resp)
         logging.debug(vars(resp))
         # logging.debug(vars(oauth.atlassian))

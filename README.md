@@ -113,37 +113,49 @@ If you already know how to create a python virtual environment, you can skip thi
 ### Choose between virtualenv or conda:
 
 ### conda option (recommended)
-follow https://docs.conda.io/projects/conda/en/latest/user-guide/install/
+    follow https://docs.conda.io/projects/conda/en/latest/user-guide/install/
+    create virtual environement following https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
+E.g.:
+```
+conda create -n etabot python=3.5
+```
+Activate
+```
+source activate etabot
+```
 
 ### virtualenv option
 
-Install `virtualenv` and `virtualenvwrapper` tool to manage python environment
-```
-$ pip install virtualenv
-$ pip install virtualenvwrapper
-```
-Open your bash profile:
-```
-$ vim ~/.bash_profile
-```
-and add the following two lines at the end of the file:
-```
-export WORKON_HOME=~/Envs
-source /usr/local/bin/virtualenvwrapper.sh
-```
-And at your terminal, run:
-```
-$ source ~/.bash_profile
-```
+    Install `virtualenv` and `virtualenvwrapper` tool to manage python environment
+    ```
+    $ pip install virtualenv
+    $ pip install virtualenvwrapper
+    ```
+    Open your bash profile:
+    ```
+    $ vim ~/.bash_profile
+    ```
+    and add the following two lines at the end of the file:
+    ```
+    export WORKON_HOME=~/Envs
+    source /usr/local/bin/virtualenvwrapper.sh
+    ```
+    And at your terminal, run:
+    ```
+    $ source ~/.bash_profile
+    ```
 
-To create a virtual environment for the project, follow the command below:
-```
-$ mkvirtualenv --python=python3 <name_of_the_virtual_environment>
-```
+    To create a virtual environment for the project, follow the command below:
+    ```
+    $ mkvirtualenv --python=python3 <name_of_the_virtual_environment>
+    ```
 
 
 #### Run django server locally
-Suppose you're already in a virtual environemnt, go to our project root directory,install the dependencies:
+
+*Prerequisite*: enable your virtual environemnt
+
+go to our project root directory, install the dependencies:
 ```
 $ pip install -r requirements.txt
 ```
@@ -152,6 +164,7 @@ Go the etabotsite directory:
 $ cd etabotsite/
 ```
 
+### Configure pmp
 Follow instructions in section "Configure pmp" below
 
 If this is your first time running the project in development mode and you are using local database, you want to create the database table by running the following command:
@@ -176,17 +189,20 @@ You have a sample project management site ready to go!
 
 
 ### Configure pmp
+
+### Note: your teammates might already have configuration files - good idea to ask them
+
 (see Advanced settings for details of file definitions)
 - add custom_settings.json to etabotsite directory 
 - add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
 - add sys_email_settings.json to etabotsite directory
 - add ETA algorithm as a git submodule (see section "Optinal: connecting ETA algorithm instead of a placeholder")
 
-#### Advanced settings
+## Advanced settings
 
 ### Settings jsons
 
-## custom_settings.json - general custom settings
+#### custom_settings.json - general custom settings
 ```
 {
     "local_host_url":"<your local host url for testing, e.g. http://127.0.0.1:8000">,
@@ -317,8 +333,8 @@ pip install --install-option="--with-openssl" --install-option="--openssl-dir=/u
 can be resolved with 
 ```
 pip install -r requirements.txt --ignore-installed certifi
-
-solution for all such packages:
+```
+Or here is solution for all such packages:
 
 ```
 pip install -r requirements.txt --ignore-installed
