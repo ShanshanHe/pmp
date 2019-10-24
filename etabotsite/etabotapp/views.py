@@ -23,8 +23,8 @@ import json
 import mimetypes
 import logging
 import celery as clry
-# from authlib.django.client import OAuth
-from authlib.integrations.django_client import OAuth
+from authlib.django.client import OAuth
+# from authlib.integrations.django_client import OAuth
 from django.conf import settings
 import datetime
 import pytz
@@ -231,11 +231,15 @@ class AtlassianOAuth(APIView):
         logging.debug('state={}'.format(state))
         resp = oauth.atlassian.authorize_redirect(
             request, redirect_uri,
-            state=state,
-            audience=AUTHLIB_OAUTH_CLIENTS.get(
-                oauth_name, {}).get(
-                'client_kwargs', {}).get(
-                'audience'))
+            state=state)
+
+        # resp = oauth.atlassian.authorize_redirect(
+        #     request, redirect_uri,
+        #     state=state,
+        #     audience=AUTHLIB_OAUTH_CLIENTS.get(
+        #         oauth_name, {}).get(
+        #         'client_kwargs', {}).get(
+        #         'audience'))        
         logging.debug(resp)
         logging.debug(vars(resp))
         # logging.debug(vars(oauth.atlassian))
@@ -272,9 +276,13 @@ def atlassian_callback(request):
     logging.debug('state={}'.format(state))
     try:
         token = oauth.atlassian.authorize_access_token(
-            request, redirect_uri='https://dev.etabot.ai/atlassian_callback')
+            request)
+        # token = oauth.atlassian.authorize_access_token(
+        #     request, redirect_uri='https://dev.etabot.ai/atlassian_callback')
+
         logging.debug('token={}'.format(token))
     except Exception as e:
+        logging.error('cannot get token due to: "{}"'.format(e))
         return redirect('/error_page')
     if token.get('expires_in') is not None:
         try:

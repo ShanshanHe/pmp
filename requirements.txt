@@ -1,6 +1,6 @@
 amqp==2.5.1
 asn1crypto==0.23.0
-git+git://github.com/lepture/authlib.git@master
+Authlib==0.12.1
 billiard==3.6.1.0
 boto3==1.9.42
 botocore==1.12.42
