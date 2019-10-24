@@ -223,7 +223,7 @@ class AtlassianOAuth(APIView):
         """Redirect to Atlassian for granting access to user data."""
         # logging.debug(vars(request))
         oauth_name = 'atlassian'
-        redirect_uri = 'https://dev.etabot.ai/atlassian_callback'
+        redirect_uri = 'https://dev.etabot.ai/atlassian_callback_404'
         logging.debug('redirect_uri: "{}"'.format(redirect_uri))
 
         timestamp = pytz.utc.localize(datetime.datetime.utcnow())
@@ -279,6 +279,7 @@ def atlassian_callback(request):
             request, redirect_uri='https://dev.etabot.ai/atlassian_callback')
         logging.debug('token={}'.format(token))
     except Exception as e:
+        logging.error('cannot get token due to: "{}"'.format(e))
         return redirect('/error_page')
     if token.get('expires_in') is not None:
         try:
