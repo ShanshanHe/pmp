@@ -279,7 +279,9 @@ projects: {}'.format(tms_config, projects))
         logging.debug('allowed TMS types: "{}"'.format(TMS_TYPES))
         if self.TMS_type == TMS_TYPES[0][0]:
             logging.debug('initalizing TMS JIRA class')
-            cloudid = tms_config.params.get('id')
+            cloudid = None
+            if tms_config.params is not None:
+                cloudid = tms_config.params.get('id')
             if cloudid is not None:
                 server = JIRA_API.JIRA_CLOUD_API + cloudid
             else:
