@@ -24,7 +24,6 @@ import mimetypes
 import logging
 import celery as clry
 from authlib.django.client import OAuth
-# from authlib.integrations.django_client import OAuth
 from django.conf import settings
 import datetime
 import pytz
@@ -233,17 +232,8 @@ class AtlassianOAuth(APIView):
             request, redirect_uri,
             state=state)
 
-        # resp = oauth.atlassian.authorize_redirect(
-        #     request, redirect_uri,
-        #     state=state,
-        #     audience=AUTHLIB_OAUTH_CLIENTS.get(
-        #         oauth_name, {}).get(
-        #         'client_kwargs', {}).get(
-        #         'audience'))        
         logging.debug(resp)
         logging.debug(vars(resp))
-        # logging.debug(vars(oauth.atlassian))
-        # logging.debug(vars(oauth.atlassian.oauth2_client_cls))
         oa2cr = OAuth2CodeRequest(
             owner=request.user,
             name=oauth_name,
@@ -251,14 +241,6 @@ class AtlassianOAuth(APIView):
             state=state)
         oa2cr.save()
 
-        # resp["Access-Control-Allow-Origin"] = "*, null, localhost:4200, localhost:8000"
-
-        # # resp["Access-Control-Allow-Credentials"] = "true"
-        # resp["Access-Control-Allow-Methods"] = "GET,HEAD,OPTIONS,POST,PUT"
-        # resp["Access-Control-Allow-Headers"] = "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Allow-Origin, Access-Control-Request-Origin"
-        # logging.debug(resp)
-        # logging.debug(vars(resp))
-        # logging.debug('url={}'.format(resp.url))
         return Response(
             json.dumps({'redirect_url': resp.url}),
             status=status.HTTP_200_OK)
