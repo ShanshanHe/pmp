@@ -54,7 +54,7 @@ oauth = OAuth(fetch_token=fetch_token)
 
 oauth.register(name='atlassian')
 logging.debug('oauth registered: {}'.format(oauth.atlassian))
-AUTHLIB_OAUTH_CLIENTS = getattr(settings, "AUTHLIB_OAUTH_CLIENTS", None)
+# AUTHLIB_OAUTH_CLIENTS = getattr(settings, "AUTHLIB_OAUTH_CLIENTS", None)
 
 @ensure_csrf_cookie
 def index(request, path='', format=None):
