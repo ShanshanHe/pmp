@@ -94,7 +94,8 @@ class TMS_JIRA(ProtoTMS):
                 self.server_end_point,
                 self.username_login,
                 password=self.tms_config.password,
-                token=self.tms_config.access_token)
+                token=self.tms_config.access_token,
+                oauth_obj=self.tms_config.oauth_obj)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             self.tms_config.connectivity_status = {
                 'status': 'connected',

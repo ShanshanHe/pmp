@@ -38,23 +38,48 @@ if LOCAL_MODE:
 else:
     logger.setLevel(logging.INFO)
 
+PROD_HOST_URL = getattr(settings, "PROD_HOST_URL", "http://localhost:8000")
+
+
 def fetch_token(name, request):
+    """Authlib support function."""
+    OAUTH1_SERVICES = []
     if name in OAUTH1_SERVICES:
         model = OAuth1Token
     else:
         model = OAuth2Token
-
+    logging.info('authlib fetch_token searching for token in model {}'.format(
+        model))
     token = model.find(
         name=name,
         owner=request.user
     )
     return token.to_token()
 
-oauth = OAuth(fetch_token=fetch_token)
+
+def update_token(name, token, refresh_token=None, access_token=None):
+    """Authlib support function.""" 
+    logging.info('updating token')
+    if refresh_token:
+        logging.info('searching for token by refresh_token')
+        item = OAuth2Token.find(name=name, refresh_token=refresh_token)
+    elif access_token:
+        item = OAuth2Token.find(name=name, access_token=access_token)
+    else:
+        return
+
+    # update old token
+    item.access_token = token['access_token']
+    item.refresh_token = token.get('refresh_token')
+    item.expires_at = token['expires_at']
+    logging.info('saving token')
+    item.save()
+    logging.info('token saved')
+
+oauth = OAuth(fetch_token=fetch_token, update_token=update_token)
 
 oauth.register(name='atlassian')
 logging.debug('oauth registered: {}'.format(oauth.atlassian))
-# AUTHLIB_OAUTH_CLIENTS = getattr(settings, "AUTHLIB_OAUTH_CLIENTS", None)
 
 @ensure_csrf_cookie
 def index(request, path='', format=None):
@@ -222,7 +247,7 @@ class AtlassianOAuth(APIView):
         """Redirect to Atlassian for granting access to user data."""
         # logging.debug(vars(request))
         oauth_name = 'atlassian'
-        redirect_uri = 'https://dev.etabot.ai/atlassian_callback'
+        redirect_uri = PROD_HOST_URL + '/atlassian_callback'
         logging.debug('redirect_uri: "{}"'.format(redirect_uri))
 
         timestamp = pytz.utc.localize(datetime.datetime.utcnow())
@@ -259,8 +284,6 @@ def atlassian_callback(request):
     try:
         token = oauth.atlassian.authorize_access_token(
             request)
-        # token = oauth.atlassian.authorize_access_token(
-        #     request, redirect_uri='https://dev.etabot.ai/atlassian_callback')
 
         logging.debug('token={}'.format(token))
     except Exception as e:
