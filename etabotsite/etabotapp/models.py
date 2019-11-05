@@ -3,7 +3,7 @@ import os
 import logging
 
 logging.getLogger().setLevel(logging.DEBUG)
-
+logging.info('models import started.')
 sys.path.append(os.path.abspath('etabotapp'))
 import TMSlib.TMS as TMSlib
 import TMSlib.data_conversion as dc
@@ -12,7 +12,6 @@ sys.path.pop(0)
 
 from django.db import models
 from jsonfield import JSONField
-
 
 from django.db.models.signals import post_save, pre_save
 from django.contrib.auth.models import User
@@ -135,6 +134,42 @@ class OAuth2Token(models.Model):
             expires_at=self.expires_at,
         )
 
+
+def fetch_oauth_token(name, request):
+    """Authlib support function."""
+    OAUTH1_SERVICES = []
+    if name in OAUTH1_SERVICES:
+        model = OAuth1Token
+    else:
+        model = OAuth2Token
+    logging.info('authlib fetch_token searching for token in model {}'.format(
+        model))
+    token = model.find(
+        name=name,
+        owner=request.user
+    )
+    return token.to_token()
+
+
+def update_oauth_token(name, token, refresh_token=None, access_token=None):
+    """Authlib support function.""" 
+    logging.info('updating token')
+    if refresh_token:
+        logging.info('searching for token by refresh_token')
+        item = OAuth2Token.find(name=name, refresh_token=refresh_token)
+    elif access_token:
+        item = OAuth2Token.find(name=name, access_token=access_token)
+    else:
+        return
+
+    # update old token
+    item.access_token = token['access_token']
+    item.refresh_token = token.get('refresh_token')
+    item.expires_at = token['expires_at']
+    logging.info('saving token')
+    item.save()
+    logging.info('token saved')
+
 @receiver(post_save, sender=TMS)
 def parse_tms(sender, instance, created, **kwargs):
     if created:
@@ -156,7 +191,8 @@ def parse_projects_for_TMS(instance, **kwargs):
     existing_projects = Project.objects.filter(project_tms=instance.id)
     TMS_w1 = TMSlib.TMSWrapper(
         instance,
-        projects=existing_projects)
+        projects=existing_projects,
+        oauth_obj=oauth)
     TMS_w1.init_ETApredict([])
 
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
@@ -200,3 +236,20 @@ def parse_projects_for_TMS(instance, **kwargs):
  Updated existing projects: {}".format(
         ', '.join(new_projects),
         ', '.join(updted_projects))
+
+
+from django.conf import settings
+from authlib.django.client import OAuth
+
+PROD_HOST_URL = getattr(settings, "PROD_HOST_URL", "http://localhost:8000")
+atlassian_redirect_uri = PROD_HOST_URL + '/atlassian_callback'
+logging.debug('atlassian_redirect_uri: "{}"'.format(atlassian_redirect_uri))
+
+oauth = OAuth(fetch_token=fetch_oauth_token, update_token=update_oauth_token)
+oauth.register(name='atlassian')
+logging.debug('oauth registered: {}'.format(oauth.atlassian))
+
+
+
+
+logging.info('models import finished.')

@@ -2,8 +2,7 @@
 
 Author: Alex Radnaev (alexander.radnaev@gmail.com)
 
-Status: Prortotype
-Date last modified: 2018-04-13
+Status: Prototype
 
 Python Version: 3.6
 """
@@ -16,6 +15,7 @@ import datetime
 import user_activation
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
 
 try:
     sys.path.append('etabot_algo/')
@@ -67,7 +67,11 @@ class TMS_JIRA(ProtoTMS):
     default_open_status_values = ['Open', 'To Do', 'Selected for Development']
 
     def __init__(
-            self, server_end_point, username_login, task_system_schema):
+            self,
+            server_end_point,
+            username_login,
+            task_system_schema,
+            oauth_obj=None):
 
         if task_system_schema is None:
             task_system_schema = {
@@ -79,11 +83,12 @@ class TMS_JIRA(ProtoTMS):
             self, server_end_point, username_login, task_system_schema)
 
         self.jira = None
+        self.oauth_obj = oauth_obj
         logging.debug('TMS_JIRA initalized')
 
     def connect_to_TMS(self, update_tms=True):
         """Create self.jira object, Return None if connected or error string otherwise.
-        s
+
         TODO: move tms_config - Django model with credentials (password or token)
         from implicit access from child class to init params
         """
@@ -95,7 +100,7 @@ class TMS_JIRA(ProtoTMS):
                 self.username_login,
                 password=self.tms_config.password,
                 token=self.tms_config.access_token,
-                oauth_obj=self.tms_config.oauth_obj)
+                oauth_obj=self.oauth_obj)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             self.tms_config.connectivity_status = {
                 'status': 'connected',
@@ -112,17 +117,20 @@ JIRA_wrapper: {}'.format(e))
                 logging.info(
                     'sending email about connectivity issue to: "{}".'.format(
                         self.username_login))
-
-                msg = MIMEMultipart()
-                msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
-                msg['To'] = self.username_login  # TODO: user.email
-                msg['Subject'] = 'Account {} needs attention.'.format(
-                    self.server_end_point)
-                msg_body = '<html><body><h3>Please log in to https://app.etabot.ai/login \
-    and fix credentials for account {}</h3></body></html>'.format(
-                    self.server_end_point)
-                msg.attach(MIMEText(msg_body, 'html'))
-                user_activation.ActivationProcessor.send_email(msg)
+                if self.username_login is not None or '@' not in self.username:
+                    msg = MIMEMultipart()
+                    msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
+                    msg['To'] = self.username_login  # TODO: user.email
+                    msg['Subject'] = 'Account {} needs attention.'.format(
+                        self.server_end_point)
+                    msg_body = '<html><body><h3>Please log in to https://app.etabot.ai/login \
+        and fix credentials for account {}</h3></body></html>'.format(
+                        self.server_end_point)
+                    msg.attach(MIMEText(msg_body, 'html'))
+                    user_activation.ActivationProcessor.send_email(msg)
+                else:
+                    logging.warning('username is not email - \
+cannot send connectivity issue email')
         if update_tms:
             logging.debug('saving connectivity status')
             self.tms_config.save()
@@ -249,7 +257,8 @@ class TMSWrapper(TMS_JIRA):
     def __init__(
             self,
             tms_config,
-            projects=None):
+            projects=None,
+            oauth_obj=None):
         """
         Arguments:
             tms_config - Django model of TMS.
@@ -262,6 +271,7 @@ class TMSWrapper(TMS_JIRA):
 projects: {}'.format(tms_config, projects))
         self.tms_config = tms_config
         self.TMS_type = tms_config.type
+        self.oauth_obj = oauth_obj
         logging.debug('tms_config.type: "{}" of type "{}"'.format(
             tms_config.type, type(tms_config.type)))
         self.ETApredict_obj = None
@@ -291,7 +301,8 @@ projects: {}'.format(tms_config, projects))
                 self,
                 server,
                 tms_config.username,
-                task_system_schema)
+                task_system_schema,
+                oauth_obj=self.oauth_obj)
             # self.TMS = TMS_JIRA()
         else:
             raise NameError(

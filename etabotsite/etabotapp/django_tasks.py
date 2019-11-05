@@ -5,6 +5,7 @@ from celery import Celery
 
 from .models import Project, TMS
 import TMSlib.TMS as TMSlib
+from .models import oauth
 
 import eta_tasks as et
 import logging
@@ -29,7 +30,7 @@ following TMS entries ({}): {}'.format(
                 logging.info('generating ETAs for TMS {} Projects: {}'.format(
                     tms, project_set))
                 try:
-                    tms_wrapper = TMSlib.TMSWrapper(tms)
+                    tms_wrapper = TMSlib.TMSWrapper(tms, oauth_obj=oauth)
                     tms_wrapper.init_ETApredict(project_set)
                     tms_wrapper.estimate_tasks()
                     del tms_wrapper
