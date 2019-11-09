@@ -99,7 +99,7 @@ class TMS_JIRA(ProtoTMS):
                 self.server_end_point,
                 self.username_login,
                 password=self.tms_config.password,
-                token=self.tms_config.access_token,
+                token=self.tms_config.oauth2_token,
                 oauth_obj=self.oauth_obj)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             self.tms_config.connectivity_status = {
@@ -117,7 +117,7 @@ JIRA_wrapper: {}'.format(e))
                 logging.info(
                     'sending email about connectivity issue to: "{}".'.format(
                         self.username_login))
-                if self.username_login is not None or '@' not in self.username:
+                if self.username_login is not None and '@' in self.username_login:
                     msg = MIMEMultipart()
                     msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
                     msg['To'] = self.username_login  # TODO: user.email

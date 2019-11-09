@@ -49,15 +49,16 @@ class JIRA_wrapper():
         server - URL to JIRA server
         username - JIRA username (not used for OAuth2.0 (password==None, token not None)
         password - JIRA password or API key (not needed if OAuth2.0 token is passed
-        token - OAuth2.0 token (not needed if password is passed)
+        token - OAuth2.0 token django model (not needed if password is passed)
         oauth_obj - authlib oauth object for automatically refreshing token
         """
         self.gh = None
-        self.jira = self.JIRA_connect(
-            server, username, password=password, token=token)
+        self.oauth_obj=oauth_obj        
         self.username = username
         self.max_results_jira_api = 50
-        self.oauth_obj=oauth_obj
+
+        self.jira = self.JIRA_connect(
+            server, username, password=password, token=token)
 
     def JIRA_connect(
             self,
@@ -93,10 +94,17 @@ class JIRA_wrapper():
                     else:
                         if self.oauth_obj is not None:
                             logging.info('getting user profile to test connection and update token...')
-                            res = self.oauth_obj.atlassian.get(JIRA_CLOUD_PROFILE)
+                            logging.debug('OAuth object: {}'.format(self.oauth_obj))
+                            logging.debug('OAuth object vars: {}'.format(vars(self.oauth_obj)))
+                            logging.debug('token: {}'.format(token))
+                            logging.debug('token vars: {}'.format(vars(token)))
+                            token_dict = token.to_token()
+                            logging.debug('token dict: {}'.format(token_dict))
+                            res = self.oauth_obj.atlassian.get(JIRA_CLOUD_PROFILE, token=token_dict)
                             logging.info(res)
+                            logging.debug(vars(res))
                         options['headers'] = {
-                            'Authorization': 'Bearer {}'.format(token)}     
+                            'Authorization': 'Bearer {}'.format(token.access_token)}     
                         logging.debug('connecting with options: {}'.format(options))                      
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'

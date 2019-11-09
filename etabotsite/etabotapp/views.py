@@ -10,6 +10,7 @@ from rest_framework.response import Response
 
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import OAuth1Token, OAuth2Token, OAuth2CodeRequest
+from .models import atlassian_redirect_uri
 from .models import TMS, Project
 from .models import parse_projects_for_TMS
 from .models import oauth
@@ -272,19 +273,21 @@ def atlassian_callback(request):
         token_type=token['token_type'],
         access_token=token['access_token'],
         refresh_token=token['refresh_token'],
-        expires_at=pytz.utc.localize(datetime.datetime.utcnow()) +
-            datetime.timedelta(seconds=token['expires_in'])
+        expires_at=token['expires_at']
         )
+        # expires_at=pytz.utc.localize(datetime.datetime.utcnow()) +
+        #     datetime.timedelta(seconds=token['expires_in'])
+
     token_item.save()
     logging.debug('token saved: {}'.format(vars(token_item)))
 
 
-    add_update_atlassian_tms(user, token['access_token'])
+    add_update_atlassian_tms(user, token_item)
     return redirect('/tmss')
 
 
-def add_update_atlassian_tms(owner, access_token):
-    atlassian = Atlassian_API.AtlassianAPI(access_token)
+def add_update_atlassian_tms(owner, token_item):
+    atlassian = Atlassian_API.AtlassianAPI(token_item)
     resources = atlassian.get_accessible_resources()
     logging.debug(resources)
 
@@ -302,7 +305,7 @@ def add_update_atlassian_tms(owner, access_token):
                 type='JI',
                 name=resource.get('name'),
                 params=resource,
-                access_token=access_token)
+                oauth2_token=token_item)
             new_TMS.save()
             logging.debug('created new TMS {}'.format(new_TMS))
         else:
@@ -311,7 +314,7 @@ def add_update_atlassian_tms(owner, access_token):
                 existing_TMS.params=resource
                 existing_TMS.endpoint=resource['url']
                 existing_TMS.name=resource.get('name')
-                existing_TMS.access_token=access_token
+                existing_TMS.oauth2_token=token_item
                 existing_TMS.save()
                 logging.debug('updated {}'.format(existing_TMS))
     logging.debug('add_update_atlassian_tms is done')
