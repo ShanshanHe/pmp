@@ -273,10 +273,7 @@ def atlassian_callback(request):
         token_type=token['token_type'],
         access_token=token['access_token'],
         refresh_token=token['refresh_token'],
-        expires_at=token['expires_at']
-        )
-        # expires_at=pytz.utc.localize(datetime.datetime.utcnow()) +
-        #     datetime.timedelta(seconds=token['expires_in'])
+        expires_at=token['expires_at'])
 
     token_item.save()
     logging.debug('token saved: {}'.format(vars(token_item)))
