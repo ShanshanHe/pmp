@@ -10,7 +10,7 @@ class AtlassianAPI():
 
     def default_headers(self):
         return {
-            'Authorization': 'Bearer {}'.format(self.token),
+            'Authorization': 'Bearer {}'.format(self.token.access_token),
             'Accept': 'application/json'
         }
 

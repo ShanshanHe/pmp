@@ -25,20 +25,47 @@ import threading
 
 # from passwords.encrypted_passwords import passwords_dict
 # import keyring
-JIRA_CLOUD_API = "https://api.atlassian.com/ex/jira/"
+JIRA_CLOUD_BASE = "https://api.atlassian.com/" 
+JIRA_CLOUD_API = JIRA_CLOUD_BASE + "ex/jira/"
+JIRA_CLOUD_PROFILE = JIRA_CLOUD_BASE + "me"
 
 jira_timout_seconds = 10.
 
+
 class JIRA_wrapper():
-    # handles communication with JIRA API
-    def __init__(self, server, username, password=None, token=None):
+    """Handles communication with JIRA API."""
+
+    def __init__(
+            self,
+            server,
+            username,
+            password=None,
+            token=None,
+            oauth_obj=None):
+        """Create JIRA_wrapper object for JIRA API communication.
+
+        Arguments:
+
+        server - URL to JIRA server
+        username - JIRA username (not used for OAuth2.0 (password==None, token not None)
+        password - JIRA password or API key (not needed if OAuth2.0 token is passed
+        token - OAuth2.0 token django model (not needed if password is passed)
+        oauth_obj - authlib oauth object for automatically refreshing token
+        """
         self.gh = None
-        self.jira = self.JIRA_connect(server, username, password=password, token=token)
+        self.oauth_obj=oauth_obj        
         self.username = username
         self.max_results_jira_api = 50
 
-    def JIRA_connect(self, server, username, password=None, token=None):
+        self.jira = self.JIRA_connect(
+            server, username, password=password, token=token)
 
+    def JIRA_connect(
+            self,
+            server,
+            username,
+            password=None,
+            token=None):
 
         if password is None and token is None:
             raise NameError('JIRA API key or token must be provided')
@@ -65,8 +92,19 @@ class JIRA_wrapper():
                             basic_auth=(username, password),
                             options=options)
                     else:
+                        if self.oauth_obj is not None:
+                            logging.info('getting user profile to test connection and update token...')
+                            logging.debug('OAuth object: {}'.format(self.oauth_obj))
+                            logging.debug('OAuth object vars: {}'.format(vars(self.oauth_obj)))
+                            logging.debug('token: {}'.format(token))
+                            logging.debug('token vars: {}'.format(vars(token)))
+                            token_dict = token.to_token()
+                            logging.debug('token dict: {}'.format(token_dict))
+                            res = self.oauth_obj.atlassian.get(JIRA_CLOUD_PROFILE, token=token_dict)
+                            logging.info(res)
+                            logging.debug(vars(res))
                         options['headers'] = {
-                            'Authorization': 'Bearer {}'.format(token)}     
+                            'Authorization': 'Bearer {}'.format(token.access_token)}     
                         logging.debug('connecting with options: {}'.format(options))                      
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'

@@ -1,3 +1,5 @@
+"""Django tasks for celery."""
+
 from datetime import datetime
 from celery import shared_task
 
@@ -5,17 +7,15 @@ from celery import Celery
 
 from .models import Project, TMS
 import TMSlib.TMS as TMSlib
+from .models import oauth
 
 import eta_tasks as et
 import logging
 
-# BROKER_URL = getattr(settings, "BROKER_URL", None)
-
-# celery = Celery('tasks', broker=BROKER_URL)
 
 @shared_task
 def estimate_all():
-    # Estimate ETA for all tasks
+    """Estimate ETA for all tasks."""
     tms_set = TMS.objects.all()
     logging.info(
         'starting generating ETAs for the \
@@ -29,7 +29,7 @@ following TMS entries ({}): {}'.format(
                 logging.info('generating ETAs for TMS {} Projects: {}'.format(
                     tms, project_set))
                 try:
-                    tms_wrapper = TMSlib.TMSWrapper(tms)
+                    tms_wrapper = TMSlib.TMSWrapper(tms, oauth_obj=oauth)
                     tms_wrapper.init_ETApredict(project_set)
                     tms_wrapper.estimate_tasks()
                     del tms_wrapper
@@ -48,6 +48,7 @@ def estimate_ETA_for_TMS_project_set_ids(
         tms_id,
         projects_set_ids,
         params):
+    """Generate ETAs for a given TMS and set of projects."""
     logging.info('searching for TMS with id: {}'.format(tms_id))
     tms_list = TMS.objects.all().filter(
             pk=tms_id)
