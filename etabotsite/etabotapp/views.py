@@ -7,6 +7,7 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
 
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import OAuth1Token, OAuth2Token, OAuth2CodeRequest
@@ -259,9 +260,13 @@ def atlassian_callback(request):
     users_set = OAuth2CodeRequest.objects.all().filter(
         state=state)
     if len(users_set)==0:
-        return Response('no user found with such auth code request. please try again.', HTTP_400_BAD_REQUEST)
+        return Response(
+            'no user found with such auth code request. please try again.',
+            status=status.HTTP_400_BAD_REQUEST)
     elif len(users_set) > 1:
-        return Response('Auth code request collision. please try again.', HTTP_400_BAD_REQUEST)
+        return Response(
+            'Auth code request collision. please try again.',
+            status=status.HTTP_400_BAD_REQUEST)
     else:
         pass
     user=users_set[0].owner
