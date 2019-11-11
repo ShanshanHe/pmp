@@ -61,6 +61,9 @@ Here we are creating the container `temp-volume` using the busybox base image an
 Note: Using the same mount path is not necessary.
 The previous command will create the container but it will exit immediately but we dont need it running to manage the volume.
 We now copy our certificate files to the volume through this container. The following commands copy these certs and rename these files to the `pmp_pmp-nginx-cert` volume via the `temp_volume` container.
+
+Security Note: for your production please generate your own pair of keys
+
 ```
 $ docker cp nginx/certs/cert.pem temp-volume:/etc/ssl/certs/cert.pem
 $ docker cp nginx/certs/key.pem temp-volume:/etc/ssl/certs/key.pem

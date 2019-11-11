@@ -46,7 +46,7 @@ class OAuth2CodeRequest(models.Model):
                               on_delete=models.CASCADE)    
     name = models.CharField(max_length=40)
     state = models.CharField(max_length=200)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(null=True)
 
 class OAuth2Token(models.Model):
     """Model for Storing tokens from OAuth2."""
@@ -55,8 +55,8 @@ class OAuth2Token(models.Model):
     name = models.CharField(max_length=40)
     token_type = models.CharField(max_length=20)
     access_token = models.CharField(max_length=2048)
-    refresh_token = models.CharField(max_length=200)
-    expires_at = models.PositiveIntegerField()
+    refresh_token = models.CharField(max_length=200, null=True)
+    expires_at = models.PositiveIntegerField(null=True)
 
     def is_expired(self):
 
