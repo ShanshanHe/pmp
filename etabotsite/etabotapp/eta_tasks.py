@@ -3,7 +3,7 @@
 import TMSlib.data_conversion as dc
 import TMSlib.TMS as TMSlib
 import logging
-
+from .models import oauth
 
 def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     """Estimates ETA for a given TMS and projects_set.
@@ -12,11 +12,6 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     add an option not to refresh velocities
     https://etabot.atlassian.net/browse/ET-521
     """
-    if 'oauth_obj' not in kwargs:
-        oauth_obj = None
-        logging.info('estimate_ETA_for_TMS did not get oauth_obj')
-    else:
-        logging.info('estimate_ETA_for_TMS got oauth_obj')
 
     logging.debug(
         'estimate_ETA_for_TMS started for TMS {}, projects: {}'.format(
