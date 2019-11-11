@@ -18,7 +18,6 @@ from .models import oauth
 from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
 import TMSlib.data_conversion as dc
-import eta_tasks
 from .user_activation import ActivationProcessor, ResponseCode
 
 import threading
@@ -379,7 +378,6 @@ for user {} due to: {}'.format(
         # includes TMS credentials
         # threads = []
         global_params = post_data.get('params', {})
-        global_params['oauth_obj'] = oauth
         logging.debug('estimate call global_params: {}'.format(global_params))
         tasks_count = 0
         celery = clry.Celery()
@@ -399,11 +397,6 @@ for user {} due to: {}'.format(
                     owner=self.request.user,
                     project_tms_id=tms.id)
             logging.debug('projects_set: "{}"'.format(projects_set))
-            # eta_thread = threading.Thread(
-            #     target=eta_tasks.estimate_ETA_for_TMS,
-            #     args=(tms, projects_set))
-            # threads.append(eta_thread)
-            # eta_thread.start()
 
             celery.send_task(
                 'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
