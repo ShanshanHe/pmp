@@ -5,7 +5,9 @@ import logging
 logging.getLogger().setLevel(logging.DEBUG)
 logging.info('models import started.')
 sys.path.append(os.path.abspath('etabotapp'))
+logging.info('loading TMSlib')
 import TMSlib.TMS as TMSlib
+logging.info('loaded TMSlib')
 import TMSlib.data_conversion as dc
 
 sys.path.pop(0)

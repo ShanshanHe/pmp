@@ -3,7 +3,7 @@
 import TMSlib.data_conversion as dc
 import TMSlib.TMS as TMSlib
 import logging
-from .models import oauth
+
 
 def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     """Estimates ETA for a given TMS and projects_set.
@@ -16,7 +16,7 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     logging.debug(
         'estimate_ETA_for_TMS started for TMS {}, projects: {}'.format(
             tms, projects_set))
-    tms_wrapper = TMSlib.TMSWrapper(tms, oauth_obj=oauth_obj)
+    tms_wrapper = TMSlib.TMSWrapper(tms, oauth_obj=kwargs.get('oauth_obj'))
     tms_wrapper.init_ETApredict(projects_set)
     projects_dict = tms_wrapper.ETApredict_obj.eta_engine.projects
     project_names = []
