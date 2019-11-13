@@ -146,7 +146,7 @@ class TMS(models.Model):
         token_dict = token.to_token()
         logging.debug('initial token dict: {}'.format(token_dict))
         logging.info('priming TMS GET with oauth...')
-        res = self.oauth_obj.atlassian.get(
+        res = oauth.atlassian.get(
             Atlassian_API.ATLASSIAN_CLOUD_PROFILE, token=token_dict)
         logging.info(res)
         logging.debug(vars(res))
