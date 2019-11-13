@@ -208,8 +208,7 @@ def parse_projects_for_TMS(instance, **kwargs):
     existing_projects = Project.objects.filter(project_tms=instance.id)
     TMS_w1 = TMSlib.TMSWrapper(
         instance,
-        projects=existing_projects,
-        oauth_obj=oauth)
+        projects=existing_projects)
     TMS_w1.init_ETApredict([])
 
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects

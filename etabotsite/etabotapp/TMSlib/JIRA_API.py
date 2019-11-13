@@ -41,8 +41,7 @@ class JIRA_wrapper():
             server,
             username,
             password=None,
-            TMSconfig=None,
-            oauth_obj=None):
+            TMSconfig=None):
         """Create JIRA_wrapper object for JIRA API communication.
 
         Arguments:
@@ -51,10 +50,8 @@ class JIRA_wrapper():
         username - JIRA username (not used for OAuth2.0 (password==None, token not None)
         password - JIRA password or API key (not needed if OAuth2.0 token is passed
         TMSconfig - TMS django model (not needed if password is passed)
-        oauth_obj - authlib oauth object for automatically refreshing token
         """
         self.gh = None
-        self.oauth_obj=oauth_obj        
         self.username = username
         self.max_results_jira_api = 50
         self.TMSconfig = TMSconfig
@@ -95,11 +92,7 @@ class JIRA_wrapper():
                             basic_auth=(username, password),
                             options=options)
                     else:
-                        if self.oauth_obj is not None:
-                            logging.info('getting user profile to test connection and update token if needed...')
-                            logging.debug('OAuth object: {}'.format(self.oauth_obj))
-                            logging.debug('OAuth object vars: {}'.format(vars(self.oauth_obj)))
-                            token = self.TMSconfig.get_fresh_token()
+                        token = self.TMSconfig.get_fresh_token()
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',

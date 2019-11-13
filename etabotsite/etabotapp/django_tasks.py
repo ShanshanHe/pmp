@@ -5,7 +5,7 @@ from celery import shared_task
 
 from celery import Celery
 
-from .models import Project, TMS, oauth
+from .models import Project, TMS
 import TMSlib.TMS as TMSlib
 
 import eta_tasks as et
@@ -28,7 +28,7 @@ following TMS entries ({}): {}'.format(
                 logging.info('generating ETAs for TMS {} Projects: {}'.format(
                     tms, project_set))
                 try:
-                    tms_wrapper = TMSlib.TMSWrapper(tms, oauth_obj=oauth)
+                    tms_wrapper = TMSlib.TMSWrapper(tms)
                     tms_wrapper.init_ETApredict(project_set)
                     tms_wrapper.estimate_tasks()
                     del tms_wrapper
@@ -62,5 +62,4 @@ def estimate_ETA_for_TMS_project_set_ids(
 
     projects_set = Project.objects.all().filter(pk__in=projects_set_ids)
     logging.info('found projects_set: {}'.format(projects_set))
-    params['oauth_obj'] = oauth
     et.estimate_ETA_for_TMS(tms, projects_set, **params)
