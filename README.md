@@ -185,6 +185,9 @@ Vola! You have django server up and running in development mode. Go to you brows
 http://<url you set in etc/hosts>:8000
 You have a sample project management site ready to go!
 
+## Trouble Shooting
+production app.etabot.ai can't be reached - check that your /etc/hosts is not pointing to localhost
+
 
 ## Testing 
 
