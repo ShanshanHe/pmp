@@ -66,7 +66,10 @@ class JIRA_wrapper():
             username,
             password=None,
             token=None):
+        """Connect to jira api.
 
+        TODO: update token if oauth refreshed it.
+        """
         if password is None and token is None:
             raise NameError('JIRA API key or token must be provided')
 
@@ -103,7 +106,7 @@ class JIRA_wrapper():
                             res = self.oauth_obj.atlassian.get(JIRA_CLOUD_PROFILE, token=token_dict)
                             logging.info(res)
                             logging.debug(vars(res))
-                            logging.info('token vars: {}'.format(vars(token)))
+                            logging.debug('token vars: {}'.format(vars(token)))
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',
