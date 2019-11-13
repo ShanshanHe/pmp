@@ -89,7 +89,7 @@ class JIRA_wrapper():
                 logging.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
-                    if token is None:
+                    if self.TMSconfig is None and self.TMSconfig.oauth2_token is None:
                         logging.debug('token is None, using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
