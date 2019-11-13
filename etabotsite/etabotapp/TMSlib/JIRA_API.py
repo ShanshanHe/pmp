@@ -105,7 +105,9 @@ class JIRA_wrapper():
                             logging.debug(vars(res))
                             logging.info('token vars: {}'.format(vars(token)))
                         options['headers'] = {
-                            'Authorization': 'Bearer {}'.format(token.access_token)}     
+                            'Authorization': 'Bearer {}'.format(token.access_token),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'}     
                         logging.debug('connecting with options: {}'.format(options))                      
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'
