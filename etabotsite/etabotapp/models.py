@@ -9,7 +9,7 @@ logging.info('loading TMSlib')
 import TMSlib.TMS as TMSlib
 logging.info('loaded TMSlib')
 import TMSlib.data_conversion as dc
-
+import TMSlib.Atlassian_API as Atlassian_API
 sys.path.pop(0)
 
 from django.db import models
@@ -139,6 +139,22 @@ class TMS(models.Model):
     def __str__(self):
         return "{}@{}".format(self.username, self.endpoint)
 
+    def get_fresh_token(self):
+        token = self.oauth2_token
+        logging.debug('initial token: {}'.format(token))
+        logging.info('initial token vars: {}'.format(vars(token)))
+        token_dict = token.to_token()
+        logging.debug('initial token dict: {}'.format(token_dict))
+        logging.info('priming TMS GET with oauth...')
+        res = self.oauth_obj.atlassian.get(
+            Atlassian_API.ATLASSIAN_CLOUD_PROFILE, token=token_dict)
+        logging.info(res)
+        logging.debug(vars(res))
+        logging.debug('self.oauth2_token: {}'.format(self.oauth2_token))
+        logging.debug('token vars: {}'.format(vars(token)))
+        token = self.oauth2_token
+        logging.debug('token vars: {}'.format(vars(token)))
+        return token
 
 class Project(models.Model):
     """This class represents the project model."""

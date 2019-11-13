@@ -6,10 +6,12 @@ Status: Prototype
 
 Python Version: 3.6
 """
+import logging
 
+logging.debug('loading TMSlib.TMS')
 from enum import Enum
 import TMSlib.JIRA_API as JIRA_API
-import logging
+logging.debug('loading TMSlib.TMS: loaded JIRA_API')
 import sys
 import datetime
 import user_activation
@@ -25,6 +27,7 @@ except Exception as e:
     logging.warning('cannot load ETApredict due to "{}"\
  Loading ETApredict_placeholder'.format(e))
     import TMSlib.ETApredict_placeholder as ETApredict
+logging.debug('loading TMSlib.TMS: done')
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -99,7 +102,7 @@ class TMS_JIRA(ProtoTMS):
                 self.server_end_point,
                 self.username_login,
                 password=self.tms_config.password,
-                token=self.tms_config.oauth2_token,
+                TMSconfig=self.tms_config,
                 oauth_obj=self.oauth_obj)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             self.tms_config.connectivity_status = {
