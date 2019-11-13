@@ -51,7 +51,7 @@ except Exception as e:
     logging.warning('cannot load custom_settings.json due to "{}"'.format(
         e))
 CUSTOM_SETTINGS = custom_settings
-
+PROD_HOST_URL = prod_host_url
 
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
 logging.info('HOST_URL="{}"'.format(HOST_URL))

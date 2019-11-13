@@ -7,15 +7,17 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework import status
 
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import OAuth1Token, OAuth2Token, OAuth2CodeRequest
+from .models import atlassian_redirect_uri
 from .models import TMS, Project
 from .models import parse_projects_for_TMS
+from .models import oauth
 from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
 import TMSlib.data_conversion as dc
-import eta_tasks
 from .user_activation import ActivationProcessor, ResponseCode
 
 import threading
@@ -23,13 +25,13 @@ import json
 import mimetypes
 import logging
 import celery as clry
-# from authlib.django.client import OAuth
-from authlib.integrations.django_client import OAuth
+
 from django.conf import settings
 import datetime
 import pytz
 import hashlib
 import TMSlib.Atlassian_API as Atlassian_API
+# import oauth_support
 
 logger = logging.getLogger()
 
@@ -39,23 +41,6 @@ if LOCAL_MODE:
 else:
     logger.setLevel(logging.INFO)
 
-def fetch_token(name, request):
-    if name in OAUTH1_SERVICES:
-        model = OAuth1Token
-    else:
-        model = OAuth2Token
-
-    token = model.find(
-        name=name,
-        owner=request.user
-    )
-    return token.to_token()
-
-oauth = OAuth(fetch_token=fetch_token)
-
-oauth.register(name='atlassian')
-logging.debug('oauth registered: {}'.format(oauth.atlassian))
-AUTHLIB_OAUTH_CLIENTS = getattr(settings, "AUTHLIB_OAUTH_CLIENTS", None)
 
 @ensure_csrf_cookie
 def index(request, path='', format=None):
@@ -223,23 +208,16 @@ class AtlassianOAuth(APIView):
         """Redirect to Atlassian for granting access to user data."""
         # logging.debug(vars(request))
         oauth_name = 'atlassian'
-        redirect_uri = 'https://dev.etabot.ai/atlassian_callback'
-        logging.debug('redirect_uri: "{}"'.format(redirect_uri))
 
         timestamp = pytz.utc.localize(datetime.datetime.utcnow())
         state = hashlib.sha256(('{}{}'.format(request.user, timestamp)).encode('utf-8')).hexdigest()
         logging.debug('state={}'.format(state))
         resp = oauth.atlassian.authorize_redirect(
-            request, redirect_uri,
-            state=state,
-            audience=AUTHLIB_OAUTH_CLIENTS.get(
-                oauth_name, {}).get(
-                'client_kwargs', {}).get(
-                'audience'))
+            request, atlassian_redirect_uri,
+            state=state)
+
         logging.debug(resp)
         logging.debug(vars(resp))
-        # logging.debug(vars(oauth.atlassian))
-        # logging.debug(vars(oauth.atlassian.oauth2_client_cls))
         oa2cr = OAuth2CodeRequest(
             owner=request.user,
             name=oauth_name,
@@ -247,14 +225,6 @@ class AtlassianOAuth(APIView):
             state=state)
         oa2cr.save()
 
-        # resp["Access-Control-Allow-Origin"] = "*, null, localhost:4200, localhost:8000"
-
-        # # resp["Access-Control-Allow-Credentials"] = "true"
-        # resp["Access-Control-Allow-Methods"] = "GET,HEAD,OPTIONS,POST,PUT"
-        # resp["Access-Control-Allow-Headers"] = "Origin, Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Allow-Origin, Access-Control-Request-Origin"
-        # logging.debug(resp)
-        # logging.debug(vars(resp))
-        # logging.debug('url={}'.format(resp.url))
         return Response(
             json.dumps({'redirect_url': resp.url}),
             status=status.HTTP_200_OK)
@@ -272,9 +242,11 @@ def atlassian_callback(request):
     logging.debug('state={}'.format(state))
     try:
         token = oauth.atlassian.authorize_access_token(
-            request, redirect_uri='https://dev.etabot.ai/atlassian_callback')
+            request, redirect_uri=atlassian_redirect_uri)
+
         logging.debug('token={}'.format(token))
     except Exception as e:
+        logging.error('cannot get token due to: "{}"'.format(e))
         return redirect('/error_page')
     if token.get('expires_in') is not None:
         try:
@@ -287,9 +259,13 @@ def atlassian_callback(request):
     users_set = OAuth2CodeRequest.objects.all().filter(
         state=state)
     if len(users_set)==0:
-        return Response('no user found with such auth code request. please try again.', HTTP_400_BAD_REQUEST)
+        return Response(
+            'no user found with such auth code request. please try again.',
+            status=status.HTTP_400_BAD_REQUEST)
     elif len(users_set) > 1:
-        return Response('Auth code request collision. please try again.', HTTP_400_BAD_REQUEST)
+        return Response(
+            'Auth code request collision. please try again.',
+            status=status.HTTP_400_BAD_REQUEST)
     else:
         pass
     user=users_set[0].owner
@@ -301,19 +277,18 @@ def atlassian_callback(request):
         token_type=token['token_type'],
         access_token=token['access_token'],
         refresh_token=token['refresh_token'],
-        expires_at=pytz.utc.localize(datetime.datetime.utcnow()) +
-            datetime.timedelta(seconds=token['expires_in'])
-        )
+        expires_at=token['expires_at'])
+
     token_item.save()
     logging.debug('token saved: {}'.format(vars(token_item)))
 
 
-    add_update_atlassian_tms(user, token['access_token'])
+    add_update_atlassian_tms(user, token_item)
     return redirect('/tmss')
 
 
-def add_update_atlassian_tms(owner, access_token):
-    atlassian = Atlassian_API.AtlassianAPI(access_token)
+def add_update_atlassian_tms(owner, token_item):
+    atlassian = Atlassian_API.AtlassianAPI(token_item)
     resources = atlassian.get_accessible_resources()
     logging.debug(resources)
 
@@ -331,7 +306,7 @@ def add_update_atlassian_tms(owner, access_token):
                 type='JI',
                 name=resource.get('name'),
                 params=resource,
-                access_token=access_token)
+                oauth2_token=token_item)
             new_TMS.save()
             logging.debug('created new TMS {}'.format(new_TMS))
         else:
@@ -340,7 +315,7 @@ def add_update_atlassian_tms(owner, access_token):
                 existing_TMS.params=resource
                 existing_TMS.endpoint=resource['url']
                 existing_TMS.name=resource.get('name')
-                existing_TMS.access_token=access_token
+                existing_TMS.oauth2_token=token_item
                 existing_TMS.save()
                 logging.debug('updated {}'.format(existing_TMS))
     logging.debug('add_update_atlassian_tms is done')
@@ -422,11 +397,6 @@ for user {} due to: {}'.format(
                     owner=self.request.user,
                     project_tms_id=tms.id)
             logging.debug('projects_set: "{}"'.format(projects_set))
-            # eta_thread = threading.Thread(
-            #     target=eta_tasks.estimate_ETA_for_TMS,
-            #     args=(tms, projects_set))
-            # threads.append(eta_thread)
-            # eta_thread.start()
 
             celery.send_task(
                 'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',

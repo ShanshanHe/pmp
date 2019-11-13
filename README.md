@@ -61,6 +61,9 @@ Here we are creating the container `temp-volume` using the busybox base image an
 Note: Using the same mount path is not necessary.
 The previous command will create the container but it will exit immediately but we dont need it running to manage the volume.
 We now copy our certificate files to the volume through this container. The following commands copy these certs and rename these files to the `pmp_pmp-nginx-cert` volume via the `temp_volume` container.
+
+Security Note: for your production please generate your own pair of keys
+
 ```
 $ docker cp nginx/certs/cert.pem temp-volume:/etc/ssl/certs/cert.pem
 $ docker cp nginx/certs/key.pem temp-volume:/etc/ssl/certs/key.pem
@@ -97,7 +100,102 @@ Hope you enjoy!
 ### To run django seperately for development, please follow the process below:
 
 #### Prerequisite:
-* Have python 3.6 installed on your development machine
+* Have python 3.6 installed on your development machine (anaconda distribution is pretty good)
+
+## Install virtual environment management tool
+If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.
+
+### Choose between virtualenv or conda:
+
+### conda option (recommended)
+    follow https://docs.conda.io/projects/conda/en/latest/user-guide/install/
+    create virtual environement following https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
+E.g.:
+```
+conda create -n etabot python=3.5
+```
+Activate
+```
+conda activate etabot
+```
+
+### virtualenv option (do not follow if you use conda for virtual environment management)
+
+    Install `virtualenv` and `virtualenvwrapper` tool to manage python environment
+    ```
+    $ pip install virtualenv
+    $ pip install virtualenvwrapper
+    ```
+    Open your bash profile:
+    ```
+    $ vim ~/.bash_profile
+    ```
+    and add the following two lines at the end of the file:
+    ```
+    export WORKON_HOME=~/Envs
+    source /usr/local/bin/virtualenvwrapper.sh
+    ```
+    And at your terminal, run:
+    ```
+    $ source ~/.bash_profile
+    ```
+
+    To create a virtual environment for the project, follow the command below:
+    ```
+    $ mkvirtualenv --python=python3 <name_of_the_virtual_environment>
+    ```
+
+
+#### Run django server locally
+
+*Prerequisite*: enable your virtual environemnt
+
+go to our project root directory, install the dependencies:
+```
+$ pip install -r requirements.txt
+```
+Go the etabotsite directory:
+```
+$ cd etabotsite/
+```
+
+### Configure pmp
+
+### Note: your teammates might already have configuration files - good idea to ask them
+
+(see Advanced settings for details of file definitions)
+- add custom_settings.json to etabotsite directory 
+- add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
+- add sys_email_settings.json to etabotsite directory
+- add ETA algorithm as a git submodule (see section "Optinal: connecting ETA algorithm instead of a placeholder")
+
+If this is your first time running the project in development mode and you are using local database, you want to create the database table by running the following command:
+```
+$ python manage.py migrate
+```
+
+Note: we no longer use python manage.py makemigrations to create migrations. The migration files are part of the code base now since automatic makemigrations miss certain,
+
+To run the backend server:
+```
+$ python manage.py runserver 127.0.0.1:8000
+```
+
+Vola! You have django server up and running in development mode. Go to you browser, enter the address below:
+http://<url you set in etc/hosts>:8000
+You have a sample project management site ready to go!
+
+
+## Testing 
+
+To run all the unit tests - from etabotsite directory:
+```
+$ python manage.py test
+```
+
+## Advanced settings
+
+### local DNS setting
 * Add your dns to hosts, for example:
   ``` 
   $ sudo vi /etc/hosts
@@ -107,86 +205,9 @@ Hope you enjoy!
   127.0.0.1 app.etabot.ai
   ```
 
-If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.
-
-#### Install virtual environment management tool
-### Choose between virtualenv or conda:
-
-### conda option (recommended)
-follow https://docs.conda.io/projects/conda/en/latest/user-guide/install/
-
-### virtualenv option
-
-Install `virtualenv` and `virtualenvwrapper` tool to manage python environment
-```
-$ pip install virtualenv
-$ pip install virtualenvwrapper
-```
-Open your bash profile:
-```
-$ vim ~/.bash_profile
-```
-and add the following two lines at the end of the file:
-```
-export WORKON_HOME=~/Envs
-source /usr/local/bin/virtualenvwrapper.sh
-```
-And at your terminal, run:
-```
-$ source ~/.bash_profile
-```
-
-To create a virtual environment for the project, follow the command below:
-```
-$ mkvirtualenv --python=python3 <name_of_the_virtual_environment>
-```
-
-
-#### Run django server locally
-Suppose you're already in a virtual environemnt, go to our project root directory,install the dependencies:
-```
-$ pip install -r requirements.txt
-```
-Go the etabotsite directory:
-```
-$ cd etabotsite/
-```
-
-Follow instructions in section "Configure pmp" below
-
-If this is your first time running the project in development mode and you are using local database, you want to create the database table by running the following command:
-```
-$ python manage.py migrate
-$ python manage.py makemigrations
-```
-To run all the unit tests:
-```
-$ python manage.py test
-```
-
-To run the backend server:
-```
-$ python manage.py runserver 127.0.0.1:8000
-```
-
-Vola! You have django server up and running in development mode. Go to you browser, enter the address below:
-http://<url you set in etc/hosts>:8000/index
-You have a sample project management site ready to go!
-
-
-
-### Configure pmp
-(see Advanced settings for details of file definitions)
-- add custom_settings.json to etabotsite directory 
-- add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
-- add sys_email_settings.json to etabotsite directory
-- add ETA algorithm as a git submodule (see section "Optinal: connecting ETA algorithm instead of a placeholder")
-
-#### Advanced settings
-
 ### Settings jsons
 
-## custom_settings.json - general custom settings
+#### custom_settings.json - general custom settings
 ```
 {
     "local_host_url":"<your local host url for testing, e.g. http://127.0.0.1:8000">,
@@ -207,6 +228,33 @@ You have a sample project management site ready to go!
     "CELERY_DEFAULT_QUEUE": "SQS queue name in AWS",
     "eta_crontab_args":<dictionary with crontab settings for example: 'eta_crontab_args':{'hour': 8}
                         see celery.schedules.crontab documentation for details>
+
+    "AUTHLIB_OAUTH_CLIENTS": {
+        "some_platform": {
+            "client_id": "your_client_id_from_3dparty",
+            "client_secret": "your_client_secret_from_3dparty",
+            "access_token_url": "something_3dparty_token",
+            "authorize_url": "something_3dparty_authorize",
+            "client_kwargs": {
+                "audience": "extra_params_if_needed",
+                "scope": "extra_params_if_needed",
+                "token_endpoint_auth_method": "extra_params_if_needed",
+                "token_placement": "extra_params_if_needed",
+                "prompt": "extra_params_if_needed"}
+
+        "atlassian": {
+            "client_id": "example",
+            "client_secret": "example",
+            "access_token_url": "https://auth.atlassian.com/oauth/token",
+            "authorize_url": "https://auth.atlassian.com/authorize",
+            "client_kwargs": {
+                "audience": "api.atlassian.com",
+                "scope": "read:jira-work read:jira-user write:jira-work offline_access",
+                "token_endpoint_auth_method": "client_secret_post",
+                "token_placement": "header",
+                "prompt": "consent"}
+        }            
+
 }
 ```
 
@@ -286,12 +334,33 @@ pip uninstall pycurl
 pip install --install-option="--with-openssl" --install-option="--openssl-dir=/usr/local/opt/openssl" pycurl
 ```
 
+other issues with pycurl may be due to  MacOS depreciating open_ssl
+fix: install open_ssl with brew
+
+may need to: 
+
+```sudo chown -R $(whoami) /usr/local/lib/pkgconfig /usr/local/sbin```
+```brew install openssl```
+openssl is keg-only, which means it was not symlinked into /usr/local,
+because Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries.
+
+If you need to have openssl first in your PATH run:
+```echo 'export PATH="/usr/local/opt/openssl/bin:$PATH"' >> ~/.bash_profile```
+
+For compilers to find openssl you may need to set:
+```export LDFLAGS="-L/usr/local/opt/openssl/lib"```
+```export CPPFLAGS="-I/usr/local/opt/openssl/include"```
+
+For pkg-config to find openssl you may need to set:
+```export PKG_CONFIG_PATH="/usr/local/opt/openssl/lib/pkgconfig"```
+
+
 ### Issue "ERROR: Cannot uninstall 'certifi'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall."
 can be resolved with 
 ```
 pip install -r requirements.txt --ignore-installed certifi
-
-solution for all such packages:
+```
+Or here is solution for all such packages:
 
 ```
 pip install -r requirements.txt --ignore-installed
@@ -310,8 +379,8 @@ pip install --ignore-installed certifi
 start python and make sure you can import pycurl
 if not, try 
 ```
-conda install pycurl
-```
+
+conda install pycurl```
 
 ### Networking errors
 add the following lines in case you run into Networking errors:
