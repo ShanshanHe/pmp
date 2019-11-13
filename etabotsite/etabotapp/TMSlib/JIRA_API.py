@@ -93,18 +93,21 @@ class JIRA_wrapper():
                             options=options)
                     else:
                         if self.oauth_obj is not None:
-                            logging.info('getting user profile to test connection and update token...')
+                            logging.info('getting user profile to test connection and update token if needed...')
                             logging.debug('OAuth object: {}'.format(self.oauth_obj))
                             logging.debug('OAuth object vars: {}'.format(vars(self.oauth_obj)))
                             logging.debug('token: {}'.format(token))
-                            logging.debug('token vars: {}'.format(vars(token)))
+                            logging.info('token vars: {}'.format(vars(token)))
                             token_dict = token.to_token()
                             logging.debug('token dict: {}'.format(token_dict))
                             res = self.oauth_obj.atlassian.get(JIRA_CLOUD_PROFILE, token=token_dict)
                             logging.info(res)
                             logging.debug(vars(res))
+                            logging.info('token vars: {}'.format(vars(token)))
                         options['headers'] = {
-                            'Authorization': 'Bearer {}'.format(token.access_token)}     
+                            'Authorization': 'Bearer {}'.format(token.access_token),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'}     
                         logging.debug('connecting with options: {}'.format(options))                      
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'

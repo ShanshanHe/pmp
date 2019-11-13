@@ -12,16 +12,11 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     add an option not to refresh velocities
     https://etabot.atlassian.net/browse/ET-521
     """
-    if 'oauth_obj' not in kwargs:
-        oauth_obj = None
-        logging.info('estimate_ETA_for_TMS did not get oauth_obj')
-    else:
-        logging.info('estimate_ETA_for_TMS got oauth_obj')
 
     logging.debug(
         'estimate_ETA_for_TMS started for TMS {}, projects: {}'.format(
             tms, projects_set))
-    tms_wrapper = TMSlib.TMSWrapper(tms, oauth_obj=oauth_obj)
+    tms_wrapper = TMSlib.TMSWrapper(tms, oauth_obj=kwargs.get('oauth_obj'))
     tms_wrapper.init_ETApredict(projects_set)
     projects_dict = tms_wrapper.ETApredict_obj.eta_engine.projects
     project_names = []

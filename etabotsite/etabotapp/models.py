@@ -5,7 +5,9 @@ import logging
 logging.getLogger().setLevel(logging.DEBUG)
 logging.info('models import started.')
 sys.path.append(os.path.abspath('etabotapp'))
+logging.info('loading TMSlib')
 import TMSlib.TMS as TMSlib
+logging.info('loaded TMSlib')
 import TMSlib.data_conversion as dc
 
 sys.path.pop(0)
@@ -46,7 +48,7 @@ class OAuth2CodeRequest(models.Model):
                               on_delete=models.CASCADE)    
     name = models.CharField(max_length=40)
     state = models.CharField(max_length=200)
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(null=True)
 
 class OAuth2Token(models.Model):
     """Model for Storing tokens from OAuth2."""
@@ -55,8 +57,8 @@ class OAuth2Token(models.Model):
     name = models.CharField(max_length=40)
     token_type = models.CharField(max_length=20)
     access_token = models.CharField(max_length=2048)
-    refresh_token = models.CharField(max_length=200)
-    expires_at = models.PositiveIntegerField()
+    refresh_token = models.CharField(max_length=200, null=True)
+    expires_at = models.PositiveIntegerField(null=True)
 
     def is_expired(self):
 
@@ -128,11 +130,11 @@ class TMS(models.Model):
     endpoint = models.CharField(max_length=60)
     username = models.CharField(max_length=60, null=True)
     password = EncryptedCharField(max_length=60, null=True)
-    oauth2_token = models.ForeignKey(OAuth2Token, on_delete=models.CASCADE, null=True)
     type = models.CharField(max_length=20, choices=TMSlib.TMS_TYPES)
     connectivity_status = JSONField(null=True)
     name = models.CharField(max_length=60, null=True)
     params = JSONField(null=True)
+    oauth2_token = models.ForeignKey(OAuth2Token, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return "{}@{}".format(self.username, self.endpoint)
