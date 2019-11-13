@@ -30,8 +30,6 @@ import TMSlib.Atlassian_API as Atlassian_API
 
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
 logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
-jira_timout_seconds = 10.
-
 
 class JIRA_wrapper():
     """Handles communication with JIRA API."""
@@ -64,10 +62,14 @@ class JIRA_wrapper():
             username,
             password=None):
         """Connect to jira api.
-
-        TODO: update token if oauth refreshed it.
         """
-        if password is None and (self.TMSconfig is None and self.TMSconfig.oauth2_token is None):
+        if password is not None:
+            auth_method = 'password'
+            jira_timout_seconds = 10.
+        elif self.TMSconfig is not None and self.TMSconfig.oauth2_token is not None:
+            auth_method = 'oauth2'
+            jira_timout_seconds = 30.
+        else:    
             raise NameError('JIRA API key or TMSconfig with token must be provided')
 
         options = {
@@ -78,6 +80,7 @@ class JIRA_wrapper():
             username, options.get('server', 'unkown server')))
 
         jira = None
+
         try:
             jira_place = []
             errors_place = {}
@@ -86,7 +89,7 @@ class JIRA_wrapper():
                 logging.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
-                    if self.TMSconfig is None and self.TMSconfig.oauth2_token is None:
+                    if auth_method=='password':
                         logging.debug('token is None, using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
@@ -114,6 +117,7 @@ class JIRA_wrapper():
             auth_thread = threading.Thread(
                 target=get_jira_object, args=(jira_place, errors_place))
             auth_thread.start()
+
             logging.debug('waiting for {} seconds before checking for thread \
 status'.format(jira_timout_seconds))
             auth_thread.join(jira_timout_seconds)
