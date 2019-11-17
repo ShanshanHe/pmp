@@ -115,7 +115,7 @@ def update_oauth_token(name, token, refresh_token=None, access_token=None):
         return
 
     # update old token
-    TMSs = TMS.objects.filter(oauth2_token == item.id)
+    TMSs = TMS.objects.filter(oauth2_token=item.id)
     logging.debug('found TMSs with this oauth2 token: {}'.format(TMSs))
     for tms_instance in TMSs:
         logging.debug(vars(tms_instance))
@@ -128,7 +128,7 @@ def update_oauth_token(name, token, refresh_token=None, access_token=None):
     logging.debug('TMSs after saving token:')
     for tms_instance in TMSs:
         logging.debug(vars(tms_instance))
-    TMSs = TMS.objects.filter(oauth2_token == item.id)
+    TMSs = TMS.objects.filter(oauth2_token=item.id)
     logging.debug('TMSs after saving token and repeat search:')
     for tms_instance in TMSs:
         logging.debug(vars(tms_instance))
