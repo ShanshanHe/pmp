@@ -172,6 +172,13 @@ class TMS(models.Model):
         logging.debug('self.oauth2_token: {}'.format(self.oauth2_token))
         logging.debug('vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
         logging.debug('token vars: {}'.format(vars(token)))
+
+        logging.debug('refreshing from db')
+        self.refresh_from_db()
+        logging.debug('self.oauth2_token: {}'.format(self.oauth2_token))
+        logging.debug('vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
+        logging.debug('token vars: {}'.format(vars(token)))
+        
         logging.debug('reassigning token to self.oauth2_token...')
         token = self.oauth2_token
         logging.debug('token vars: {}'.format(vars(token)))
