@@ -73,8 +73,7 @@ class TMS_JIRA(ProtoTMS):
             self,
             server_end_point,
             username_login,
-            task_system_schema,
-            oauth_obj=None):
+            task_system_schema):
 
         if task_system_schema is None:
             task_system_schema = {
@@ -86,7 +85,6 @@ class TMS_JIRA(ProtoTMS):
             self, server_end_point, username_login, task_system_schema)
 
         self.jira = None
-        self.oauth_obj = oauth_obj
         logging.debug('TMS_JIRA initalized')
 
     def connect_to_TMS(self, update_tms=True):
@@ -102,8 +100,7 @@ class TMS_JIRA(ProtoTMS):
                 self.server_end_point,
                 self.username_login,
                 password=self.tms_config.password,
-                TMSconfig=self.tms_config,
-                oauth_obj=self.oauth_obj)
+                TMSconfig=self.tms_config)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             self.tms_config.connectivity_status = {
                 'status': 'connected',
@@ -260,8 +257,7 @@ class TMSWrapper(TMS_JIRA):
     def __init__(
             self,
             tms_config,
-            projects=None,
-            oauth_obj=None):
+            projects=None):
         """
         Arguments:
             tms_config - Django model of TMS.
@@ -274,7 +270,6 @@ class TMSWrapper(TMS_JIRA):
 projects: {}'.format(tms_config, projects))
         self.tms_config = tms_config
         self.TMS_type = tms_config.type
-        self.oauth_obj = oauth_obj
         logging.debug('tms_config.type: "{}" of type "{}"'.format(
             tms_config.type, type(tms_config.type)))
         self.ETApredict_obj = None
@@ -304,8 +299,7 @@ projects: {}'.format(tms_config, projects))
                 self,
                 server,
                 tms_config.username,
-                task_system_schema,
-                oauth_obj=self.oauth_obj)
+                task_system_schema)
             # self.TMS = TMS_JIRA()
         else:
             raise NameError(

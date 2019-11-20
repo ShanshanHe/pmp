@@ -30,8 +30,6 @@ import TMSlib.Atlassian_API as Atlassian_API
 
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
 logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
-jira_timout_seconds = 10.
-
 
 class JIRA_wrapper():
     """Handles communication with JIRA API."""
@@ -41,8 +39,7 @@ class JIRA_wrapper():
             server,
             username,
             password=None,
-            TMSconfig=None,
-            oauth_obj=None):
+            TMSconfig=None):
         """Create JIRA_wrapper object for JIRA API communication.
 
         Arguments:
@@ -51,10 +48,8 @@ class JIRA_wrapper():
         username - JIRA username (not used for OAuth2.0 (password==None, token not None)
         password - JIRA password or API key (not needed if OAuth2.0 token is passed
         TMSconfig - TMS django model (not needed if password is passed)
-        oauth_obj - authlib oauth object for automatically refreshing token
         """
         self.gh = None
-        self.oauth_obj=oauth_obj        
         self.username = username
         self.max_results_jira_api = 50
         self.TMSconfig = TMSconfig
@@ -67,10 +62,14 @@ class JIRA_wrapper():
             username,
             password=None):
         """Connect to jira api.
-
-        TODO: update token if oauth refreshed it.
         """
-        if password is None and (self.TMSconfig is None and self.TMSconfig.oauth2_token is None):
+        if password is not None:
+            auth_method = 'password'
+            jira_timout_seconds = 10.
+        elif self.TMSconfig is not None and self.TMSconfig.oauth2_token is not None:
+            auth_method = 'oauth2'
+            jira_timout_seconds = 30.
+        else:    
             raise NameError('JIRA API key or TMSconfig with token must be provided')
 
         options = {
@@ -81,6 +80,7 @@ class JIRA_wrapper():
             username, options.get('server', 'unkown server')))
 
         jira = None
+
         try:
             jira_place = []
             errors_place = {}
@@ -89,17 +89,13 @@ class JIRA_wrapper():
                 logging.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
-                    if token is None:
+                    if auth_method=='password':
                         logging.debug('token is None, using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
                             options=options)
                     else:
-                        if self.oauth_obj is not None:
-                            logging.info('getting user profile to test connection and update token if needed...')
-                            logging.debug('OAuth object: {}'.format(self.oauth_obj))
-                            logging.debug('OAuth object vars: {}'.format(vars(self.oauth_obj)))
-                            token = self.TMSconfig.get_fresh_token()
+                        token = self.TMSconfig.get_fresh_token()
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',
@@ -121,6 +117,7 @@ class JIRA_wrapper():
             auth_thread = threading.Thread(
                 target=get_jira_object, args=(jira_place, errors_place))
             auth_thread.start()
+
             logging.debug('waiting for {} seconds before checking for thread \
 status'.format(jira_timout_seconds))
             auth_thread.join(jira_timout_seconds)
