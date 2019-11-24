@@ -7,94 +7,6 @@ backend data infrastructure and server for Smart project management tool made fo
 - Docker version (typically used in production)
 - non-Docker version (typically used for development to allow faster iterations)
 
-### Docker version deployment
-please follow these steps:
-
-#### Docker deployment Prequisites:
-* Have docker, docker compose installed
-* Knowledge of Django and Nginx
-* If needed add your dns to hosts for testing with your url locally, for example:
-  ``` 
-  $ sudo vi /etc/hosts
-  ```
-  Add the following line to the end of the file:
-  ```
-  127.0.0.1 <your web-app url, e.g. app.etabot.ai>
-  ```
-
-* Optionally to start, required for full operation:
-- create/get the following json files in/etabotsite (see descriptions in "Settings jsons" section)
-    1. custom_settings.json - general custom settings (end points, database, messenging service, etc)
-    2. django_keys_prod.json - Django encryption keys used in production mode
-    3. sys_email_settings.json - used for email communication setup
-- git http url to an ETA algorithm
-
-#### Bring up pmp services which include nginx and django
-Clone the repo to your server
-```
-git clone https://github.com/ShanshanHe/pmp.git
-```
-
-### Follow steps in "Configure pmp" section in appendix
-
-### Build docker images and create volumes
-At the root directory, run the following commands:
-```
-$ docker-compose build --no-cache
-$ docker-compose up --no-start --force-recreate
-```
-
-The two commands above will build two docker images: `pmp-nginx` and `pmp-django`, and then run both images as two containers. At the same time, they create two docker local volumes, you can check the volumes using the following command:
-
-```
-$ docker volume ls
-DRIVER              VOLUME NAME
-local               pmp_pmp-django-static
-local               pmp_pmp-nginx-cert
-```
-
-In our nginx, we have SSL enabled, so please make sure you have certificates ready. Now we are going to create a temporary container to load the certificate files onto the `pmp_pmp-nginx-cert` volume for nginx to use. Volume data persists outside of a containers lifetime and so even when we have finished with this temporary volume the certificate files will still be there for the nginx service to see.
-```
-$ docker run --name temp-volume -v pmp_pmp-nginx-cert:/etc/ssl/certs busybox
-```
-Here we are creating the container `temp-volume` using the busybox base image and using the same named volume `pmp_pmp-nginx-cert` mounted to the same path in the container as the nginx service would.
-Note: Using the same mount path is not necessary.
-The previous command will create the container but it will exit immediately but we dont need it running to manage the volume.
-We now copy our certificate files to the volume through this container. The following commands copy these certs and rename these files to the `pmp_pmp-nginx-cert` volume via the `temp_volume` container.
-
-Security Note: for your production please generate your own pair of keys
-
-```
-$ docker cp nginx/certs/cert.pem temp-volume:/etc/ssl/certs/cert.pem
-$ docker cp nginx/certs/key.pem temp-volume:/etc/ssl/certs/key.pem
-```
-
-### Running docker containers
-Now we run the following commands again:
-```
-$ docker-compose build --no-cache
-$ docker-compose up --force-recreate
-```
-Ensure all containers are up and running by:
-```
-$ docker ps
-```
-And you should see three containers running.
-
-if you do not want celery container that runs periodic tasks - stop it by:
-```
-docker stop <container_id>
-```
-where <container_id> can be found from the earlier docker ps command
-
-if you want to start the celery container on another machine, run this after images are built instead of docker-compose up
-```
-docker run pmp_celery
-```
-
-Vola, you successfully deployed your `pmp` project! Type the ip address of your server in your browser to visit the default `pmp` webpage. 
-
-Hope you enjoy!
 
 ## non-Docker version deployment
 ### To run django seperately for development, please follow the process below:
@@ -107,7 +19,7 @@ If you already know how to create a python virtual environment, you can skip thi
 
 ### Choose between virtualenv or conda:
 
-### conda option (recommended)
+### conda option (recommended for less dependencies troubleshooting)
     follow https://docs.conda.io/projects/conda/en/latest/user-guide/install/
     create virtual environement following https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 E.g.:
@@ -146,6 +58,39 @@ conda activate etabot
     ```
 
 
+
+### Configure pmp
+### Note: your teammates might already have configuration files - good idea to ask them
+
+(see Advanced settings for details of file definitions)
+- add custom_settings.json to etabotsite directory 
+- add sys_email_settings.json to etabotsite directory
+- optionally add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
+- optionally add ETA algorithm as a git submodule (see section "Optinal: connecting ETA algorithm instead of a placeholder")
+
+### Database setup
+We support Postgres database, we no longer support sqlite3 (default local Django Database).
+
+For local development you can setup a postgres database in a few minutes using docker container:
+
+```docker pull postgres```
+
+```docker run --name postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -v ~/dir/:/var/lib/postgresql/data -d postgres```
+
+Execute commands (e.g. in a SQLWorkbench)
+```SET AUTOCOMMIT = ON;```
+```CREATE USER etabot WITH PASSWORD 'somepassword';```
+```CREATE DATABASE etabot_db WITH OWNER etabot;```
+
+change custom_settings.json with the new db interface (see section *Settings jsons*)
+
+Go the etabotsite directory:
+```
+$ cd etabotsite/
+```
+
+```$ python manage.py migrate```
+
 #### Run django server locally
 
 *Prerequisite*: enable your virtual environemnt
@@ -159,22 +104,12 @@ Go the etabotsite directory:
 $ cd etabotsite/
 ```
 
-### Configure pmp
-
-### Note: your teammates might already have configuration files - good idea to ask them
-
-(see Advanced settings for details of file definitions)
-- add custom_settings.json to etabotsite directory 
-- add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
-- add sys_email_settings.json to etabotsite directory
-- add ETA algorithm as a git submodule (see section "Optinal: connecting ETA algorithm instead of a placeholder")
-
 If this is your first time running the project in development mode and you are using local database, you want to create the database table by running the following command:
 ```
 $ python manage.py migrate
 ```
 
-Note: we no longer use python manage.py makemigrations to create migrations. The migration files are part of the code base now since automatic makemigrations miss certain,
+Note: we no longer use python manage.py makemigrations to create migrations during setup. The migration files are part of the code base now since automatic makemigrations miss certain,
 
 To run the backend server:
 ```
@@ -182,8 +117,19 @@ $ python manage.py runserver 127.0.0.1:8000
 ```
 
 Vola! You have django server up and running in development mode. Go to you browser, enter the address below:
-http://<url you set in etc/hosts>:8000
-You have a sample project management site ready to go!
+http://localhost:8000
+
+
+## Database schema changes during development
+There is one official way to define database schema - that is defined by Django migration files, which are part of code base.
+This is needed to work around failures of automatic makemigrations and migrate routine (e.g. some models.py schema changes are not properly reflected in migrations files, some migration files commands are not altering actual database properly).
+
+If your code requires database schema change, please run
+```python manage.py makemigrations```
+```python manage.py migrate```
+and test the results.
+If needed, edit new migration files manually.
+Add migration files to commit.
 
 
 ## Testing 
@@ -213,7 +159,13 @@ $ python manage.py test
     "local_host_url":"<your local host url for testing, e.g. http://127.0.0.1:8000">,
     "prod_host_url":"<your production host url for testing, e.g. https://app.etabot.ai>"
 
-    "db":"Django database definition. If no such key found, a local sqlite3 database will be used."
+    "db": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "your_db_name",
+        "USER": "your_username",
+        "PASSWORD": "your_password",
+        "HOST": "host, e.g. localhost"
+    },    
 
     "MESSAGE_BROKER":"rabbitmq" or "aws",
     # in case of rabbitmq:
@@ -396,3 +348,92 @@ To free up space from unused stale containers:
 ```
 docker images -q --filter dangling=true | xargs docker rmi
 ```
+
+### Docker version deployment
+please follow these steps:
+
+#### Docker deployment Prequisites:
+* Have docker, docker compose installed
+* Knowledge of Django and Nginx
+* If needed add your dns to hosts for testing with your url locally, for example:
+  ``` 
+  $ sudo vi /etc/hosts
+  ```
+  Add the following line to the end of the file:
+  ```
+  127.0.0.1 <your web-app url, e.g. app.etabot.ai>
+  ```
+
+* Optionally to start, required for full operation:
+- create/get the following json files in/etabotsite (see descriptions in "Settings jsons" section)
+    1. custom_settings.json - general custom settings (end points, database, messenging service, etc)
+    2. django_keys_prod.json - Django encryption keys used in production mode
+    3. sys_email_settings.json - used for email communication setup
+- git http url to an ETA algorithm
+
+#### Bring up pmp services which include nginx and django
+Clone the repo to your server
+```
+git clone https://github.com/ShanshanHe/pmp.git
+```
+
+### Follow steps in "Configure pmp" section in appendix
+
+### Build docker images and create volumes
+At the root directory, run the following commands:
+```
+$ docker-compose build --no-cache
+$ docker-compose up --no-start --force-recreate
+```
+
+The two commands above will build two docker images: `pmp-nginx` and `pmp-django`, and then run both images as two containers. At the same time, they create two docker local volumes, you can check the volumes using the following command:
+
+```
+$ docker volume ls
+DRIVER              VOLUME NAME
+local               pmp_pmp-django-static
+local               pmp_pmp-nginx-cert
+```
+
+In our nginx, we have SSL enabled, so please make sure you have certificates ready. Now we are going to create a temporary container to load the certificate files onto the `pmp_pmp-nginx-cert` volume for nginx to use. Volume data persists outside of a containers lifetime and so even when we have finished with this temporary volume the certificate files will still be there for the nginx service to see.
+```
+$ docker run --name temp-volume -v pmp_pmp-nginx-cert:/etc/ssl/certs busybox
+```
+Here we are creating the container `temp-volume` using the busybox base image and using the same named volume `pmp_pmp-nginx-cert` mounted to the same path in the container as the nginx service would.
+Note: Using the same mount path is not necessary.
+The previous command will create the container but it will exit immediately but we dont need it running to manage the volume.
+We now copy our certificate files to the volume through this container. The following commands copy these certs and rename these files to the `pmp_pmp-nginx-cert` volume via the `temp_volume` container.
+
+Security Note: for your production please generate your own pair of keys
+
+```
+$ docker cp nginx/certs/cert.pem temp-volume:/etc/ssl/certs/cert.pem
+$ docker cp nginx/certs/key.pem temp-volume:/etc/ssl/certs/key.pem
+```
+
+### Running docker containers
+Now we run the following commands again:
+```
+$ docker-compose build --no-cache
+$ docker-compose up --force-recreate
+```
+Ensure all containers are up and running by:
+```
+$ docker ps
+```
+And you should see three containers running.
+
+if you do not want celery container that runs periodic tasks - stop it by:
+```
+docker stop <container_id>
+```
+where <container_id> can be found from the earlier docker ps command
+
+if you want to start the celery container on another machine, run this after images are built instead of docker-compose up
+```
+docker run pmp_celery
+```
+
+Vola, you successfully deployed your `pmp` project! Type the ip address of your server in your browser to visit the default `pmp` webpage. 
+
+Hope you enjoy!
