@@ -1,3 +1,4 @@
+.gitmodules
 db.sqlite3
 etabotapp/static/ng2_app/.DS_Store
 *.csv
