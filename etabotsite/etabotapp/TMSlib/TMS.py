@@ -23,10 +23,12 @@ try:
     sys.path.append('etabot_algo/')
     logging.debug(sys.path)
     import etabot_algo.ETApredict as ETApredict
+    import etabot_algo.ETAreport as ETAreport
 except Exception as e:
-    logging.warning('cannot load ETApredict due to "{}"\
- Loading ETApredict_placeholder'.format(e))
+    logging.warning('cannot load ETApredict or ETAreport due to "{}"\
+ Loading ETApredict_placeholder, ETAreport_placeholder instead'.format(e))
     import TMSlib.ETApredict_placeholder as ETApredict
+    import TMSlib.ETAreport_placeholder as ETAreport
 logging.debug('loading TMSlib.TMS: done')
 
 logger = logging.getLogger()
@@ -64,6 +66,9 @@ class ProtoTMS():
         raise NotImplementedError(
             'default estimate task deadlines is not implemented')
 
+    def generate_projects_status_report(self):
+        raise NotImplementedError(
+            'generate_projects_status_report is not implemented yet')
 
 class TMS_JIRA(ProtoTMS):
 
@@ -259,6 +264,9 @@ class TMSWrapper(TMS_JIRA):
             tms_config,
             projects=None):
         """
+        Task Management System Wrapper - generalized TMS to 
+        support multiple platforms (JIRA, Asana, Trello, etc)
+
         Arguments:
             tms_config - Django model of TMS.
 
@@ -327,3 +335,14 @@ Connectivity status: {}'.format(self.tms_config.connectivity_status))
 projects: "{}", hold tight!'.format(self, project_names))
         self.ETApredict_obj.generate_task_list_view_with_ETA(
             project_names, **kwargs)
+
+    def generate_projects_status_report(self):
+        """Generate JSON with a report.
+
+        To be reported periodically (e.g. daily) or on demand
+        via email, dashboard, Slack, etc.
+
+        """
+        report_json = ETAreport.generate_status_report(
+            self.ETApredict_obj, **kwargs)
+        return report_json
