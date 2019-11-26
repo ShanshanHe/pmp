@@ -6,7 +6,7 @@ from .views import ParseTMSprojects
 from .views import index
 from .views import activate
 from .views import email_verification
-from .views import atlassian_callback
+from .views import AtlassianOAuthCallback
 from .views import AtlassianOAuth
 from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -52,7 +52,7 @@ urlpatterns += [
         auth_views.PasswordResetCompleteView.as_view(),
         name='password_reset_complete'),
     
-    url(r'^atlassian_callback', atlassian_callback, name='atlassian_callback'),
+    url(r'^atlassian_callback', AtlassianOAuthCallback.as_view(), name='atlassian_callback'),
     # catch-all pattern for compatibility with the Angular routes
     url(r'^(?P<path>.*)$', index),
     url(r'^$', index)
