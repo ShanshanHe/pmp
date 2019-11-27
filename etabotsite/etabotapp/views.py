@@ -177,6 +177,7 @@ class ParseTMSprojects(APIView):
             tms_set = get_tms_set_by_id(request)
         except Exception as e:
             response_message = 'Failed to parse tms id due to "{}"'.format(e)
+            logging.error(response_message)
             return Response(
                 response_message,
                 status=status.HTTP_400_BAD_REQUEST)
@@ -193,6 +194,7 @@ Please update your login credentials.'
             else:
                 response_message = 'unknown error. If the issue persists, \
 please contact us at hello@etabot.ai.'
+            logging.error(response_message)
             return Response(
                 response_message,
                 status=status.HTTP_400_BAD_REQUEST)
