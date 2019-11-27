@@ -151,20 +151,18 @@ class TMSViewSet(viewsets.ModelViewSet):
     """
     This viewset automatically provides `list`, `create`, `retrieve`,
     `update` and `destroy` actions.
-
-    Additionally we also provide an extra `highlight` action.
     """
     serializer_class = TMSSerializer
     permission_classes = (permissions.IsAuthenticated,
                           IsOwner,)
 
     def get_queryset(self):
-        if self.request.user.is_superuser:
-            return TMS.objects.all()
+        # if self.request.user.is_superuser:
+        #     return TMS.objects.all()
         return TMS.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        res = serializer.save(owner=self.request.user)
 
 
 class ParseTMSprojects(APIView):
@@ -294,15 +292,20 @@ class AtlassianOAuthCallback(APIView):
         token_item.save()
         logging.debug('token saved: {}'.format(vars(token_item)))
 
-        self.add_update_atlassian_tms(user, token_item)
-        return redirect('/tmss')
+        new_tms_ids = self.add_update_atlassian_tms(user, token_item)
+        tms_ids_list_string = construct_new_tms_ids_query_params(new_tms_ids)
+        return redirect('/tmss' + tms_ids_list_string)
 
 
     def add_update_atlassian_tms(self, owner, token_item):
+        """Get all available systems for the token and pass to Django models.
+
+        Return list of ids for newly created TMS Django models
+        """
         atlassian = Atlassian_API.AtlassianAPI(token_item)
         resources = atlassian.get_accessible_resources()
         logging.debug(resources)
-
+        new_tms_ids = []
         for resource in resources:
             TMSs = TMS.objects.all().filter(
                 endpoint=resource['url'],
@@ -319,6 +322,7 @@ class AtlassianOAuthCallback(APIView):
                     params=resource,
                     oauth2_token=token_item)
                 new_TMS.save()
+                new_tms_ids.append(new_TMS.id)
                 logging.debug('created new TMS {}'.format(new_TMS))
             else:
                 for existing_TMS in TMSs:
@@ -330,6 +334,14 @@ class AtlassianOAuthCallback(APIView):
                     existing_TMS.save()
                     logging.debug('updated {}'.format(existing_TMS))
         logging.debug('add_update_atlassian_tms is done')
+        return new_tms_ids
+
+def construct_new_tms_ids_query_params(new_tms_ids):
+    tms_ids_list_string = ''
+    if len(new_tms_ids) > 0:
+        tms_ids_list_string = '?' + '&'.join([
+            'new_tms_ids={}'.format(tms_id) for tms_id in new_tms_ids])
+    return tms_ids_list_string
 
 def get_tms_set_by_id(request):
     """Return tms_set on success or request Response."""

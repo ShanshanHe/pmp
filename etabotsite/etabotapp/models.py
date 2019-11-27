@@ -219,13 +219,13 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
         ActivationProcessor.email_token(user)
 
-@receiver(post_save, sender=TMS)
-def parse_tms(sender, instance, created, **kwargs):
-    if created:
-        logging.debug('new TMS instance created - parsing projects')
-        parse_projects_for_TMS(instance, **kwargs)
-    else:
-        logging.debug('saving existing TMS - no need to parse projects')
+# @receiver(post_save, sender=TMS)
+# def parse_tms(sender, instance, created, **kwargs):
+#     if created:
+#         logging.debug('new TMS instance created - parsing projects')
+#         parse_projects_for_TMS(instance, **kwargs)
+#     else:
+#         logging.debug('saving existing TMS - no need to parse projects')
 
 
 def parse_projects_for_TMS(instance, **kwargs):
