@@ -13,7 +13,8 @@ import TMSlib.Atlassian_API as Atlassian_API
 sys.path.pop(0)
 
 from django.db import models
-from jsonfield import JSONField
+# from jsonfield import JSONField
+from django.contrib.postgres.fields import JSONField
 
 from django.db.models.signals import post_save, pre_save
 from django.contrib.auth.models import User
@@ -27,6 +28,9 @@ from django.utils.translation import gettext as _
 import datetime
 import time
 import pytz
+
+from django.conf import settings
+from authlib.django.client import OAuth
 
 class OAuth1Token(models.Model):
     owner = models.ForeignKey('auth.User', related_name='OAuth1Tokens',
@@ -232,7 +236,8 @@ def parse_projects_for_TMS(instance, **kwargs):
     Arguments:
         instance - Django TMS object instance
     """
-    logging.debug('parse_tms started with kwargs: {}'.format(kwargs))
+    logging.info('parse_tms started')
+    logging.debug('parse_projects_for_TMS kwargs: {}'.format(kwargs))
     existing_projects = Project.objects.filter(project_tms=instance.id)
     TMS_w1 = TMSlib.TMSWrapper(
         instance,
@@ -247,6 +252,7 @@ def parse_projects_for_TMS(instance, **kwargs):
     for p in existing_projects:
         existing_projects_dict[p.name] = p
 
+    logging.info('passing parsed projects info to Django models.')
     new_projects = []
     updted_projects = []
     if projects_dict is not None:
@@ -275,15 +281,12 @@ def parse_projects_for_TMS(instance, **kwargs):
                 p.mode = attrs.get('mode', p.mode)
                 p.save()
                 updted_projects.append(project_name)
-    logging.debug('parse_tms has finished')
+    logging.info('parse_tms has finished')
     return "New projects found and parsed: {}. \
  Updated existing projects: {}".format(
         ', '.join(new_projects),
         ', '.join(updted_projects))
 
-
-from django.conf import settings
-from authlib.django.client import OAuth
 
 PROD_HOST_URL = getattr(settings, "PROD_HOST_URL", "http://localhost:8000")
 atlassian_redirect_uri = PROD_HOST_URL + '/atlassian_callback'

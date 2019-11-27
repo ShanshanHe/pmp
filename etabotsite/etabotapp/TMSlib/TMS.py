@@ -319,7 +319,7 @@ server_end_point: {}, username_login: {}'.format(
             self.server_end_point, self.username_login))
 
     def init_ETApredict(self, projects):
-        logging.debug('init_ETApredict started')
+        logging.info('init_ETApredict started')
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
         try:
             logging.debug('user_velocity_per_project: {}'.format(
@@ -327,7 +327,7 @@ server_end_point: {}, username_login: {}'.format(
         except Exception as e:
             logging.warning('user_velocity_per_project error: {}'.format(e))
         self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)
-        logging.debug('TMSwrapper: init_ETApredict finished. \
+        logging.info('TMSwrapper: init_ETApredict finished. \
 Connectivity status: {}'.format(self.tms_config.connectivity_status))
 
     def estimate_tasks(self, project_names=None, **kwargs):

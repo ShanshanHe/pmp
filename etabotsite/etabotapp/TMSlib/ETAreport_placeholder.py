@@ -19,8 +19,8 @@ def generate_status_report(ETApredict_obj, **kwargs):
         'projects_total': 1,
         'deadlines_on_track': 3,
         'deadlines_total': 5,
-        'projects':[
-            'Cheburashka': {
+        'projects':{
+            'Cheburashka':{
                 'overdue':[
                     {
                         'task': 'build friends house',
@@ -49,7 +49,7 @@ def generate_status_report(ETApredict_obj, **kwargs):
                         'link': 'https://xkcd.com?id=123'
                     }
                     ]
-                }
+                },
             'Buckwheat': {
                 'overdue':[
                     {
@@ -68,7 +68,7 @@ def generate_status_report(ETApredict_obj, **kwargs):
                     }
                     ]
                 }                
-            ]
+            }
 
         }
     return report
