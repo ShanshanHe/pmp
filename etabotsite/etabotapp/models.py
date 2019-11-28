@@ -219,13 +219,13 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
         ActivationProcessor.email_token(user)
 
-@receiver(post_save, sender=TMS)
-def parse_tms(sender, instance, created, **kwargs):
-    if created:
-        logging.debug('new TMS instance created - parsing projects')
-        parse_projects_for_TMS(instance, **kwargs)
-    else:
-        logging.debug('saving existing TMS - no need to parse projects')
+# @receiver(post_save, sender=TMS)
+# def parse_tms(sender, instance, created, **kwargs):
+#     if created:
+#         logging.debug('new TMS instance created - parsing projects')
+#         parse_projects_for_TMS(instance, **kwargs)
+#     else:
+#         logging.debug('saving existing TMS - no need to parse projects')
 
 
 def parse_projects_for_TMS(instance, **kwargs):
@@ -254,7 +254,7 @@ def parse_projects_for_TMS(instance, **kwargs):
 
     logging.info('passing parsed projects info to Django models.')
     new_projects = []
-    updted_projects = []
+    updated_projects = []
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
             velocity_json = dc.get_velocity_json(
@@ -280,12 +280,16 @@ def parse_projects_for_TMS(instance, **kwargs):
                     'project_settings', p.project_settings)
                 p.mode = attrs.get('mode', p.mode)
                 p.save()
-                updted_projects.append(project_name)
+                updated_projects.append(project_name)
     logging.info('parse_tms has finished')
-    return "New projects found and parsed: {}. \
- Updated existing projects: {}".format(
-        ', '.join(new_projects),
-        ', '.join(updted_projects))
+    response_message = ''
+    if len(new_projects) > 0:
+        response_message += "New projects found and parsed: {}.".format(
+            ', '.join(new_projects))        
+    if len(updated_projects) > 0:
+        response_message += " Updated existing projects: {}.".format(
+            ', '.join(updated_projects))
+    return response_message
 
 
 PROD_HOST_URL = getattr(settings, "PROD_HOST_URL", "http://localhost:8000")
