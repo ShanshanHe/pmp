@@ -170,7 +170,7 @@ class ParseTMSprojects(APIView):
     def get(self, request, format=None):
         logging.debug('request.query_params: "{}"'.format(
             request.query_params))
-
+        response_message = ''
         try:
             tms_set = get_tms_set_by_id(request)
         except Exception as e:
@@ -182,8 +182,10 @@ class ParseTMSprojects(APIView):
         logging.debug('starting projects parsing for tms_set: {}'.format(
             tms_set))
         try:
+            res_messages = []
             for tms in tms_set:
-                parse_projects_for_TMS(tms)
+                res_messages.append(parse_projects_for_TMS(tms))
+            response_message = '\n'.join(res_messages)
         except Exception as e:
             logging.debug('parse_projects_for_TMS failed due to {}'.format(e))
             if 'not connected to JIRA' in str(e):
@@ -197,9 +199,8 @@ please contact us at hello@etabot.ai.'
                 response_message,
                 status=status.HTTP_400_BAD_REQUEST)
 
-        response_message = 'parsed'
         return Response(
-            response_message,
+            json.dumps({'result': response_message}),
             status=status.HTTP_200_OK)
 
 

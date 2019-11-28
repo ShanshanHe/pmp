@@ -187,6 +187,30 @@ ORDER BY Rank ASC'.format(
             len(done_issues)))
         return done_issues
 
+    def prepare_for_get_tasks(self, assignee=None, project_names=None):
+        if self.jira is None:
+            raise NameError('not connected to JIRA')
+
+        if assignee is None:
+            assignee = 'currentUser()'
+        extra_filter = self.construct_extra_filter(project_names=project_names)
+
+        return (assignee, extra_filter)
+
+    def get_future_sprints_tasks_ranked(self, assignee=None, project_names=None):
+        """Get all open tasks sorted by rank from future sprints.
+
+        Return list of tasks.
+        """
+        (assignee, extra_filter) = self.prepare_for_get_tasks(
+            assignee=assignee, project_names=project_names)
+
+        future_sprints_tasks = self.jira.get_jira_issues(
+            'assignee={assignee} AND status != "Done" \
+AND sprint in futureSprints() {extra_filter} ORDER BY Rank ASC'.format(
+                assignee=assignee, extra_filter=extra_filter))
+        return future_sprints_tasks
+
     def get_all_open_tasks_ranked(self, assignee=None, project_names=None):
         """Get all open tasks sorted by rank.
 
@@ -195,13 +219,11 @@ ORDER BY Rank ASC'.format(
             open in open sprint
             in progress not open sprint
             open not open sprint
-            backlog"""
-        if self.jira is None:
-            raise NameError('not connected to JIRA')
+            backlog
+        """
+        (assignee, extra_filter) = self.prepare_for_get_tasks(
+            assignee=assignee, project_names=project_names)
 
-        if assignee is None:
-            assignee = 'currentUser()'
-        extra_filter = self.construct_extra_filter(project_names=project_names)
         in_progress_issues_current_sprint = self.jira.get_jira_issues(
             'assignee={assignee} AND status="In Progress" \
 AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
