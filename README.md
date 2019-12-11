@@ -131,6 +131,9 @@ and test the results.
 If needed, edit new migration files manually.
 Add migration files to commit.
 
+## Trouble Shooting
+production app.etabot.ai can't be reached - check that your /etc/hosts is not pointing to localhost
+
 
 ## Testing 
 
