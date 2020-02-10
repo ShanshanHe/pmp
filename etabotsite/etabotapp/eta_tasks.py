@@ -3,13 +3,14 @@
 import TMSlib.data_conversion as dc
 import TMSlib.TMS as TMSlib
 import logging
+import reports
 
 
 def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     """Estimates ETA for a given TMS and projects_set.
 
     Arguments:
-        tms - Django model of TMS. 
+        tms - Django model of TMS.
 
     Todo:
     add an option not to refresh velocities
@@ -44,3 +45,22 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
         project_names=project_names,
         **kwargs)
     logging.debug('estimate_ETA_for_TMS finished')
+
+def generate_email_report(tms, projects_set, **kwargs):
+    """Generate the email report for a given TMS and projects_set.
+
+    Arguments:
+        tms - Django model of TMS.
+
+    Todo:
+    Build report structure
+    """
+    logging.debug(
+        'geneating email report for TMS {}, projects: {}'.format(
+            tms, projects_set))
+    tms_wrapper = TMSlib.TMSWrapper(tms)
+    tms_wrapper.init_ETApredict(projects_set)
+    raw_status_report = tms_wrapper.generate_status_report(
+        tms_wrapper.ETApredict_obj)
+    formatted_report = reports.generate_formatted_report(raw_status_report)
+    
