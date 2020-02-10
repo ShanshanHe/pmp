@@ -27,6 +27,7 @@ logger = logging.getLogger()
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
 LOCAL_MODE = (PLATFORM == 'Darwin')
+LOCAL_MODE = True
 
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
@@ -250,7 +251,10 @@ if 'AUTHLIB_OAUTH_CLIENTS' in custom_settings:
     AUTHLIB_OAUTH_CLIENTS = custom_settings.get('AUTHLIB_OAUTH_CLIENTS')
     logging.debug('loaded AUTHLIB_OAUTH_CLIENTS={}'.format(AUTHLIB_OAUTH_CLIENTS))
 else:
-    logging.warning('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
+    if not LOCAL_MODE:
+        raise NameError('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
+    else:
+        logging.warning('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -283,7 +287,10 @@ if 'SYS_EMAIL_SETTINGS'  in custom_settings:
         'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
     DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
 else:
-    logging.warning('cannot load sys_email_settings as its not in custom_settings.json')
+    if not LOCAL_MODE:
+        raise NameError('cannot load sys_email_settings as its not in custom_settings.json')
+    else:
+        logging.warning('cannot load sys_email_settings as its not in custom_settings.json')
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
