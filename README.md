@@ -63,8 +63,7 @@ conda activate etabot
 ### Note: your teammates might already have configuration files - good idea to ask them
 
 (see Advanced settings for details of file definitions)
-- add custom_settings.json to etabotsite directory 
-- add sys_email_settings.json to etabotsite directory
+- add custom_settings.json to etabotsite directory
 - optionally add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
 - optionally add ETA algorithm as a git submodule (see section "Optinal: connecting ETA algorithm instead of a placeholder")
 
@@ -135,7 +134,7 @@ Add migration files to commit.
 production app.etabot.ai can't be reached - check that your /etc/hosts is not pointing to localhost
 
 
-## Testing 
+## Testing
 
 To run all the unit tests - from etabotsite directory:
 ```
@@ -146,7 +145,7 @@ $ python manage.py test
 
 ### local DNS setting
 * Add your dns to hosts, for example:
-  ``` 
+  ```
   $ sudo vi /etc/hosts
   ```
   Add the following line to the end of the file:
@@ -196,6 +195,7 @@ $ python manage.py test
                 "token_endpoint_auth_method": "extra_params_if_needed",
                 "token_placement": "extra_params_if_needed",
                 "prompt": "extra_params_if_needed"}
+              },
 
         "atlassian": {
             "client_id": "example",
@@ -208,7 +208,18 @@ $ python manage.py test
                 "token_endpoint_auth_method": "client_secret_post",
                 "token_placement": "header",
                 "prompt": "consent"}
-        }            
+              }
+      },
+
+      "SYS_EMAIL_SETTINGS":{
+        "DJANGO_SYS_EMAIL": "username for email server",
+        "DJANGO_SYS_EMAIL_PWD":"password for email server",
+        "DJANGO_EMAIL_HOST":"email server host, e.g. smtp.sendgrid.net",
+        "DJANGO_EMAIL_USE_TLS":bool for TLS,
+        "DJANGO_EMAIL_PORT":email server port number port number,
+        "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":Django email token expiration period in seconds (86400 = 24h)
+      },
+
 
 }
 ```
@@ -232,15 +243,6 @@ $ python generate_key.py
 ## django_keys_prod.json
 same as django_keys.json but keys for production. Keys will be checked against exposed dev keys from git repo.
 
-## sys_email_settings.json - used for email communication setup
-```
-    "DJANGO_SYS_EMAIL": "username for email server",
-    "DJANGO_SYS_EMAIL_PWD":"password for email server",
-    "DJANGO_EMAIL_HOST":"email server host, e.g. smtp.sendgrid.net",
-    "DJANGO_EMAIL_USE_TLS":bool for TLS,
-    "DJANGO_EMAIL_PORT":email server port number port number,
-    "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":Django email token expiration period in seconds (86400 = 24h)
-```
 
 
 ### server end-point selection
@@ -282,7 +284,7 @@ celery -A etabotsite beat -l INFO
 
 #### Installation issues
 
-### Issue "ImportError: The curl client requires the pycurl library." 
+### Issue "ImportError: The curl client requires the pycurl library."
 can be resolved on Mac with:
 ```
 pip uninstall pycurl
@@ -292,7 +294,7 @@ pip install --install-option="--with-openssl" --install-option="--openssl-dir=/u
 other issues with pycurl may be due to  MacOS depreciating open_ssl
 fix: install open_ssl with brew
 
-may need to: 
+may need to:
 
 ```sudo chown -R $(whoami) /usr/local/lib/pkgconfig /usr/local/sbin```
 ```brew install openssl```
@@ -311,7 +313,7 @@ For pkg-config to find openssl you may need to set:
 
 
 ### Issue "ERROR: Cannot uninstall 'certifi'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall."
-can be resolved with 
+can be resolved with
 ```
 pip install -r requirements.txt --ignore-installed certifi
 ```
@@ -332,7 +334,7 @@ pip install --ignore-installed certifi
 ```
 ### Celery issue with pycurl.
 start python and make sure you can import pycurl
-if not, try 
+if not, try
 ```
 
 conda install pycurl```
@@ -341,7 +343,7 @@ conda install pycurl```
 add the following lines in case you run into Networking errors:
 Edit /etc/default/docker and add your DNS server to the following line:
 
-Example 
+Example
 DOCKER_OPTS="--dns 8.8.8.8 --dns 10.252.252.252"
 
 
@@ -359,7 +361,7 @@ please follow these steps:
 * Have docker, docker compose installed
 * Knowledge of Django and Nginx
 * If needed add your dns to hosts for testing with your url locally, for example:
-  ``` 
+  ```
   $ sudo vi /etc/hosts
   ```
   Add the following line to the end of the file:
@@ -369,9 +371,8 @@ please follow these steps:
 
 * Optionally to start, required for full operation:
 - create/get the following json files in/etabotsite (see descriptions in "Settings jsons" section)
-    1. custom_settings.json - general custom settings (end points, database, messenging service, etc)
+    1. custom_settings.json - general custom settings (end points, database, messenging service, system email settings, etc)
     2. django_keys_prod.json - Django encryption keys used in production mode
-    3. sys_email_settings.json - used for email communication setup
 - git http url to an ETA algorithm
 
 #### Bring up pmp services which include nginx and django
@@ -437,6 +438,6 @@ if you want to start the celery container on another machine, run this after ima
 docker run pmp_celery
 ```
 
-Vola, you successfully deployed your `pmp` project! Type the ip address of your server in your browser to visit the default `pmp` webpage. 
+Vola, you successfully deployed your `pmp` project! Type the ip address of your server in your browser to visit the default `pmp` webpage.
 
 Hope you enjoy!
