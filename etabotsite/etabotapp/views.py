@@ -361,6 +361,30 @@ def get_tms_set_by_id(request):
     return tms_set
 
 
+def get_projects_by_tms(user, tms_id):
+    return [
+        pj.id for pj in Project.objects.all().filter(
+            owner=user,
+            project_tms_id=tms_id)
+    ]
+
+
+def estimate_tms(celery, user, tms, global_params, project_id=None):
+    if project_id:
+        projects = [int(project_id)]
+    else:
+        projects = get_projects_by_tms(
+            user, tms.id
+        )
+    logging.debug('projects: "{}"'.format(projects))
+
+    result = celery.send_task(
+        'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
+        (tms.id, [p.id for p in projects], global_params))
+
+    return result.task_id
+
+
 class EstimateTMSView(APIView):
 
     def post(self, request, format=None):
@@ -369,10 +393,10 @@ class EstimateTMSView(APIView):
         TODO: implement params per project."""
 
         logging.debug('request.user: {}, username {}'.format(
-        request.user, request.user.username))
+            request.user, request.user.username))
 
         logging.debug('self.request.user: {}, self.username {}'.format(
-        self.request.user, self.request.user.username))
+            self.request.user, self.request.user.username))
 
         post_data = json.loads(request.body.decode(encoding='utf-8'))
         logging.debug('post_data: {}'.format(post_data))
@@ -402,35 +426,39 @@ for user {} due to: {}'.format(
         # threads = []
         global_params = post_data.get('params', {})
         logging.debug('estimate call global_params: {}'.format(global_params))
-        tasks_count = 0
+
         celery = clry.Celery()
         celery.config_from_object('django.conf:settings')
 
-        for tms in tms_set:
-            project_id = request.query_params.get('project_id', None)
-            if project_id is not None:
-                project_id = int(project_id)
-                logging.debug('subsetting project_id="{}"'.format(project_id))
-                projects_set = Project.objects.all().filter(
-                    owner=self.request.user,
-                    project_tms_id=tms.id,
-                    id=project_id)
-            else:
-                projects_set = Project.objects.all().filter(
-                    owner=self.request.user,
-                    project_tms_id=tms.id)
-            logging.debug('projects_set: "{}"'.format(projects_set))
+        tms_id_to_celery_task_id = {
+            tms.id: celery.result.AsyncResult(
+                estimate_tms(
+                    celery, self.request.user, tms, global_params,
+                    request.query_params.get('project_id', None)))
+            for tms in tms_set
+        }
 
-            celery.send_task(
-                'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
-                (tms.id,
-                 [p.id for p in projects_set],
-                 global_params))
-            tasks_count += 1
-        # response_message = 'TMS account to estimate:{}. Number of threads started:{}'.format(
-        #         tms_set, len(threads))
         response_message = 'TMS account to estimate:{}. \
-Number of tasks sent: {}'.format(tms_set, tasks_count)
+Number of tasks sent: {}'.format(tms_set, len(tms_id_to_celery_task_id))
         return Response(
-            response_message,
+            data=tms_id_to_celery_task_id,
+            status=status.HTTP_200_OK)
+
+
+class EstimationStatusView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        """
+        Get ETA updates task status for a particular tms_id.
+        """
+        # https://stackoverflow.com/questions/9034091/how-to-check-task-status-in-celery
+        celery = clry.Celery()
+        celery.config_from_object('django.conf:settings')
+        task_id = kwargs.get('id')
+        if not task_id:
+            return Response(
+                'TMS estimation task id not provided!',
+                status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            data=celery.result.AsyncResult(task_id).status,
             status=status.HTTP_200_OK)
