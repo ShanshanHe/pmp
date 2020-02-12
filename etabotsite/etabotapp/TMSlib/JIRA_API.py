@@ -27,7 +27,8 @@ import TMSlib.Atlassian_API as Atlassian_API
 
 # from passwords.encrypted_passwords import passwords_dict
 # import keyring
-
+JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
+JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.            
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
 logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
 
@@ -49,7 +50,6 @@ class JIRA_wrapper():
         password - JIRA password or API key (not needed if OAuth2.0 token is passed
         TMSconfig - TMS django model (not needed if password is passed)
         """
-        self.gh = None
         self.username = username
         self.max_results_jira_api = 50
         self.TMSconfig = TMSconfig
@@ -61,14 +61,13 @@ class JIRA_wrapper():
             server,
             username,
             password=None):
-        """Connect to jira api.
-        """
+        """Connect to jira api."""
         if password is not None:
             auth_method = 'password'
-            jira_timout_seconds = 10.
+            jira_timout_seconds = JIRA_TIMEOUT_FOR_PASSWORD_SECONDS
         elif self.TMSconfig is not None and self.TMSconfig.oauth2_token is not None:
             auth_method = 'oauth2'
-            jira_timout_seconds = 30.
+            jira_timout_seconds = JIRA_TIMEOUT_FOR_OAUTH2_SECONDS
         else:    
             raise NameError('JIRA API key or TMSconfig with token must be provided')
 
@@ -90,7 +89,7 @@ class JIRA_wrapper():
                     username, options))
                 try:
                     if auth_method=='password':
-                        logging.debug('token is None, using basic auth with password')
+                        logging.debug('using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
                             options=options)
