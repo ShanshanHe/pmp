@@ -56,7 +56,7 @@ class ActivationProcessor(object):
         server.send_message(msg)
         logging.info('email sent.')
         del server
-
+ 
     @staticmethod
     def email_token(user):
         try:

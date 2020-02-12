@@ -3,11 +3,11 @@ import os
 import logging
 
 logging.getLogger().setLevel(logging.DEBUG)
-logging.info('models import started.')
+logging.debug('models import started.')
 sys.path.append(os.path.abspath('etabotapp'))
-logging.info('loading TMSlib')
+logging.debug('loading TMSlib')
 import TMSlib.TMS as TMSlib
-logging.info('loaded TMSlib')
+logging.debug('loaded TMSlib')
 import TMSlib.data_conversion as dc
 import TMSlib.Atlassian_API as Atlassian_API
 sys.path.pop(0)
@@ -299,8 +299,4 @@ logging.debug('atlassian_redirect_uri: "{}"'.format(atlassian_redirect_uri))
 oauth = OAuth(fetch_token=fetch_oauth_token, update_token=update_oauth_token)
 oauth.register(name='atlassian')
 logging.debug('oauth registered: {}'.format(oauth.atlassian))
-
-
-
-
 logging.info('models import finished.')
