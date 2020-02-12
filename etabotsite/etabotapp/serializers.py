@@ -3,6 +3,7 @@ from rest_framework.validators import UniqueValidator
 from rest_framework.validators import UniqueTogetherValidator
 from django.contrib.auth.models import User
 from .models import Project, TMS
+from .models import oauth
 from django.conf import settings
 import logging
 import TMSlib.TMS as TMSlib

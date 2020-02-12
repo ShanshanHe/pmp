@@ -10,6 +10,7 @@
     Python Version: 3.6
 """
 import logging
+logging.debug('logging JIRA_API imports')
 from Crypto.Cipher import AES
 from jira import JIRA
 from jira.client import GreenHopper
@@ -18,6 +19,7 @@ from inspect import getsourcefile
 import os.path
 import sys
 import threading
+import TMSlib.Atlassian_API as Atlassian_API
 # current_path = os.path.abspath(getsourcefile(lambda: 0))
 # current_dir = os.path.dirname(current_path)
 # parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
@@ -25,23 +27,49 @@ import threading
 
 # from passwords.encrypted_passwords import passwords_dict
 # import keyring
-JIRA_CLOUD_API = "https://api.atlassian.com/ex/jira/"
-
-jira_timout_seconds = 10.
+JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
+JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.            
+JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
+logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
 
 class JIRA_wrapper():
-    # handles communication with JIRA API
-    def __init__(self, server, username, password=None, token=None):
-        self.gh = None
-        self.jira = self.JIRA_connect(server, username, password=password, token=token)
+    """Handles communication with JIRA API."""
+
+    def __init__(
+            self,
+            server,
+            username,
+            password=None,
+            TMSconfig=None):
+        """Create JIRA_wrapper object for JIRA API communication.
+
+        Arguments:
+
+        server - URL to JIRA server
+        username - JIRA username (not used for OAuth2.0 (password==None, token not None)
+        password - JIRA password or API key (not needed if OAuth2.0 token is passed
+        TMSconfig - TMS django model (not needed if password is passed)
+        """
         self.username = username
         self.max_results_jira_api = 50
+        self.TMSconfig = TMSconfig
+        self.jira = self.JIRA_connect(
+            server, username, password=password)
 
-    def JIRA_connect(self, server, username, password=None, token=None):
-
-
-        if password is None and token is None:
-            raise NameError('JIRA API key or token must be provided')
+    def JIRA_connect(
+            self,
+            server,
+            username,
+            password=None):
+        """Connect to jira api."""
+        if password is not None:
+            auth_method = 'password'
+            jira_timout_seconds = JIRA_TIMEOUT_FOR_PASSWORD_SECONDS
+        elif self.TMSconfig is not None and self.TMSconfig.oauth2_token is not None:
+            auth_method = 'oauth2'
+            jira_timout_seconds = JIRA_TIMEOUT_FOR_OAUTH2_SECONDS
+        else:    
+            raise NameError('JIRA API key or TMSconfig with token must be provided')
 
         options = {
             'max_retries': 1,
@@ -51,6 +79,7 @@ class JIRA_wrapper():
             username, options.get('server', 'unkown server')))
 
         jira = None
+
         try:
             jira_place = []
             errors_place = {}
@@ -59,14 +88,17 @@ class JIRA_wrapper():
                 logging.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
-                    if token is None:
-                        logging.debug('token is None, using basic auth with password')
+                    if auth_method=='password':
+                        logging.debug('using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
                             options=options)
                     else:
+                        token = self.TMSconfig.get_fresh_token()
                         options['headers'] = {
-                            'Authorization': 'Bearer {}'.format(token)}     
+                            'Authorization': 'Bearer {}'.format(token.access_token),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'}     
                         logging.debug('connecting with options: {}'.format(options))                      
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'
@@ -84,6 +116,7 @@ class JIRA_wrapper():
             auth_thread = threading.Thread(
                 target=get_jira_object, args=(jira_place, errors_place))
             auth_thread.start()
+
             logging.debug('waiting for {} seconds before checking for thread \
 status'.format(jira_timout_seconds))
             auth_thread.join(jira_timout_seconds)

@@ -3,16 +3,25 @@ import os
 from celery import Celery
 from celery.schedules import crontab
 import logging
+import django
 from django.conf import settings
+from django.apps import apps
 
 # Set default Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'etabotsite.settings')
+
+django.setup()
+
 # print('celery os.environ: {}'.format(os.environ))
 app = Celery('etabotapp')
 # Celery will apply all configuration keys with defined namespace
 app.config_from_object('django.conf:settings')
+# app.config_from_object(settings, namespace='CELERY')
 # Load tasks from all registered apps
 app.autodiscover_tasks(related_name='django_tasks')
+# app.autodiscover_tasks(
+#     lambda: [n.name for n in apps.get_app_configs()],
+#     related_name='django_tasks')
 
 # print('settings: {}'.format(settings))
 # print('LOCAL_MODE: {}'.format(settings.LOCAL_MODE))

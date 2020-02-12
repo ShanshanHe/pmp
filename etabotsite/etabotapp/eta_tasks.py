@@ -8,10 +8,14 @@ import logging
 def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     """Estimates ETA for a given TMS and projects_set.
 
+    Arguments:
+        tms - Django model of TMS. 
+
     Todo:
     add an option not to refresh velocities
     https://etabot.atlassian.net/browse/ET-521
     """
+
     logging.debug(
         'estimate_ETA_for_TMS started for TMS {}, projects: {}'.format(
             tms, projects_set))

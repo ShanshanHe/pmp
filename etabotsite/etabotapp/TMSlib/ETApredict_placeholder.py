@@ -29,7 +29,7 @@ class ETApredict():
             self.get_projects()
 
     def generate_task_list_view_with_ETA(
-            self, project_names=None):
+            self, project_names=None, include_active_sprints=False):
         self.TMS_interface.connect_to_TMS()
         logging.info('placeholder ETAs have been generated')
 

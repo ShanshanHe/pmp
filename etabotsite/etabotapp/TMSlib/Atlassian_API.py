@@ -2,6 +2,10 @@
 
 import requests
 
+ATLASSIAN_CLOUD_BASE = "https://api.atlassian.com/" 
+ATLASSIAN_CLOUD_PROFILE = ATLASSIAN_CLOUD_BASE + "me"
+
+
 class AtlassianAPI():
     def __init__(self, token):
         self.token = token
@@ -10,7 +14,7 @@ class AtlassianAPI():
 
     def default_headers(self):
         return {
-            'Authorization': 'Bearer {}'.format(self.token),
+            'Authorization': 'Bearer {}'.format(self.token.access_token),
             'Accept': 'application/json'
         }
 

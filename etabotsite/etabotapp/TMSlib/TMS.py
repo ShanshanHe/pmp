@@ -2,29 +2,34 @@
 
 Author: Alex Radnaev (alexander.radnaev@gmail.com)
 
-Status: Prortotype
-Date last modified: 2018-04-13
+Status: Prototype
 
 Python Version: 3.6
 """
+import logging
 
+logging.debug('loading TMSlib.TMS')
 from enum import Enum
 import TMSlib.JIRA_API as JIRA_API
-import logging
+logging.debug('loading TMSlib.TMS: loaded JIRA_API')
 import sys
 import datetime
 import user_activation
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+
 try:
     sys.path.append('etabot_algo/')
     logging.debug(sys.path)
     import etabot_algo.ETApredict as ETApredict
+    import etabot_algo.ETAreport as ETAreport
 except Exception as e:
-    logging.warning('cannot load ETApredict due to "{}"\
- Loading ETApredict_placeholder'.format(e))
+    logging.warning('cannot load ETApredict or ETAreport due to "{}"\
+ Loading ETApredict_placeholder, ETAreport_placeholder instead'.format(e))
     import TMSlib.ETApredict_placeholder as ETApredict
+    import TMSlib.ETAreport_placeholder as ETAreport
+logging.debug('loading TMSlib.TMS: done')
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -61,13 +66,19 @@ class ProtoTMS():
         raise NotImplementedError(
             'default estimate task deadlines is not implemented')
 
+    def generate_projects_status_report(self):
+        raise NotImplementedError(
+            'generate_projects_status_report is not implemented yet')
 
 class TMS_JIRA(ProtoTMS):
 
     default_open_status_values = ['Open', 'To Do', 'Selected for Development']
 
     def __init__(
-            self, server_end_point, username_login, task_system_schema):
+            self,
+            server_end_point,
+            username_login,
+            task_system_schema):
 
         if task_system_schema is None:
             task_system_schema = {
@@ -83,7 +94,7 @@ class TMS_JIRA(ProtoTMS):
 
     def connect_to_TMS(self, update_tms=True):
         """Create self.jira object, Return None if connected or error string otherwise.
-        s
+
         TODO: move tms_config - Django model with credentials (password or token)
         from implicit access from child class to init params
         """
@@ -94,7 +105,7 @@ class TMS_JIRA(ProtoTMS):
                 self.server_end_point,
                 self.username_login,
                 password=self.tms_config.password,
-                token=self.tms_config.access_token)
+                TMSconfig=self.tms_config)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             self.tms_config.connectivity_status = {
                 'status': 'connected',
@@ -111,17 +122,20 @@ JIRA_wrapper: {}'.format(e))
                 logging.info(
                     'sending email about connectivity issue to: "{}".'.format(
                         self.username_login))
-
-                msg = MIMEMultipart()
-                msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
-                msg['To'] = self.username_login  # TODO: user.email
-                msg['Subject'] = 'Account {} needs attention.'.format(
-                    self.server_end_point)
-                msg_body = '<html><body><h3>Please log in to https://app.etabot.ai/login \
-    and fix credentials for account {}</h3></body></html>'.format(
-                    self.server_end_point)
-                msg.attach(MIMEText(msg_body, 'html'))
-                user_activation.ActivationProcessor.send_email(msg)
+                if self.username_login is not None and '@' in self.username_login:
+                    msg = MIMEMultipart()
+                    msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
+                    msg['To'] = self.username_login  # TODO: user.email
+                    msg['Subject'] = 'Account {} needs attention.'.format(
+                        self.server_end_point)
+                    msg_body = '<html><body><h3>Please log in to https://app.etabot.ai/login \
+        and fix credentials for account {}</h3></body></html>'.format(
+                        self.server_end_point)
+                    msg.attach(MIMEText(msg_body, 'html'))
+                    user_activation.ActivationProcessor.send_email(msg)
+                else:
+                    logging.warning('username is not email - \
+cannot send connectivity issue email')
         if update_tms:
             logging.debug('saving connectivity status')
             self.tms_config.save()
@@ -173,6 +187,30 @@ ORDER BY Rank ASC'.format(
             len(done_issues)))
         return done_issues
 
+    def prepare_for_get_tasks(self, assignee=None, project_names=None):
+        if self.jira is None:
+            raise NameError('not connected to JIRA')
+
+        if assignee is None:
+            assignee = 'currentUser()'
+        extra_filter = self.construct_extra_filter(project_names=project_names)
+
+        return (assignee, extra_filter)
+
+    def get_future_sprints_tasks_ranked(self, assignee=None, project_names=None):
+        """Get all open tasks sorted by rank from future sprints.
+
+        Return list of tasks.
+        """
+        (assignee, extra_filter) = self.prepare_for_get_tasks(
+            assignee=assignee, project_names=project_names)
+
+        future_sprints_tasks = self.jira.get_jira_issues(
+            'assignee={assignee} AND status != "Done" \
+AND sprint in futureSprints() {extra_filter} ORDER BY Rank ASC'.format(
+                assignee=assignee, extra_filter=extra_filter))
+        return future_sprints_tasks
+
     def get_all_open_tasks_ranked(self, assignee=None, project_names=None):
         """Get all open tasks sorted by rank.
 
@@ -181,13 +219,11 @@ ORDER BY Rank ASC'.format(
             open in open sprint
             in progress not open sprint
             open not open sprint
-            backlog"""
-        if self.jira is None:
-            raise NameError('not connected to JIRA')
+            backlog
+        """
+        (assignee, extra_filter) = self.prepare_for_get_tasks(
+            assignee=assignee, project_names=project_names)
 
-        if assignee is None:
-            assignee = 'currentUser()'
-        extra_filter = self.construct_extra_filter(project_names=project_names)
         in_progress_issues_current_sprint = self.jira.get_jira_issues(
             'assignee={assignee} AND status="In Progress" \
 AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
@@ -250,6 +286,9 @@ class TMSWrapper(TMS_JIRA):
             tms_config,
             projects=None):
         """
+        Task Management System Wrapper - generalized TMS to 
+        support multiple platforms (JIRA, Asana, Trello, etc)
+
         Arguments:
             tms_config - Django model of TMS.
 
@@ -302,7 +341,7 @@ server_end_point: {}, username_login: {}'.format(
             self.server_end_point, self.username_login))
 
     def init_ETApredict(self, projects):
-        logging.debug('init_ETApredict started')
+        logging.info('init_ETApredict started')
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
         try:
             logging.debug('user_velocity_per_project: {}'.format(
@@ -310,7 +349,7 @@ server_end_point: {}, username_login: {}'.format(
         except Exception as e:
             logging.warning('user_velocity_per_project error: {}'.format(e))
         self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)
-        logging.debug('TMSwrapper: init_ETApredict finished. \
+        logging.info('TMSwrapper: init_ETApredict finished. \
 Connectivity status: {}'.format(self.tms_config.connectivity_status))
 
     def estimate_tasks(self, project_names=None, **kwargs):
@@ -318,3 +357,14 @@ Connectivity status: {}'.format(self.tms_config.connectivity_status))
 projects: "{}", hold tight!'.format(self, project_names))
         self.ETApredict_obj.generate_task_list_view_with_ETA(
             project_names, **kwargs)
+
+    def generate_projects_status_report(self):
+        """Generate JSON with a report.
+
+        To be reported periodically (e.g. daily) or on demand
+        via email, dashboard, Slack, etc.
+
+        """
+        report_json = ETAreport.generate_status_report(
+            self.ETApredict_obj, **kwargs)
+        return report_json
