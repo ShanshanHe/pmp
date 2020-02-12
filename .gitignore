@@ -12,3 +12,5 @@ etabotsite/django_keys_prod.json
 etabotsite/custom_settings.json
 # pycharm
 .idea/
+*.diff
+*.bk

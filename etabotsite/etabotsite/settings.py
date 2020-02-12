@@ -128,7 +128,7 @@ INSTALLED_APPS = [
     'etabotapp',
     'rest_framework',
     'rest_framework.authtoken',
-    # 'rest_framework_expiring_authtoken',
+    'rest_framework_expiring_authtoken',
     'corsheaders',
     'encrypted_model_fields',
 ]
@@ -356,3 +356,6 @@ elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
 logging.info('BROKER_URL: {}'.format(BROKER_URL))
 logging.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
 logging.debug('setting.py is done')
+
+import datetime
+EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=1)
