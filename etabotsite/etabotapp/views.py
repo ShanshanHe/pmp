@@ -380,7 +380,7 @@ def estimate_tms(celery, user, tms, global_params, project_id=None):
 
     result = celery.send_task(
         'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
-        (tms.id, [p.id for p in projects], global_params))
+        (tms.id, projects, global_params))
 
     return result.task_id
 
@@ -398,7 +398,11 @@ class EstimateTMSView(APIView):
         logging.debug('self.request.user: {}, self.username {}'.format(
             self.request.user, self.request.user.username))
 
-        post_data = json.loads(request.body.decode(encoding='utf-8'))
+        post_data = {}
+        if request.body:
+            logging.debug('request.body: {}'.format(request.body))
+            post_data = json.loads(request.body)
+
         logging.debug('post_data: {}'.format(post_data))
         logging.debug('request.query_params: "{}"'.format(
             request.query_params))
@@ -411,9 +415,13 @@ class EstimateTMSView(APIView):
                 tms_set = get_tms_set_by_id(request)
             except Exception as e:
                 return Response(
-                    'No TMS found with tms_id="{}" \
-for user {} due to: {}'.format(
-                        request.query_params.get('tms'), self.request.user, e),
+                    {
+                        "error":
+                            "No TMS found with tms_id=\"{}\" for user {} due "
+                            "to: {}".format(
+                                request.query_params.get('tms'),
+                                self.request.user, e)
+                    },
                     status=status.HTTP_400_BAD_REQUEST)
 
         logging.debug('found tms: {}'.format(tms_set))
@@ -431,10 +439,9 @@ for user {} due to: {}'.format(
         celery.config_from_object('django.conf:settings')
 
         tms_id_to_celery_task_id = {
-            tms.id: celery.result.AsyncResult(
-                estimate_tms(
-                    celery, self.request.user, tms, global_params,
-                    request.query_params.get('project_id', None)))
+            tms.id: estimate_tms(
+                celery, self.request.user, tms, global_params,
+                request.query_params.get('project_id', None))
             for tms in tms_set
         }
 
@@ -447,18 +454,20 @@ Number of tasks sent: {}'.format(tms_set, len(tms_id_to_celery_task_id))
 
 class EstimationStatusView(APIView):
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, id):
         """
         Get ETA updates task status for a particular tms_id.
         """
         # https://stackoverflow.com/questions/9034091/how-to-check-task-status-in-celery
         celery = clry.Celery()
         celery.config_from_object('django.conf:settings')
-        task_id = kwargs.get('id')
+        task_id = id
         if not task_id:
             return Response(
-                'TMS estimation task id not provided!',
+                {'error': 'TMS estimation task id not provided!'},
                 status=status.HTTP_400_BAD_REQUEST)
+        logging.debug('task status: {}'.format(
+            celery.AsyncResult(task_id).status))
         return Response(
-            data=celery.result.AsyncResult(task_id).status,
+            data={task_id: celery.AsyncResult(task_id).status},
             status=status.HTTP_200_OK)

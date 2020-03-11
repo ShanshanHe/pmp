@@ -30,7 +30,7 @@ urlpatterns += [
         include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/get-token/', views.obtain_expiring_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
-    url(r'^api/estimate-status/tms/(?P<id>.+)/$/',
+    url(r'^api/estimate-status/tms/(?P<id>.+)/$',
         EstimationStatusView.as_view(), name="estimation_status"),
     url(r'^api/parse_projects/', ParseTMSprojects.as_view(), name="estimate_tms"),
     url(r'^api/atlassian_oauth', AtlassianOAuth.as_view(), name='atlassian_oauth'),

@@ -318,7 +318,12 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_DEFAULT_QUEUE = 'etabotqueue'
-CELERY_RESULT_BACKEND = None  # Disabling the results backend
+CELERY_RESULT_BACKEND = 'db+postgresql://{}:{}@{}:5432/{}'.format(
+    DATABASES['default']['USER'],
+    DATABASES['default']['PASSWORD'],
+    DATABASES['default']['HOST'],
+    DATABASES['default']['NAME'],
+)  # Disabling the results backend
 
 # Configuring the message broker for Celery Task Scheduling
 if custom_settings['MESSAGE_BROKER'].lower() == 'aws':
