@@ -90,7 +90,7 @@ def activate(request):
 @permission_classes([])
 def email_verification(request):
     logging.debug('activate API started')
-    post_data = json.loads(request.body.decode(encoding='utf-8'))
+    post_data = json.loads(request.body)
     user = User.objects.get(pk=post_data['uid'])
     body = dict()
 
@@ -401,7 +401,7 @@ class EstimateTMSView(APIView):
         post_data = {}
         if request.body:
             logging.debug('request.body: {}'.format(request.body))
-            post_data = json.loads(request.body.decode(encoding='utf-8'))
+            post_data = json.loads(request.body)
 
         logging.debug('post_data: {}'.format(post_data))
         logging.debug('request.query_params: "{}"'.format(
