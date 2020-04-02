@@ -2,6 +2,10 @@
 
 import requests
 
+ATLASSIAN_CLOUD_BASE = "https://api.atlassian.com/" 
+ATLASSIAN_CLOUD_PROFILE = ATLASSIAN_CLOUD_BASE + "me"
+
+
 class AtlassianAPI():
     def __init__(self, token):
         self.token = token

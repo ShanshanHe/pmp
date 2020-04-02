@@ -10,6 +10,7 @@
     Python Version: 3.6
 """
 import logging
+logging.debug('logging JIRA_API imports')
 from Crypto.Cipher import AES
 from jira import JIRA
 from jira.client import GreenHopper
@@ -18,6 +19,7 @@ from inspect import getsourcefile
 import os.path
 import sys
 import threading
+import TMSlib.Atlassian_API as Atlassian_API
 # current_path = os.path.abspath(getsourcefile(lambda: 0))
 # current_dir = os.path.dirname(current_path)
 # parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
@@ -25,12 +27,10 @@ import threading
 
 # from passwords.encrypted_passwords import passwords_dict
 # import keyring
-JIRA_CLOUD_BASE = "https://api.atlassian.com/" 
-JIRA_CLOUD_API = JIRA_CLOUD_BASE + "ex/jira/"
-JIRA_CLOUD_PROFILE = JIRA_CLOUD_BASE + "me"
-
-jira_timout_seconds = 10.
-
+JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
+JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.            
+JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
+logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
 
 class JIRA_wrapper():
     """Handles communication with JIRA API."""
@@ -40,8 +40,7 @@ class JIRA_wrapper():
             server,
             username,
             password=None,
-            token=None,
-            oauth_obj=None):
+            TMSconfig=None):
         """Create JIRA_wrapper object for JIRA API communication.
 
         Arguments:
@@ -49,29 +48,28 @@ class JIRA_wrapper():
         server - URL to JIRA server
         username - JIRA username (not used for OAuth2.0 (password==None, token not None)
         password - JIRA password or API key (not needed if OAuth2.0 token is passed
-        token - OAuth2.0 token django model (not needed if password is passed)
-        oauth_obj - authlib oauth object for automatically refreshing token
+        TMSconfig - TMS django model (not needed if password is passed)
         """
-        self.gh = None
-        self.oauth_obj=oauth_obj        
         self.username = username
         self.max_results_jira_api = 50
-
+        self.TMSconfig = TMSconfig
         self.jira = self.JIRA_connect(
-            server, username, password=password, token=token)
+            server, username, password=password)
 
     def JIRA_connect(
             self,
             server,
             username,
-            password=None,
-            token=None):
-        """Connect to jira api.
-
-        TODO: update token if oauth refreshed it.
-        """
-        if password is None and token is None:
-            raise NameError('JIRA API key or token must be provided')
+            password=None):
+        """Connect to jira api."""
+        if password is not None:
+            auth_method = 'password'
+            jira_timout_seconds = JIRA_TIMEOUT_FOR_PASSWORD_SECONDS
+        elif self.TMSconfig is not None and self.TMSconfig.oauth2_token is not None:
+            auth_method = 'oauth2'
+            jira_timout_seconds = JIRA_TIMEOUT_FOR_OAUTH2_SECONDS
+        else:    
+            raise NameError('JIRA API key or TMSconfig with token must be provided')
 
         options = {
             'max_retries': 1,
@@ -81,6 +79,7 @@ class JIRA_wrapper():
             username, options.get('server', 'unkown server')))
 
         jira = None
+
         try:
             jira_place = []
             errors_place = {}
@@ -89,24 +88,13 @@ class JIRA_wrapper():
                 logging.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
-                    if token is None:
-                        logging.debug('token is None, using basic auth with password')
+                    if auth_method=='password':
+                        logging.debug('using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
                             options=options)
                     else:
-                        if self.oauth_obj is not None:
-                            logging.info('getting user profile to test connection and update token if needed...')
-                            logging.debug('OAuth object: {}'.format(self.oauth_obj))
-                            logging.debug('OAuth object vars: {}'.format(vars(self.oauth_obj)))
-                            logging.debug('token: {}'.format(token))
-                            logging.info('token vars: {}'.format(vars(token)))
-                            token_dict = token.to_token()
-                            logging.debug('token dict: {}'.format(token_dict))
-                            res = self.oauth_obj.atlassian.get(JIRA_CLOUD_PROFILE, token=token_dict)
-                            logging.info(res)
-                            logging.debug(vars(res))
-                            logging.debug('token vars: {}'.format(vars(token)))
+                        token = self.TMSconfig.get_fresh_token()
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',
@@ -128,6 +116,7 @@ class JIRA_wrapper():
             auth_thread = threading.Thread(
                 target=get_jira_object, args=(jira_place, errors_place))
             auth_thread.start()
+
             logging.debug('waiting for {} seconds before checking for thread \
 status'.format(jira_timout_seconds))
             auth_thread.join(jira_timout_seconds)

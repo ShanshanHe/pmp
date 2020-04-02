@@ -1,12 +1,13 @@
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework_expiring_authtoken import views
 from .views import UserViewSet, ProjectViewSet, TMSViewSet, EstimateTMSView
 from .views import ParseTMSprojects
 from .views import index
 from .views import activate
 from .views import email_verification
-from .views import atlassian_callback
+from .views import AtlassianOAuthCallback
 from .views import AtlassianOAuth
 from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
@@ -25,7 +26,7 @@ urlpatterns += [
     url(r'^api/', include(router.urls)),
     url(r'^api/auth/',
         include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api/get-token/', obtain_auth_token),
+    url(r'^api/get-token/', views.obtain_expiring_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
     url(r'^api/parse_projects/', ParseTMSprojects.as_view(), name="estimate_tms"),
     url(r'^api/atlassian_oauth', AtlassianOAuth.as_view(), name='atlassian_oauth'),
@@ -52,7 +53,7 @@ urlpatterns += [
         auth_views.PasswordResetCompleteView.as_view(),
         name='password_reset_complete'),
     
-    url(r'^atlassian_callback', atlassian_callback, name='atlassian_callback'),
+    url(r'^atlassian_callback', AtlassianOAuthCallback.as_view(), name='atlassian_callback'),
     # catch-all pattern for compatibility with the Angular routes
     url(r'^(?P<path>.*)$', index),
     url(r'^$', index)

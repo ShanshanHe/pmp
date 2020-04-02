@@ -128,7 +128,7 @@ INSTALLED_APPS = [
     'etabotapp',
     'rest_framework',
     'rest_framework.authtoken',
-    # 'rest_framework_expiring_authtoken',
+    'rest_framework_expiring_authtoken',
     'corsheaders',
     'encrypted_model_fields',
 ]
@@ -246,8 +246,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # OAuth
-AUTHLIB_OAUTH_CLIENTS = custom_settings.get('AUTHLIB_OAUTH_CLIENTS')
-logging.debug('loaded AUTHLIB_OAUTH_CLIENTS={}'.format(AUTHLIB_OAUTH_CLIENTS))
+if 'AUTHLIB_OAUTH_CLIENTS' in custom_settings:
+    AUTHLIB_OAUTH_CLIENTS = custom_settings.get('AUTHLIB_OAUTH_CLIENTS')
+    logging.debug('loaded AUTHLIB_OAUTH_CLIENTS={}'.format(AUTHLIB_OAUTH_CLIENTS))
+else:
+    if not LOCAL_MODE:
+        raise NameError('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
+    else:
+        logging.warning('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -262,30 +268,28 @@ USE_L10N = True
 
 USE_TZ = True
 
-# system email settings
+# System email settings
 
 SYS_DOMAIN = local_host_url if LOCAL_MODE else prod_host_url
 
-sys_email_settings = {}
-try:
-    with open('sys_email_settings.json') as f:
-        sys_email_settings = json.load(f)
-    logging.info('loaded sys_email_settings.json: {}'.format(
-        sys_email_settings.keys()))
-except Exception as e:
-    logging.warning('Cannot load sys_email_settings due to "{}". \
-Will use default values'.format(e))
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST_USER = SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
-EMAIL_HOST_PASSWORD = SYS_EMAIL_PWD = sys_email_settings.get(
-    'DJANGO_SYS_EMAIL_PWD', '')
-EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST', '')
-EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
-EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
-EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
-    'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
-DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
+if 'SYS_EMAIL_SETTINGS'  in custom_settings:
+    sys_email_settings = custom_settings.get('SYS_EMAIL_SETTINGS')
+    logging.debug('loaded SYS_EMAIL_SETTINGS')
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST_USER = SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
+    EMAIL_HOST_PASSWORD = SYS_EMAIL_PWD = sys_email_settings.get(
+        'DJANGO_SYS_EMAIL_PWD', '')
+    EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST', '')
+    EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
+    EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
+    EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
+        'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
+    DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
+else:
+    if not LOCAL_MODE:
+        raise NameError('cannot load sys_email_settings as its not in custom_settings.json')
+    else:
+        logging.warning('cannot load sys_email_settings as its not in custom_settings.json')
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
@@ -356,3 +360,6 @@ elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
 logging.info('BROKER_URL: {}'.format(BROKER_URL))
 logging.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
 logging.debug('setting.py is done')
+
+import datetime
+EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=1)
