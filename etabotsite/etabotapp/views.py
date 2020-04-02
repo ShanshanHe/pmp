@@ -374,7 +374,7 @@ class EstimateTMSView(APIView):
         logging.debug('self.request.user: {}, self.username {}'.format(
         self.request.user, self.request.user.username))
 
-        post_data = json.loads(request.body.decode(encoding='utf-8'))
+        post_data = json.loads(request.body)
         logging.debug('post_data: {}'.format(post_data))
         logging.debug('request.query_params: "{}"'.format(
             request.query_params))
