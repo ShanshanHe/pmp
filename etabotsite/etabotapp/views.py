@@ -59,7 +59,7 @@ def index(request, path='', format=None):
 @permission_classes([])
 def activate(request):
     logging.debug('activate API started')
-    post_data = json.loads(request.body.decode(encoding='utf-8'))
+    post_data = json.loads(request.body)
     logging.debug('user activate post_data: "{}"'.format(post_data))
     code = ActivationProcessor.activate_user(post_data['token'])
     body = dict()
@@ -90,7 +90,7 @@ def activate(request):
 @permission_classes([])
 def email_verification(request):
     logging.debug('activate API started')
-    post_data = json.loads(request.body.decode(encoding='utf-8'))
+    post_data = json.loads(request.body)
     user = User.objects.get(pk=post_data['uid'])
     body = dict()
 
