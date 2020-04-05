@@ -165,13 +165,13 @@ class TMS(models.Model):
     def get_fresh_token(self):
         token = self.oauth2_token
         logging.debug('initial token: {}'.format(token))
-        logging.info('initial token vars: {}'.format(vars(token)))
+        logging.debug('initial token vars: {}'.format(vars(token)))
         token_dict = token.to_token()
         logging.debug('initial token dict: {}'.format(token_dict))
         logging.info('priming TMS GET with oauth...')
         res = oauth.atlassian.get(
             Atlassian_API.ATLASSIAN_CLOUD_PROFILE, token=token_dict)
-        logging.info(res)
+        logging.debug(res)
         logging.debug(vars(res))
         logging.debug('self.oauth2_token: {}'.format(self.oauth2_token))
         logging.debug('vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
