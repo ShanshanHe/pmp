@@ -3,8 +3,7 @@
 import TMSlib.data_conversion as dc
 import TMSlib.TMS as TMSlib
 import logging
-import reports
-import user_activation as ua
+import email_reports
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -63,22 +62,7 @@ def generate_email_report(tms, projects_set,user, **kwargs):
     tms_wrapper = TMSlib.TMSWrapper(tms)
     tms_wrapper.init_ETApredict(projects_set)
     raw_status_report = tms_wrapper.generate_projects_status_report(**kwargs)
-    formatted_report = reports.generate_formatted_report(raw_status_report)
-
-    #Format the Msg for email.
-    try:
-        msg = MIMEMultipart()
-        msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
-        msg['To'] = user.email
-        msg['Subject'] = '[ETAbot] Your Daily Project Report'
-        msg_body = render_to_string(formatted_report)
-        msg.attach(MIMEText(msg_body, 'html'))
-        logging.info("User Email: {}".format(user.email))
-
-        user_activation.ActivationProcessor.send_email(msg)
-
-        logging.info('Successfully sent report email to User %s '
-                     % user.username)
-    except Exception as ex:
-        logging.error('Failed to send report email to User %s: %s'
-                      % (user.username, str(ex)))
+    formatted_report = email_reports.EmailReportProcess.generate_formatted_report(raw_status_report)
+    email_msg = email_reports.EmailReportProcess.format_email_msg(user,formatted_report)
+    #Send email
+    email_reports.EmailReportProcess.send_email(email_msg)

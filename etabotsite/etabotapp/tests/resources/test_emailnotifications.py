@@ -25,7 +25,7 @@ class TestEmailNotificationsTestCases(unittest.TestCase):
     def setUp(self):
         # We want to go ahead and originally create a user.
         self.user = User.objects.create_user('testuser',
-                                                  'lewis.cj11@gmail.com',
+                                                  'lokay81197@gotkmail.com',
                                                   'testpassword')
 
         self.endpoint = "localhost:8888"

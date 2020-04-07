@@ -1,0 +1,36 @@
+{% autoescape off %}
+Hi {{ username }},<br>
+<br>
+Here is your daily report regarding your projects!<br><br>
+
+Here's a high level overview of your {{ report.projects_total }} projects(s):<br>
+
+<br>
+On Track Projects:{{projects_on_track}}<br>
+Out of {{ report.deadlines_total }} deadlines, {{ report.deadlines_on_track}} of them are on track!<br>
+<br><br>
+
+Let's look at your projects more indepth!<br>
+
+{% for project in report.projects %}
+  <br>
+  Project: {{ project.project_name }}'s Detailed Report:
+  <br>
+  The following tasks are overdue!
+  <ul>
+  {% for over in project.overdue %}
+    <li>{{ over.task }}</li>
+  {% endfor %}
+  </ul>
+  <br>
+  The following tasks are on track!
+  <ul>
+  {% for tracked in project.on_track %}
+    <li>{{ tracked.task }}</li>
+  {% endfor %}
+  </ul>
+{% endfor %}
+
+Thanks,<br>
+The ETAbot Team<br>
+{% endautoescape %}
