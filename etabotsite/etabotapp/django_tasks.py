@@ -9,7 +9,7 @@ from .models import Project, TMS
 import TMSlib.TMS as TMSlib
 from django.contrib.auth.models import User
 
-import eta_tasks as et
+import eta_tasks
 import logging
 
 
@@ -69,4 +69,11 @@ def estimate_ETA_for_TMS_project_set_ids(
 def send_daily_project_report():
     """Generate Daily Email Reports for all Users"""
     logging.info("Sending Emails to all users for Daily Reports!")
-    Userlist =  1    
+    userlist =  User.objects.all()
+    for user in userlist:
+        tms_list = TMS.objects.all().filter(owner=user)
+        logging.debug("TMS: {}".format(len(tms_list)))
+        for tms in tms_list:
+            project_set = Project.objects.all().filter(project_tms_id=tms.id)
+            if project_set:
+                eta_tasks.generate_email_report(tms,project_set,user)
