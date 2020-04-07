@@ -48,11 +48,7 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
         **kwargs)
     logging.debug('estimate_ETA_for_TMS finished')
 
-SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1")
-SYS_EMAIL = getattr(settings, "SYS_EMAIL", None)
-SYS_EMAIL_PWD = getattr(settings, "SYS_EMAIL_PWD", None)
-
-def generate_email_report(tms, projects_set, **kwargs):
+def generate_email_report(tms, projects_set,user, **kwargs):
     """Generate the email report for a given TMS and projects_set.
 
     Arguments:
@@ -80,7 +76,7 @@ def generate_email_report(tms, projects_set, **kwargs):
         logging.info("User Email: {}".format(user.email))
 
         user_activation.ActivationProcessor.send_email(msg)
-        
+
         logging.info('Successfully sent report email to User %s '
                      % user.username)
     except Exception as ex:
