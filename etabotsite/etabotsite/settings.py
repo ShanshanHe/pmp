@@ -27,7 +27,7 @@ logger = logging.getLogger()
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
 LOCAL_MODE = (PLATFORM == 'Darwin')
-
+LOCAL_MODE = True 
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
 else:

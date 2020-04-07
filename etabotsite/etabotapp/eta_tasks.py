@@ -60,7 +60,6 @@ def generate_email_report(tms, projects_set, **kwargs):
             tms, projects_set))
     tms_wrapper = TMSlib.TMSWrapper(tms)
     tms_wrapper.init_ETApredict(projects_set)
-    raw_status_report = tms_wrapper.generate_status_report(
-        tms_wrapper.ETApredict_obj)
+    raw_status_report = tms_wrapper.generate_projects_status_report(**kwargs)
     formatted_report = reports.generate_formatted_report(raw_status_report)
-    
+    #return formatted_report
