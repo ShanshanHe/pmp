@@ -7,6 +7,7 @@ from celery import Celery
 
 from .models import Project, TMS
 import TMSlib.TMS as TMSlib
+from django.contrib.auth.models import User
 
 import eta_tasks as et
 import logging
@@ -63,3 +64,9 @@ def estimate_ETA_for_TMS_project_set_ids(
     projects_set = Project.objects.all().filter(pk__in=projects_set_ids)
     logging.info('found projects_set: {}'.format(projects_set))
     et.estimate_ETA_for_TMS(tms, projects_set, **params)
+
+@shared_task
+def send_daily_project_report():
+    """Generate Daily Email Reports for all Users"""
+    logging.info("Sending Emails to all users for Daily Reports!")
+    Userlist =  1    
