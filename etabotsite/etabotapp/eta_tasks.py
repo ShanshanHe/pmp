@@ -4,7 +4,9 @@ import TMSlib.data_conversion as dc
 import TMSlib.TMS as TMSlib
 import logging
 import reports
-
+import user_activation as ua
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     """Estimates ETA for a given TMS and projects_set.
@@ -46,6 +48,10 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
         **kwargs)
     logging.debug('estimate_ETA_for_TMS finished')
 
+SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1")
+SYS_EMAIL = getattr(settings, "SYS_EMAIL", None)
+SYS_EMAIL_PWD = getattr(settings, "SYS_EMAIL_PWD", None)
+
 def generate_email_report(tms, projects_set, **kwargs):
     """Generate the email report for a given TMS and projects_set.
 
@@ -62,4 +68,21 @@ def generate_email_report(tms, projects_set, **kwargs):
     tms_wrapper.init_ETApredict(projects_set)
     raw_status_report = tms_wrapper.generate_projects_status_report(**kwargs)
     formatted_report = reports.generate_formatted_report(raw_status_report)
-    #return formatted_report
+
+    #Format the Msg for email.
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
+        msg['To'] = user.email
+        msg['Subject'] = '[ETAbot] Your Daily Project Report'
+        msg_body = render_to_string(formatted_report)
+        msg.attach(MIMEText(msg_body, 'html'))
+        logging.info("User Email: {}".format(user.email))
+
+        user_activation.ActivationProcessor.send_email(msg)
+        
+        logging.info('Successfully sent report email to User %s '
+                     % user.username)
+    except Exception as ex:
+        logging.error('Failed to send report email to User %s: %s'
+                      % (user.username, str(ex)))
