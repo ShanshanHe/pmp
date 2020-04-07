@@ -26,8 +26,11 @@ class TestEmailNotificationsTestCases(unittest.TestCase):
     def setUp(self):
         # We want to go ahead and originally create a user.
         self.user = User.objects.create_user('testuser',
-                                                  'lokay81197@gotkmail.com',
+                                                  'testuser@example.com',
                                                   'testpassword')
+
+        #Test user must have valid email to test!
+        self.assertFalse('testuser@example.com',self.user.email)
 
         self.endpoint = "localhost:8888"
         self.username = "testuser@example.com"
@@ -55,6 +58,7 @@ class TestEmailNotificationsTestCases(unittest.TestCase):
     def test_estimate_ETA_for_TMS(self):
         ##eta_tasks.generate_email_report(self.tms,[self.project.id],self.user)
         dt.send_daily_project_report()
+        #If we make it here with no exits, assert a pass.
         self.assertEqual(1,1)
 
 #unittest.main()
