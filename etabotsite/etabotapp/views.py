@@ -69,8 +69,15 @@ def activate(request):
         body['message'] = 'Token is invalid. Please contact ETAbot.'
         body['status'] = 1
     elif code == ResponseCode.EXPIRATION_ERROR:
-        body['message'] = 'Account confirmation link has expired!'
+        body['message'] = (
+            'Account confirmation link has expired, we have sent a new '
+            'activation link, please check your email!')
         body['status'] = 2
+    elif code == ResponseCode.EXPIRATION_RESEND_ERROR:
+        body['message'] = (
+            'Account confirmation link has expired, activation email resend '
+            'failed, please try register again!')
+        body['status'] = 6
     elif code == ResponseCode.ALREADY_ACTIVATE_ERROR:
         body['message'] = 'You were already activated. Please login with your account!'
         body['status'] = 3
