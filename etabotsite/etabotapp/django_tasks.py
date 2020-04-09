@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 
 import eta_tasks
 import logging
+import email_reports
 
 
 @shared_task
@@ -32,7 +33,14 @@ following TMS entries ({}): {}'.format(
                     tms_wrapper = TMSlib.TMSWrapper(tms)
                     tms_wrapper.init_ETApredict(project_set)
                     tms_wrapper.estimate_tasks()
+                    raw_status_report = tms_wrapper.generate_projects_status_report(**kwargs)
+                    email_msg = email_reports.EmailReportProcess.format_email_msg(user,raw_status_report)
+                    #Send email
+                    email_reports.EmailReportProcess.send_email(email_msg)
+
                     del tms_wrapper
+
+                    # eta_tasks.generate_email_report(tms, project_set, tms.owner)
                 except Exception as e:
                     logging.error('Could not generate ETAs for TMS {} \
     Projects {} due to "{}"'.format(tms, project_set, e))

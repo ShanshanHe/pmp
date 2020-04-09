@@ -60,7 +60,7 @@ def generate_email_report(tms, projects_set,user, **kwargs):
         'geneating email report for TMS {}, projects: {}'.format(
             tms, projects_set))
     tms_wrapper = TMSlib.TMSWrapper(tms)
-    tms_wrapper.init_ETApredict(projects_set)
+    # tms_wrapper.init_ETApredict(projects_set)
     raw_status_report = tms_wrapper.generate_projects_status_report(**kwargs)
     email_msg = email_reports.EmailReportProcess.format_email_msg(user,raw_status_report)
     #Send email
