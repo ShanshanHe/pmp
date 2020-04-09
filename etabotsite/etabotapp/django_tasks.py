@@ -33,8 +33,9 @@ following TMS entries ({}): {}'.format(
                     tms_wrapper = TMSlib.TMSWrapper(tms)
                     tms_wrapper.init_ETApredict(project_set)
                     tms_wrapper.estimate_tasks()
-                    raw_status_report = tms_wrapper.generate_projects_status_report(**kwargs)
-                    email_msg = email_reports.EmailReportProcess.format_email_msg(user,raw_status_report)
+                    raw_status_report = tms_wrapper.generate_projects_status_report()
+                    email_msg = email_reports.EmailReportProcess.format_email_msg(
+                        tms.owner, raw_status_report)
                     #Send email
                     email_reports.EmailReportProcess.send_email(email_msg)
 
