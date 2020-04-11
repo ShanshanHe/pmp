@@ -18,24 +18,10 @@ def generate_status_report(ETApredict_obj, **kwargs):
           'projects_on_track': 1,
           'projects_total': 2,
           'deadlines_on_track': 3,
-          'deadlines_total': 5,
           'projects':[
               {
                     'project_name':'Cheburashka',
-                    'overdue':[
-                        {
-                            'task': 'build friends house',
-                            'due_date': 'Oct 2019',
-                            'ETA': 'Jan 2020',
-                            'link': 'https://xkcd.com?id=123'
-                        },
-                        {
-                            'task': 'meet with Shapoklyak',
-                            'due_date': 'Sep 2019',
-                            'ETA': 'Feb 2020',
-                            'link': 'https://xkcd.com?id=123'
-                        }
-                        ],
+                    'overdue':[],
                     'on_track': [
                         {
                             'task': 'clean river',
@@ -49,7 +35,8 @@ def generate_status_report(ETApredict_obj, **kwargs):
                             'ETA': 'Feb 2020',
                             'link': 'https://xkcd.com?id=123'
                         }
-                        ]
+                        ],
+                    'off_track': [],
               },
               {
                     'project_name':'Buckwheat',
@@ -68,7 +55,8 @@ def generate_status_report(ETApredict_obj, **kwargs):
                             'ETA': 'Feb 2020',
                             'link': 'https://xkcd.com?id=123'
                         }
-                        ]
+                        ],
+                    'off_track':[],
               }
               ]
           }

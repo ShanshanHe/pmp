@@ -26,11 +26,11 @@ class TestEmailNotificationsTestCases(unittest.TestCase):
     def setUp(self):
         # We want to go ahead and originally create a user.
         self.user = User.objects.create_user('testuser',
-                                                  'testuser@example.com',
+                                                  'lewis.cj11@gmail.com',
                                                   'testpassword')
 
         #Test user must have valid email to test!
-        self.assertFalse('testuser@example.com',self.user.email)
+        self.assertFalse('testuser@example.com'==self.user.email)
 
         self.endpoint = "localhost:8888"
         self.username = "testuser@example.com"
