@@ -38,6 +38,18 @@ app.conf.beat_schedule = settings.CUSTOM_SETTINGS.get(
         'schedule': crontab(**crontab_args)
     }})
 
+# email_reports_crontab_args = settings.CUSTOM_SETTINGS.get(
+#     'email_reports_crontab_args',
+#     {'hour': 10})   # Midnight Pacific time is 8am UTC
+
+#Schedule our daily reports for 1am. An hour after the predicitions are.
+# app.conf.beat_schedule = {
+#     'send_daily_reports': {
+#         'task':'etabotapp.django_tasks.send_daily_project_report',
+#         'schedule': crontab(**email_reports_crontab_args)
+#     }
+# }
+
 
 @app.task(bind=True)
 def debug_task(self):

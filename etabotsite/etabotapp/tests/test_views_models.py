@@ -2,7 +2,7 @@ import factory
 from django.test import TestCase
 from django.db.models import signals
 from django.contrib.auth.models import User
-from .models import Project, TMS
+from etabotapp.models import Project, TMS
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -59,6 +59,11 @@ class TMSModelTestCase(TestCase):
         self.tms.save()
         new_count = TMS.objects.count()
         self.assertNotEqual(old_count, new_count)
+
+
+
+
+
 
 
 class TMSViewTestCase(TestCase):
