@@ -286,7 +286,7 @@ class TMSWrapper(TMS_JIRA):
             tms_config,
             projects=None):
         """
-        Task Management System Wrapper - generalized TMS to 
+        Task Management System Wrapper - generalized TMS to
         support multiple platforms (JIRA, Asana, Trello, etc)
 
         Arguments:
@@ -358,7 +358,7 @@ projects: "{}", hold tight!'.format(self, project_names))
         self.ETApredict_obj.generate_task_list_view_with_ETA(
             project_names, **kwargs)
 
-    def generate_projects_status_report(self):
+    def generate_projects_status_report(self, **kwargs):
         """Generate JSON with a report.
 
         To be reported periodically (e.g. daily) or on demand

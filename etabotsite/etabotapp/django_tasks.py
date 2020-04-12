@@ -7,9 +7,11 @@ from celery import Celery
 
 from .models import Project, TMS
 import TMSlib.TMS as TMSlib
+from django.contrib.auth.models import User
 
-import eta_tasks as et
+import eta_tasks
 import logging
+import email_reports
 
 
 @shared_task
@@ -31,7 +33,15 @@ following TMS entries ({}): {}'.format(
                     tms_wrapper = TMSlib.TMSWrapper(tms)
                     tms_wrapper.init_ETApredict(project_set)
                     tms_wrapper.estimate_tasks()
+                    raw_status_report = tms_wrapper.generate_projects_status_report()
+                    email_msg = email_reports.EmailReportProcess.format_email_msg(
+                        tms.owner, raw_status_report)
+                    #Send email
+                    email_reports.EmailReportProcess.send_email(email_msg)
+
                     del tms_wrapper
+
+                    # eta_tasks.generate_email_report(tms, project_set, tms.owner)
                 except Exception as e:
                     logging.error('Could not generate ETAs for TMS {} \
     Projects {} due to "{}"'.format(tms, project_set, e))
@@ -63,3 +73,16 @@ def estimate_ETA_for_TMS_project_set_ids(
     projects_set = Project.objects.all().filter(pk__in=projects_set_ids)
     logging.info('found projects_set: {}'.format(projects_set))
     et.estimate_ETA_for_TMS(tms, projects_set, **params)
+
+@shared_task
+def send_daily_project_report():
+    """Generate Daily Email Reports for all Users"""
+    logging.info("Sending Emails to all users for Daily Reports!")
+    userlist =  User.objects.all()
+    for user in userlist:
+        tms_list = TMS.objects.all().filter(owner=user)
+        logging.debug("TMS: {}".format(len(tms_list)))
+        for tms in tms_list:
+            project_set = Project.objects.all().filter(project_tms_id=tms.id)
+            if project_set:
+                eta_tasks.generate_email_report(tms,project_set,user)

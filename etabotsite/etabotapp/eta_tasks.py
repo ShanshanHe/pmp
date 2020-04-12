@@ -3,13 +3,15 @@
 import TMSlib.data_conversion as dc
 import TMSlib.TMS as TMSlib
 import logging
-
+import email_reports
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     """Estimates ETA for a given TMS and projects_set.
 
     Arguments:
-        tms - Django model of TMS. 
+        tms - Django model of TMS.
 
     Todo:
     add an option not to refresh velocities
@@ -44,3 +46,22 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
         project_names=project_names,
         **kwargs)
     logging.debug('estimate_ETA_for_TMS finished')
+
+def generate_email_report(tms, projects_set,user, **kwargs):
+    """Generate the email report for a given TMS and projects_set.
+
+    Arguments:
+        tms - Django model of TMS.
+
+    Todo:
+    Build report structure
+    """
+    logging.debug(
+        'geneating email report for TMS {}, projects: {}'.format(
+            tms, projects_set))
+    tms_wrapper = TMSlib.TMSWrapper(tms)
+    # tms_wrapper.init_ETApredict(projects_set)
+    raw_status_report = tms_wrapper.generate_projects_status_report(**kwargs)
+    email_msg = email_reports.EmailReportProcess.format_email_msg(user,raw_status_report)
+    #Send email
+    email_reports.EmailReportProcess.send_email(email_msg)
