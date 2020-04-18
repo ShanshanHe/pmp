@@ -33,6 +33,8 @@ import TMSlib.Atlassian_API as Atlassian_API
 
 logger = logging.getLogger()
 
+AUTHLIB_OAUTH_CLIENTS = getattr(settings, "AUTHLIB_OAUTH_CLIENTS", False)
+
 LOCAL_MODE = getattr(settings, "LOCAL_MODE", False)
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
@@ -221,12 +223,20 @@ class AtlassianOAuth(APIView):
         # logging.debug(vars(request))
         oauth_name = 'atlassian'
 
+        permissions = request.GET.get('permissions')
+        logging.debug(permissions)
+
+        scope = AUTHLIB_OAUTH_CLIENTS.get(oauth_name, {}).get('client_kwargs', {}).get('scope')
+        if permissions == 'in ETAbot only':
+            scope = scope.replace('write:jira-work ', '')
+
         timestamp = pytz.utc.localize(datetime.datetime.utcnow())
         state = hashlib.sha256(('{}{}'.format(request.user, timestamp)).encode('utf-8')).hexdigest()
         logging.debug('state={}'.format(state))
         resp = oauth.atlassian.authorize_redirect(
             request, atlassian_redirect_uri,
-            state=state)
+            state=state,
+            scope=scope)
 
         logging.debug(resp)
         logging.debug(vars(resp))

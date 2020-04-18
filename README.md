@@ -80,6 +80,7 @@ Execute commands (e.g. in a SQLWorkbench)
 ```SET AUTOCOMMIT = ON;```
 ```CREATE USER etabot WITH PASSWORD 'somepassword';```
 ```CREATE DATABASE etabot_db WITH OWNER etabot;```
+```ALTER USER etabot CREATEDB;```
 
 change custom_settings.json with the new db interface (see section *Settings jsons*)
 
@@ -138,8 +139,10 @@ production app.etabot.ai can't be reached - check that your /etc/hosts is not po
 
 To run all the unit tests - from etabotsite directory:
 ```
-$ python manage.py test
+$ python manage.py test tests/
 ```
+
+
 
 ## Advanced settings
 
