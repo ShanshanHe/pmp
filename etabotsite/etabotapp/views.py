@@ -17,7 +17,7 @@ from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
 import TMSlib.data_conversion as dc
 from .user_activation import ActivationProcessor, ResponseCode
-
+import email_toolbox
 import threading
 import json
 import mimetypes
@@ -43,6 +43,7 @@ else:
 
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
+celery_app = clry.Celery('etabotapp')
 
 
 @ensure_csrf_cookie
@@ -389,6 +390,13 @@ def get_projects_by_tms(user, tms_id):
             project_tms_id=tms_id)
     ]
 
+def check_celery_worker_available():
+    logging.debug('checking celery workers availability')
+    # result = celery_app.control.ping(timeout=0.5)
+    # logging.debug('checking celery workers availability: {}'.format(result))
+    # if len(result) == 0:
+    #     raise NameError('no celery workers available')
+
 
 def estimate_tms(celery, user, tms, global_params, project_id=None):
     if project_id:
@@ -398,7 +406,7 @@ def estimate_tms(celery, user, tms, global_params, project_id=None):
             user, tms.id
         )
     logging.debug('projects: "{}"'.format(projects))
-
+    check_celery_worker_available()
     result = celery.send_task(
         'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
         (tms.id, projects, global_params))
@@ -469,6 +477,31 @@ Number of tasks sent: {}'.format(tms_set, len(tms_id_to_celery_task_id))
             data=tms_id_to_celery_task_id,
             status=status.HTTP_200_OK)
 
+
+class VoteView(APIView):
+    """Collecting votes."""
+
+    def post(self, request):
+        logging.debug('vote view get started')
+        post_data = {}
+        if request.body:
+            logging.debug('request.body: {}'.format(request.body))
+            post_data = json.loads(request.body)
+
+        choice = post_data.get('choice')
+        subject = 'user "{}" votes: "{}"'.format(
+                request.user,
+                choice)
+        msg_body = str(post_data)
+        msg = email_toolbox.EmailWorker.format_email_msg(
+            'no-reply@etabot.ai',
+            'hello@etabot.ai; alex@etabot.ai',
+            subject,
+            msg_body)
+        email_toolbox.EmailWorker.send_email(msg)
+        logging.debug('vote view get finished')
+        return Response(
+            status=status.HTTP_200_OK)        
 
 class CeleryTaskStatusView(APIView):
 

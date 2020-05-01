@@ -78,7 +78,9 @@ def estimate_ETA_for_TMS_project_set_ids(
         raise NameError('cannot find TMS with id {}'.format(tms_id))
     projects_set = Project.objects.all().filter(pk__in=projects_set_ids)
     logging.info('found projects_set: {}'.format(projects_set))
-    et.estimate_ETA_for_TMS(tms, projects_set, **params)
+    if 'simulate_failure' in params:
+        raise NameError('Simulating failure')
+    eta_tasks.estimate_ETA_for_TMS(tms, projects_set, **params)
 
 @shared_task
 def parse_projects_for_tms_id(
