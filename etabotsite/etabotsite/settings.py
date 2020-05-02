@@ -58,6 +58,8 @@ PROD_HOST_URL = prod_host_url
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
 logging.info('HOST_URL="{}"'.format(HOST_URL))
 
+mimetypes.add_type("image/svg+xml", ".svg", True)
+mimetypes.add_type("image/svg+xml", ".svgz", True)
 # mimetypes.add_type("text/css", ".css", True)
 # logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
