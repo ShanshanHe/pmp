@@ -5,7 +5,6 @@ April 2020
 This script contains all the class information needed to send daily
 email reports to users.
 
-
 """
 import base64
 import logging
@@ -20,6 +19,16 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum
 import email_toolbox
+
+SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1")
+SYS_EMAIL = getattr(settings, "SYS_EMAIL", None)
+SYS_EMAIL_PWD = getattr(settings, "SYS_EMAIL_PWD", None)
+EMAIL_HOST = getattr(settings, "EMAIL_HOST", None)
+EMAIL_PORT = getattr(settings, "EMAIL_PORT", None)
+TOKEN_EXPIRATION_PERIOD = getattr(
+    settings, "EMAIL_TOKEN_EXPIRATION_PERIOD_MS", 24 * 60 * 60 * 1000)
+EMAIL_SUBJECT = '[ETAbot] Please verify your email'
+TOKEN_LINK = '{}/verification/activate/{}'
 
 
 class EmailReportProcess(object):

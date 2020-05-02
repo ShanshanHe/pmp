@@ -40,6 +40,7 @@ class ResponseCode(Enum):
     ALREADY_ACTIVATE_ERROR = 3
     NOT_EXIST_ERROR = 4
     SUCCESS = 5
+    EXPIRATION_RESEND_ERROR = 6
 
 
 class ActivationProcessor(object):
@@ -96,8 +97,15 @@ class ActivationProcessor(object):
 
         if user is not None and user.is_active is False:
             if time_delta > TOKEN_EXPIRATION_PERIOD:
-                logging.error('Token has expired')
-                return ResponseCode.EXPIRATION_ERROR
+                try:
+                    ActivationProcessor.email_token(user)
+                    logging.error('Token has expired, activation link re-sent')
+                    return ResponseCode.EXPIRATION_ERROR
+                except Exception as ex:
+                    logging.error(
+                        'Token has expired, activation link resend fail: %s',
+                        ex)
+                    return ResponseCode.EXPIRATION_RESEND_ERROR
             else:
                 user.is_active = True
                 user.save()
