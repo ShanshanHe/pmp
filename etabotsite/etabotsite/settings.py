@@ -257,6 +257,11 @@ else:
     else:
         logging.warning('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
 
+if 'TEST_TMS_CREDENTIALS' in custom_settings:
+    TEST_TMS_CREDENTIALS = custom_settings.get('TEST_TMS_CREDENTIALS')
+else:
+    logging.warning('no TEST_TMS_CREDENTIALS in custom_settings - some tests will not run')
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 

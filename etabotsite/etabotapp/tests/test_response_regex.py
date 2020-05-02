@@ -11,12 +11,8 @@ logger.setLevel(logging.DEBUG)
 class TestResponseRegex(unittest.TestCase):
     """Test cases for response regex module."""
 
-    def test_get_login_url(self):
-        result = rr.get_login_url(response)
-        logging.debug(result)
-        self.assertEqual(result, ['http://localhost:8080/login.jsp'])
 
-response = """
+    response = """
 
 JiraError HTTP 403 url: http://localhost:8080/rest/api/2/serverInfo
     text: CAPTCHA_CHALLENGE; login-url=http://localhost:8080/login.jsp
@@ -144,10 +140,15 @@ if(window.WRM._dataArrived)window.WRM._dataArrived();</script>
 </body>
 </html>
 """
+    def test_get_login_url(self):
+        result = rr.get_login_url(self.response)
+        logging.debug(result)
+        self.assertEqual(result, ['http://localhost:8080/login.jsp'])
 
-captcha_sig = \
-    "'X-Authentication-Denied-Reason': 'CAPTCHA_CHALLENGE"
 
-logging.debug(captcha_sig in response)
+# captcha_sig = \
+#     "'X-Authentication-Denied-Reason': 'CAPTCHA_CHALLENGE"
 
-unittest.main()
+# logging.debug(captcha_sig in response)
+
+# unittest.main()

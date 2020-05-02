@@ -24,7 +24,7 @@ If you already know how to create a python virtual environment, you can skip thi
     create virtual environement following https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 E.g.:
 ```
-conda create -n etabot python=3.5
+conda create -n etabot python=3.6
 ```
 Activate
 ```
@@ -139,7 +139,7 @@ production app.etabot.ai can't be reached - check that your /etc/hosts is not po
 
 To run all the unit tests - from etabotsite directory:
 ```
-$ python manage.py test tests/
+$ python manage.py test tests
 ```
 
 
