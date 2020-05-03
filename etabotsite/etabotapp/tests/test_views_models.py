@@ -24,13 +24,16 @@ test_tms_data = {
     'connectivity_status': {}
 }
 
+def create_test_user():
+    return User.objects.create_user(
+    'testuser',
+    'test@example.com',
+    'testpassword')
 
 class UserTest(APITestCase):
     def setUp(self):
         # We want to go ahead and originally create a user.
-        self.test_user = User.objects.create_user('testuser',
-                                                  'test@example.com',
-                                                  'testpassword')
+        self.test_user = create_test_user()
 
     def test_create_user(self):
         """
@@ -69,7 +72,7 @@ class TMSModelTestCase(TestCase):
 
     def setUp(self):
         """Define the test client and other test variables."""
-        user = User.objects.create(username="kimchi")
+        user = create_test_user()
         self.tms = mock_up_TMS(user)
 
     @factory.django.mute_signals(signals.pre_save, signals.post_save)
@@ -87,8 +90,7 @@ class TMSViewTestCase(TestCase):
     @factory.django.mute_signals(signals.pre_save, signals.post_save)
     def setUp(self):
         """Define the TMS test client and other test variables."""
-        user = User.objects.create(username="kimchi", email="kimchi@etabot.ai",
-                                   password="iloveelie")
+        user = create_test_user()
 
         self.client = APIClient()
         self.client.force_authenticate(user=user)
@@ -150,7 +152,7 @@ class ProjectModelTestCase(TestCase):
 
     def setUp(self):
         """Define the test client and other test variables."""
-        user = User.objects.create(username="kimchi")
+        user = create_test_user()
         self.tms = mock_up_TMS(user)
         self.tms.save()
         self.project_name = "etabot"
@@ -182,8 +184,7 @@ class ProjectViewTestCase(APITestCase):
 
     def setUp(self):
         """Define the test client and other test variables."""
-        user = User.objects.create_user('testuser', 'test@example.com',
-                                        'testpassword')
+        user = create_test_user()
 
         self.client = APIClient()
         res = self.client.force_authenticate(user=user)
