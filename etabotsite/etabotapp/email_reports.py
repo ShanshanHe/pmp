@@ -1,13 +1,11 @@
-'''
+"""
 Author: Chad Lewis
 April 2020
 
 This script contains all the class information needed to send daily
 email reports to users.
 
-Much of this is based on user_activation.py
-
-'''
+"""
 import base64
 import logging
 import smtplib
@@ -20,6 +18,7 @@ from django.utils.encoding import force_bytes
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum
+import email_toolbox
 
 SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1")
 SYS_EMAIL = getattr(settings, "SYS_EMAIL", None)
@@ -35,23 +34,7 @@ TOKEN_LINK = '{}/verification/activate/{}'
 class EmailReportProcess(object):
     @staticmethod
     def send_email(msg):
-        try:
-            logging.debug('starting send_email.')
-            server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
-            server.set_debuglevel(1)
-            server.ehlo()
-            server.starttls()
-            logging.debug('login("{}","***")'.format(SYS_EMAIL))
-            server.login(SYS_EMAIL, SYS_EMAIL_PWD)
-
-            server.send_message(msg)
-            logging.info('email sent.')
-            del server
-
-
-            logging.info('Successfully sent report email to User')
-        except Exception as ex:
-            logging.error('Failed to send report email to User')
+        email_toolbox.EmailWorker.send_email(msg)
 
     @staticmethod
     def format_email_msg(user, formatted_report):

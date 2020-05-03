@@ -12,13 +12,12 @@ from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import OAuth1Token, OAuth2Token, OAuth2CodeRequest
 from .models import atlassian_redirect_uri
 from .models import TMS, Project
-from .models import parse_projects_for_TMS
 from .models import oauth
 from .permissions import IsOwnerOrReadOnly, IsOwner
 import TMSlib.TMS as TMSlib
 import TMSlib.data_conversion as dc
 from .user_activation import ActivationProcessor, ResponseCode
-
+import email_toolbox
 import threading
 import json
 import mimetypes
@@ -34,11 +33,17 @@ import TMSlib.Atlassian_API as Atlassian_API
 
 logger = logging.getLogger()
 
+AUTHLIB_OAUTH_CLIENTS = getattr(settings, "AUTHLIB_OAUTH_CLIENTS", False)
+
 LOCAL_MODE = getattr(settings, "LOCAL_MODE", False)
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
 else:
     logger.setLevel(logging.INFO)
+
+celery = clry.Celery()
+celery.config_from_object('django.conf:settings')
+celery_app = clry.Celery('etabotapp')
 
 
 @ensure_csrf_cookie
@@ -178,6 +183,7 @@ class ParseTMSprojects(APIView):
         logging.debug('request.query_params: "{}"'.format(
             request.query_params))
         response_message = ''
+        celery_task_ids = []
         try:
             tms_set = get_tms_set_by_id(request)
         except Exception as e:
@@ -191,7 +197,13 @@ class ParseTMSprojects(APIView):
         try:
             res_messages = []
             for tms in tms_set:
-                res_messages.append(parse_projects_for_TMS(tms))
+                parse_tms_kwargs = {}
+                celery_task = celery.send_task(
+                    'etabotapp.django_tasks.parse_projects_for_tms_id',
+                    (tms.id, parse_tms_kwargs))
+                celery_task_ids.append(celery_task.task_id)
+                res_messages.append('stared celery task id {} for tms id {}'.format(
+                    celery_task.task_id, tms.id))
             response_message = '\n'.join(res_messages)
         except Exception as e:
             logging.debug('parse_projects_for_TMS failed due to {}'.format(e))
@@ -207,7 +219,9 @@ please contact us at hello@etabot.ai.'
                 status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            json.dumps({'result': response_message}),
+            json.dumps({
+                'result': response_message,
+                'celery_task_ids': celery_task_ids}),
             status=status.HTTP_200_OK)
 
 
@@ -217,12 +231,20 @@ class AtlassianOAuth(APIView):
         # logging.debug(vars(request))
         oauth_name = 'atlassian'
 
+        permissions = request.GET.get('permissions')
+        logging.debug(permissions)
+
+        scope = AUTHLIB_OAUTH_CLIENTS.get(oauth_name, {}).get('client_kwargs', {}).get('scope')
+        if permissions == 'in ETAbot only':
+            scope = scope.replace('write:jira-work ', '')
+
         timestamp = pytz.utc.localize(datetime.datetime.utcnow())
         state = hashlib.sha256(('{}{}'.format(request.user, timestamp)).encode('utf-8')).hexdigest()
         logging.debug('state={}'.format(state))
         resp = oauth.atlassian.authorize_redirect(
             request, atlassian_redirect_uri,
-            state=state)
+            state=state,
+            scope=scope)
 
         logging.debug(resp)
         logging.debug(vars(resp))
@@ -375,6 +397,13 @@ def get_projects_by_tms(user, tms_id):
             project_tms_id=tms_id)
     ]
 
+def check_celery_worker_available():
+    logging.debug('checking celery workers availability')
+    # result = celery_app.control.ping(timeout=0.5)
+    # logging.debug('checking celery workers availability: {}'.format(result))
+    # if len(result) == 0:
+    #     raise NameError('no celery workers available')
+
 
 def estimate_tms(celery, user, tms, global_params, project_id=None):
     if project_id:
@@ -384,7 +413,7 @@ def estimate_tms(celery, user, tms, global_params, project_id=None):
             user, tms.id
         )
     logging.debug('projects: "{}"'.format(projects))
-
+    check_celery_worker_available()
     result = celery.send_task(
         'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
         (tms.id, projects, global_params))
@@ -442,9 +471,6 @@ class EstimateTMSView(APIView):
         global_params = post_data.get('params', {})
         logging.debug('estimate call global_params: {}'.format(global_params))
 
-        celery = clry.Celery()
-        celery.config_from_object('django.conf:settings')
-
         tms_id_to_celery_task_id = {
             tms.id: estimate_tms(
                 celery, self.request.user, tms, global_params,
@@ -459,19 +485,42 @@ Number of tasks sent: {}'.format(tms_set, len(tms_id_to_celery_task_id))
             status=status.HTTP_200_OK)
 
 
-class EstimationStatusView(APIView):
+class VoteView(APIView):
+    """Collecting votes."""
+
+    def post(self, request):
+        logging.debug('vote view get started')
+        post_data = {}
+        if request.body:
+            logging.debug('request.body: {}'.format(request.body))
+            post_data = json.loads(request.body)
+
+        choice = post_data.get('choice')
+        subject = 'user "{}" votes: "{}"'.format(
+                request.user,
+                choice)
+        msg_body = str(post_data)
+        msg = email_toolbox.EmailWorker.format_email_msg(
+            'no-reply@etabot.ai',
+            'hello@etabot.ai; alex@etabot.ai',
+            subject,
+            msg_body)
+        email_toolbox.EmailWorker.send_email(msg)
+        logging.debug('vote view get finished')
+        return Response(
+            status=status.HTTP_200_OK)        
+
+class CeleryTaskStatusView(APIView):
 
     def get(self, request, id):
         """
-        Get ETA updates task status for a particular tms_id.
+        Get celery task status for a particular celery task id.
         """
         # https://stackoverflow.com/questions/9034091/how-to-check-task-status-in-celery
-        celery = clry.Celery()
-        celery.config_from_object('django.conf:settings')
         task_id = id
         if not task_id:
             return Response(
-                {'error': 'TMS estimation task id not provided!'},
+                {'error': 'Celery task id not provided!'},
                 status=status.HTTP_400_BAD_REQUEST)
         logging.debug('task status: {}'.format(
             celery.AsyncResult(task_id).status))

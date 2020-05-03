@@ -103,11 +103,14 @@ class TMSSerializer(serializers.ModelSerializer):
     def validate(self, val_input):
         """Validate credentials and endpont result in successful login."""
         logging.debug('validate_tms_credential started')
-        # logging.debug('self.initial_data: {}'.format(self.initial_data))
+        logging.debug('self.initial_data: {}'.format(self.initial_data))
         # logging.debug('val_input: {}'.format(val_input))
         logging.debug('context: {}'.format(self.context))
         owner = self.context['request'].user
-        logging.debug('owner: {}'.format(owner))
+        logging.debug('owner: {}, type: {}'.format(
+            owner, type(owner)))
+        logging.debug('self.initial_data[owner]="{}"'.format(
+            self.initial_data.get('owner')))
         logging.debug('request method: {}'.format(
             self.context['request'].method))
         if self.context['request'].method == 'POST':
@@ -121,7 +124,12 @@ class TMSSerializer(serializers.ModelSerializer):
                             owner, endpoint))
             logging.debug(
                 'validated username/endpoint combination uniqueness current user')
-            instance = TMS(**self.initial_data)
+            tms_params = copy(self.initial_data)
+            if 'owner' in tms_params:
+                # tests using APIclient that posts different initial data
+                # when it comes to owner
+                tms_params['owner'] = owner
+            instance = TMS(**tms_params)
         elif self.context['request'].method == 'PATCH':
             tms = self.instance
             # logging.debug(tms.password)
@@ -188,7 +196,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = (
             'id',
-            'project_tms_id',
+            'project_tms',
             'name',
             'owner',
             'mode',

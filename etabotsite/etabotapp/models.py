@@ -232,7 +232,7 @@ def parse_projects_for_TMS(instance, **kwargs):
     """Parse projects for the given TMS.
 
     Creates new Django model projects objects with parsed data.
-
+    Returns response_message.
     Arguments:
         instance - Django TMS object instance
     """

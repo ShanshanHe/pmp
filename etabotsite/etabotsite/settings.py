@@ -58,6 +58,8 @@ PROD_HOST_URL = prod_host_url
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
 logging.info('HOST_URL="{}"'.format(HOST_URL))
 
+mimetypes.add_type("image/svg+xml", ".svg", True)
+mimetypes.add_type("image/svg+xml", ".svgz", True)
 # mimetypes.add_type("text/css", ".css", True)
 # logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
@@ -256,6 +258,11 @@ else:
         raise NameError('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
     else:
         logging.warning('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
+
+if 'TEST_TMS_CREDENTIALS' in custom_settings:
+    TEST_TMS_CREDENTIALS = custom_settings.get('TEST_TMS_CREDENTIALS')
+else:
+    logging.warning('no TEST_TMS_CREDENTIALS in custom_settings - some tests will not run')
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
