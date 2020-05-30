@@ -1,0 +1,54 @@
+2020-05-30 22:56:32,654 root         DEBUG    models import started.
+2020-05-30 22:56:32,654 root         DEBUG    loading TMSlib
+2020-05-30 22:56:32,655 root         DEBUG    loading TMSlib.TMS
+2020-05-30 22:56:32,655 root         DEBUG    logging JIRA_API imports
+2020-05-30 22:56:32,731 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-05-30 22:56:32,731 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-05-30 22:56:32,732 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-05-30 22:56:32,732 root         INFO     SYS_EMAIL: "apikey"
+2020-05-30 22:56:32,732 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-05-30 22:56:32,732 root         INFO     EMAIL_PORT: "587"
+2020-05-30 22:56:32,732 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-05-30 22:56:32,733 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-05-30 22:56:32,872 root         DEBUG    loaded TMSlib
+2020-05-30 22:56:32,932 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-05-30 22:56:32,932 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f5385972e80>
+2020-05-30 22:56:32,932 root         INFO     models import finished.
+2020-05-30 22:56:33,232 root         DEBUG    models import started.
+2020-05-30 22:56:33,232 root         DEBUG    loading TMSlib
+2020-05-30 22:56:33,232 root         DEBUG    loading TMSlib.TMS
+2020-05-30 22:56:33,232 root         DEBUG    logging JIRA_API imports
+2020-05-30 22:56:33,305 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-05-30 22:56:33,305 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-05-30 22:56:33,306 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-05-30 22:56:33,306 root         INFO     SYS_EMAIL: "apikey"
+2020-05-30 22:56:33,306 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-05-30 22:56:33,306 root         INFO     EMAIL_PORT: "587"
+2020-05-30 22:56:33,306 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-05-30 22:56:33,306 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-05-30 22:56:33,452 root         DEBUG    loaded TMSlib
+2020-05-30 22:56:33,515 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-05-30 22:56:33,515 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f6975b0def0>
+2020-05-30 22:56:33,515 root         INFO     models import finished.
+2020-05-30 22:56:33,577 root         DEBUG    TMSSerializer owner: ReadOnlyField(source='owner.username')
+2020-05-30 22:56:33,578 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-05-30 22:56:33,578 root         INFO     SYS_EMAIL: "apikey"
+2020-05-30 22:56:33,578 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-05-30 22:56:33,578 root         INFO     EMAIL_PORT: "587"
+2020-05-30 22:56:33,578 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-05-30 22:56:33,614 django.db.backends DEBUG    (0.001)
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+2020-05-30 22:56:33,614 django.db.backends DEBUG    (0.001)
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+2020-05-30 22:56:33,615 django.db.backends DEBUG    (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+2020-05-30 22:56:33,615 django.db.backends DEBUG    (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()

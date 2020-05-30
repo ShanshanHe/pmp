@@ -19,9 +19,46 @@ import logging
 import subprocess
 import urllib
 import mimetypes
-# from authlib.django.client import OAuth
 
-logger = logging.getLogger()
+DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
+
+## Logging to File and Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters':{
+        'file': {
+            'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+            }
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter':'file',
+            'filename': os.path.join(DJANGO_ROOT,'../loggingfiles/etabotapp.log'),
+        },
+        'console':{
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        '':{
+            'handlers':['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
+
+logger = logging.getLogger('django')
+# from authlib.django.client import OAuth
 # oauth = OAuth()
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',

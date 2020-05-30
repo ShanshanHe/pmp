@@ -23,6 +23,7 @@ import json
 import mimetypes
 import logging
 import celery as clry
+import os
 
 from django.conf import settings
 import datetime
@@ -31,7 +32,7 @@ import hashlib
 import TMSlib.Atlassian_API as Atlassian_API
 # import oauth_support
 
-logger = logging.getLogger()
+logger = logging.getLogger('django')
 
 AUTHLIB_OAUTH_CLIENTS = getattr(settings, "AUTHLIB_OAUTH_CLIENTS", False)
 
@@ -290,7 +291,7 @@ class AtlassianOAuthCallback(APIView):
                 token['expires_in'] = 3600*24*30
         else:
             token['expires_in'] = 3600*24*365
-        
+
         users_set = OAuth2CodeRequest.objects.all().filter(
             state=state)
 
@@ -508,7 +509,7 @@ class VoteView(APIView):
         email_toolbox.EmailWorker.send_email(msg)
         logging.debug('vote view get finished')
         return Response(
-            status=status.HTTP_200_OK)        
+            status=status.HTTP_200_OK)
 
 class CeleryTaskStatusView(APIView):
 
