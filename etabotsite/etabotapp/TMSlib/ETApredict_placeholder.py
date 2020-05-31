@@ -33,7 +33,7 @@ class ETApredict():
             self,
             tms_config,
             projects):
-        if len(projects) > 0:
+        if projects is not None and len(projects) > 0:
             self.projects = projects
         else:
             self.get_projects()

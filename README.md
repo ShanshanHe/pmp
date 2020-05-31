@@ -74,9 +74,14 @@ For local development you can setup a postgres database in a few minutes using d
 
 ```docker pull postgres```
 
+
+
 ```docker run --name postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -v ~/dir/:/var/lib/postgresql/data -d postgres```
 
-Execute commands (e.g. in a SQLWorkbench)
+
+```docker ps```
+
+Execute database commands in your favorite tool (e.g. in a SQLWorkbench https://www.sql-workbench.eu/downloads.html)
 ```SET AUTOCOMMIT = ON;```
 ```CREATE USER etabot WITH PASSWORD 'somepassword';```
 ```CREATE DATABASE etabot_db WITH OWNER etabot;```

@@ -17,6 +17,7 @@ import datetime
 import user_activation
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import email_toolbox
 
 
 try:
@@ -132,7 +133,7 @@ JIRA_wrapper: {}'.format(e))
         and fix credentials for account {}</h3></body></html>'.format(
                         self.server_end_point)
                     msg.attach(MIMEText(msg_body, 'html'))
-                    user_activation.ActivationProcessor.send_email(msg)
+                    email_toolbox.EmailWorker.send_email(msg)
                 else:
                     logging.warning('username is not email - \
 cannot send connectivity issue email')
@@ -365,6 +366,8 @@ projects: "{}", hold tight!'.format(self, project_names))
         via email, dashboard, Slack, etc.
 
         """
+        if self.ETApredict_obj.df_tasks_with_ETAs is None:
+            self.estimate_tasks(**kwargs)
         report_json = ETAreport.generate_status_report(
             self.ETApredict_obj, **kwargs)
         return report_json

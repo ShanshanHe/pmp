@@ -10,19 +10,8 @@ from rest_framework import status
 from django.conf import settings
 from copy import copy
 
-TEST_TMS_CREDENTIALS = getattr(settings, "TEST_TMS_CREDENTIALS", False)
+test_tms_data = getattr(settings, "TEST_TMS_DATA", None)
 
-test_tms_endpoint = TEST_TMS_CREDENTIALS.get("endpoint", "localhost:8888")
-test_tms_username = TEST_TMS_CREDENTIALS.get("username", "testuser@example.com")
-test_tms_password = TEST_TMS_CREDENTIALS.get("password", "testpassword")
-
-test_tms_data = {
-    'endpoint': test_tms_endpoint,
-    'username': test_tms_username,
-    'password': test_tms_password,
-    'type': 'JI',
-    'connectivity_status': {}
-}
 
 def create_test_user():
     return User.objects.create_user(

@@ -14,6 +14,9 @@ def generate_status_report(ETApredict_obj, **kwargs):
     json with hierarchical information.
 
     """
+    logging.debug('ETApredict_obj: {}'.format(ETApredict_obj))
+    if ETApredict_obj is None:
+        raise NameError('ETApredict_obj must be provided.')
     report = {
           'projects_on_track': 1,
           'projects_total': 2,
