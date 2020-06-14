@@ -148,8 +148,8 @@ class ProjectModelTestCase(TestCase):
         self.project_mode = "scrum"
         self.project_open_status = "ToDo"
         self.project_grace_period = "24"
-        self.project_work_hours = "{1:(10,14),2:(16,20), 3:(10,14), 4:(16,18), 5:(20,21), 6:(23,23), 0:(9,10)}"
-        self.project_vacation_days = "{('2017-04-21', '2017-04-30'), ('2017-05-16', '2017-05-19'), ('2017-05-24', '2017-05-24'), ('2017-05-29', '2017-05-29')}"
+        self.project_work_hours = {1:(10,14),2:(16,20), 3:(10,14), 4:(16,18), 5:(20,21), 6:(23,23), 0:(9,10)}
+        self.project_vacation_days = {1:('2017-04-21', '2017-04-30'), 2:('2017-05-16', '2017-05-19'), 3:('2017-05-24', '2017-05-24'), 4:('2017-05-29', '2017-05-29')}
         self.project = Project(
             owner=user,
             project_tms=self.tms,

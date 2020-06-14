@@ -1,8 +1,7 @@
 """Reports."""
 
-import pandas as pd
-import numpy as np
-
+from etabotapp.TMSlib.interface import BasicReport
+import logging
 
 def generate_status_report(ETApredict_obj, **kwargs):
     """Generate total report.
@@ -18,13 +17,13 @@ def generate_status_report(ETApredict_obj, **kwargs):
     if ETApredict_obj is None:
         raise NameError('ETApredict_obj must be provided.')
     report = {
-          'projects_on_track': 1,
-          'projects_total': 2,
+          'projects_on_track_names': 'Cheburashka',
           'deadlines_on_track': 3,
-          'projects':[
+          'deadlines_total': 4,
+          'projects': [
               {
-                    'project_name':'Cheburashka',
-                    'overdue':[],
+                    'project_name': 'Cheburashka',
+                    'overdue': [],
                     'on_track': [
                         {
                             'task': 'clean river',
@@ -59,8 +58,8 @@ def generate_status_report(ETApredict_obj, **kwargs):
                             'link': 'https://xkcd.com?id=123'
                         }
                         ],
-                    'off_track':[],
+                    'off_track': [],
               }
               ]
           }
-    return report
+    return BasicReport(**report)

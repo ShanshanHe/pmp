@@ -27,6 +27,7 @@ class ETApredict():
         self.TMS_interface = TMS_interface
         self.user_velocity_per_project = {}
         self.eta_engine = ETAengine()
+        self.df_tasks_with_ETAs = None
         logging.debug('ETApredict placeholder initialized')
 
     def init_with_Django_models(

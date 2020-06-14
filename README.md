@@ -144,9 +144,13 @@ production app.etabot.ai can't be reached - check that your /etc/hosts is not po
 
 To run all the unit tests - from etabotsite directory:
 ```
-$ python manage.py test tests
+$ pytest
 ```
 
+To run a subset of the unit tests - from etabotsite directory:
+```
+$ pytest <path to dir with tests>
+```
 
 
 ## Advanced settings

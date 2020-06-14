@@ -352,6 +352,8 @@ server_end_point: {}, username_login: {}'.format(
         self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)
         logging.info('TMSwrapper: init_ETApredict finished. \
 Connectivity status: {}'.format(self.tms_config.connectivity_status))
+        logging.debug('self.ETApredict_obj.df_tasks_with_ETAs={}'.format(
+            self.ETApredict_obj.df_tasks_with_ETAs))
 
     def estimate_tasks(self, project_names=None, **kwargs):
         logging.info('Estimating tasks for TMS "{}", \
