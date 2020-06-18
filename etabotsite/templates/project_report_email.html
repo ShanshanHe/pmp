@@ -3,80 +3,76 @@ Hi {{ username|default:"valued user" }},<br>
 <br>
 Here is your daily report regarding your projects.<br><br>
 
-Here's a high level overview of your {{ report.projects_total|default:"" }} projects(s):<br>
-
-<br>
-You have {{ report.projects_on_track|default:"0" }} project(s) on track:<br>
-{% if report.projects_on_track > 0 %}
-  <ul>
-  {% for project in report.projects %}
-    {% if project.overdue|length == 0 and project.off_track|length == 0 %}
-      <li>{{ project.project_name|default:"Project name not found" }}</li>
-    {% endif %}
-  {% endfor %}
-  </ul>
-{% endif %}
-
-
-{% if report.deadlines_total > 0 %}
-  Out of {{ report.deadlines_total|default:"0" }} deadlines, {{ report.deadlines_on_track|default:"0"}} of them are on track.<br>
+{% if report.projects|length == 0 %}
+It appears you do not have projects linked to ETAbot.
+Please go to <a href="https://app.etabot.ai/tmss">accounts page</a> to fix this.
 {% else %}
-  You have no deadlines currently.<br>
+  Here's a high level overview of your {{ report.projects|length }} projects(s):<br>
+
+  <br>
+  You have {{ report.projects_on_track_names|length }} project(s) on track:<br>
+  {% if report.projects_on_track_names|length > 0 %}
+    <ul>
+    {% for project in report.projects_on_track_names %}
+        <li>{{ project|default:"Hmm... Project name not found" }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+
+
+  {% if report.deadlines_total > 0 %}
+    Out of {{ report.deadlines_total|default:"0" }} deadlines, {{ report.deadlines_on_track|default:"0"}} of them are on track.<br>
+  {% else %}
+    You have no deadlines currently.<br>
+  {% endif %}
+  <br>
+
+  {% if report.projects|length != report.projects_on_track_names|length %}
+    Let's look at your projects more indepth.<br>
+    {% for project in report.projects %}
+      {% if project.overdue|length > 0 or project.off_track|length > 0 %}
+        <br>
+        Project: {{ project.project_name|default:"Project name not found" }}'s Detailed Report:
+        <br>
+        {% if project.overdue|length > 0 %}
+          The following tasks are overdue.
+          <ul>
+          {% for over in project.overdue %}
+            <li>{{ over.task|default:"Task name not found." }}</li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          There are no tasks currently overdue for {{ project.project_name|default:"Project name not found" }}.<br>
+        {% endif %}
+        {% if project.on_track|length > 0 %}
+        The following tasks are on track.
+          <ul>
+          {% for tracked in project.on_track %}
+            <li>{{ tracked.task|default:"Task name not found."}}</li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          None of your tasks are on track for {{ project.project_name|default:"Project name not found" }}.<br>
+        {% endif %}
+        {% if project.off_track|length > 0 %}
+          The following tasks are off track.
+          <ul>
+          {% for off in project.off_track %}
+            <li>{{ off.task|default:"Task name not found." }}</li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          There are no tasks currently off track for {{ project.project_name|default:"Project name not found" }}.<br>
+        {% endif %}
+      {% else %}
+        Project {{ project.project_name|default:"Project name not found" }} is on track.<br>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    Congratulations on having all your projects on track. We'll continue to keep you updated as you progress. <br>
+  {% endif %}
+
 {% endif %}
-<br>
-
-{% if report.projects_total != report.projects_on_track %}
-  Let's look at your projects more indepth.<br>
-
-  {% for project in report.projects %}
-    {% if project.overdue|length > 0 or project.off_track|length > 0 %}
-      <br>
-      Project: {{ project.project_name|default:"Project name not found" }}'s Detailed Report:
-      <br>
-
-      {% if project.overdue|length > 0 %}
-        The following tasks are overdue.
-        <ul>
-        {% for over in project.overdue %}
-          <li>{{ over.task|default:"Task name not found." }}</li>
-        {% endfor %}
-        </ul>
-      {% else %}
-        There are no tasks currently overdue for {{ project.project_name|default:"Project name not found" }}.<br>
-      {% endif %}
-
-      {% if project.on_track|length > 0 %}
-      The following tasks are on track.
-        <ul>
-        {% for tracked in project.on_track %}
-          <li>{{ tracked.task|default:"Task name not found."}}</li>
-        {% endfor %}
-        </ul>
-      {% else %}
-        None of your tasks are on track for {{ project.project_name|default:"Project name not found" }}.<br>
-      {% endif %}
-
-      {% if project.off_track|length > 0 %}
-        The following tasks are off track.
-        <ul>
-        {% for off in project.off_track %}
-          <li>{{ off.task|default:"Task name not found." }}</li>
-        {% endfor %}
-        </ul>
-      {% else %}
-        There are no tasks currently off track for {{ project.project_name|default:"Project name not found" }}.<br>
-      {% endif %}
-    {% else %}
-      Project {{ project.project_name|default:"Project name not found" }} is on track.<br>
-    {% endif %}
-
-  {% endfor %}
-
-{% else %}
-  Congratulations on having all your projects on track. We'll continue to keep you updated as you progress. <br>
-{% endif %}
-
-
 <br>
 Thanks,<br>
 The ETAbot Team<br>
