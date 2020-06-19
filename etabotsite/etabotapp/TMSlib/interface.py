@@ -11,8 +11,10 @@ class BasicReport:
             projects: List[Dict],
             projects_on_track_names: List[str],
             deadlines_on_track: int,
-            deadlines_total: int):
+            deadlines_total: int,
+            aux=None):
         self.projects_on_track_names = projects_on_track_names
         self.deadlines_on_track = deadlines_on_track
         self.deadlines_total = deadlines_total
         self.projects = projects
+        self.aux = aux

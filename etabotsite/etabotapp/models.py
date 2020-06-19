@@ -249,12 +249,13 @@ def parse_projects_for_TMS(instance, **kwargs):
     logging.debug('parse_tms: velocities found: {}'.format(velocities))
 
     existing_projects_dict = {}
+    new_projects = []
+    updated_projects = []
+
     for p in existing_projects:
         existing_projects_dict[p.name] = p
 
         logging.info('passing parsed projects info to Django models.')
-        new_projects = []
-        updated_projects = []
         if projects_dict is not None:
             for project_name, attrs in projects_dict.items():
                 velocity_json = dc.get_velocity_json(
