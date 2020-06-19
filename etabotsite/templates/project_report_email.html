@@ -76,7 +76,15 @@ Please go to <a href="https://app.etabot.ai/tmss">accounts page</a> to fix this.
 <br>
 Thanks,<br>
 The ETAbot Team<br>
+____________________<br>
+<font color="white">
+  details:<br>
 {% for project in report.projects %}
-      <!-- {{ project.aux|default:"no aux info"}} -->
+  ___________________
+  {{project.project_name}}
+  ___________________
+       {{ project.aux|default:"no aux info"}}
+  ___________________<br>
 {% endfor %}
+</font>
 {% endautoescape %}
