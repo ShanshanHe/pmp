@@ -346,7 +346,7 @@ server_end_point: {}, username_login: {}'.format(
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
         try:
             logging.debug('user_velocity_per_project: {}'.format(
-                self.ETApredict_obj.user_velocity_per_project))
+                self.ETApredict_obj.eta_engine.user_velocity_per_project))
         except Exception as e:
             logging.warning('user_velocity_per_project error: {}'.format(e))
         self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)

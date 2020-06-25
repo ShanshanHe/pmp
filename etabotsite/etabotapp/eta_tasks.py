@@ -27,7 +27,7 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
     project_names = []
     for project in projects_set:
         project.velocities = dc.get_velocity_json(
-            tms_wrapper.ETApredict_obj.user_velocity_per_project,
+            tms_wrapper.ETApredict_obj.eta_engine.user_velocity_per_project,
             project.name)
         project_settings = projects_dict.get(project.name, {}).get(
                     'project_settings', {})
