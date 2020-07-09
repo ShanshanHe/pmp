@@ -12,13 +12,14 @@ import smtplib
 import time
 
 from django.conf import settings
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.template.loader import render_to_string
-from django.utils.encoding import force_bytes
+# from django.utils.encoding import force_bytes
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from enum import Enum
+# from enum import Enum
 import email_toolbox
+from TMSlib.interface import BasicReport
 
 SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1")
 SYS_EMAIL = getattr(settings, "SYS_EMAIL", None)
@@ -37,15 +38,21 @@ class EmailReportProcess(object):
         email_toolbox.EmailWorker.send_email(msg)
 
     @staticmethod
-    def format_email_msg(user, formatted_report):
+    def generate_html_report(user, formatted_report: BasicReport):
+        msg_body = render_to_string('project_report_email.html', {
+            'username': user.username,
+            'report': formatted_report})
+        return msg_body
+
+    @staticmethod
+    def format_email_msg(user, formatted_report: BasicReport):
         #Format the Msg for email.
         msg = MIMEMultipart()
         msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
         msg['To'] = user.email
         msg['Subject'] = '[ETAbot] Your Daily Project Report'
-        msg_body = render_to_string('project_report_email.html', {
-        'username':user.username,
-        'report':formatted_report})
+        msg_body = EmailReportProcess.generate_html_report(
+            user, formatted_report)
         msg.attach(MIMEText(msg_body, 'html'))
         logging.info("User Email: {}".format(user.email))
         return msg

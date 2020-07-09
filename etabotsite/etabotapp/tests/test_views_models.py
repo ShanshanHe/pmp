@@ -10,19 +10,8 @@ from rest_framework import status
 from django.conf import settings
 from copy import copy
 
-TEST_TMS_CREDENTIALS = getattr(settings, "TEST_TMS_CREDENTIALS", False)
+test_tms_data = getattr(settings, "TEST_TMS_DATA", None)
 
-test_tms_endpoint = TEST_TMS_CREDENTIALS.get("endpoint", "localhost:8888")
-test_tms_username = TEST_TMS_CREDENTIALS.get("username", "testuser@example.com")
-test_tms_password = TEST_TMS_CREDENTIALS.get("password", "testpassword")
-
-test_tms_data = {
-    'endpoint': test_tms_endpoint,
-    'username': test_tms_username,
-    'password': test_tms_password,
-    'type': 'JI',
-    'connectivity_status': {}
-}
 
 def create_test_user():
     return User.objects.create_user(
@@ -159,8 +148,8 @@ class ProjectModelTestCase(TestCase):
         self.project_mode = "scrum"
         self.project_open_status = "ToDo"
         self.project_grace_period = "24"
-        self.project_work_hours = "{1:(10,14),2:(16,20), 3:(10,14), 4:(16,18), 5:(20,21), 6:(23,23), 0:(9,10)}"
-        self.project_vacation_days = "{('2017-04-21', '2017-04-30'), ('2017-05-16', '2017-05-19'), ('2017-05-24', '2017-05-24'), ('2017-05-29', '2017-05-29')}"
+        self.project_work_hours = {1:(10,14),2:(16,20), 3:(10,14), 4:(16,18), 5:(20,21), 6:(23,23), 0:(9,10)}
+        self.project_vacation_days = {1:('2017-04-21', '2017-04-30'), 2:('2017-05-16', '2017-05-19'), 3:('2017-05-24', '2017-05-24'), 4:('2017-05-29', '2017-05-29')}
         self.project = Project(
             owner=user,
             project_tms=self.tms,

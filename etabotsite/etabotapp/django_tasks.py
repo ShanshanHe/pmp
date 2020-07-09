@@ -94,7 +94,7 @@ def parse_projects_for_tms_id(
     parse_projects_for_TMS(tms, **params)
 
 @shared_task
-def send_daily_project_report():
+def send_daily_project_report(**kwargs):
     """Generate Daily Email Reports for all Users"""
     logging.info("Sending Emails to all users for Daily Reports!")
     userlist =  User.objects.all()
@@ -104,4 +104,4 @@ def send_daily_project_report():
         for tms in tms_list:
             project_set = Project.objects.all().filter(project_tms_id=tms.id)
             if project_set:
-                eta_tasks.generate_email_report(tms,project_set,user)
+                eta_tasks.generate_email_report(tms, project_set, user, **kwargs)
