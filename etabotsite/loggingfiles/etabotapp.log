@@ -1,54 +1,326 @@
-2020-05-30 22:56:32,654 root         DEBUG    models import started.
-2020-05-30 22:56:32,654 root         DEBUG    loading TMSlib
-2020-05-30 22:56:32,655 root         DEBUG    loading TMSlib.TMS
-2020-05-30 22:56:32,655 root         DEBUG    logging JIRA_API imports
-2020-05-30 22:56:32,731 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
-2020-05-30 22:56:32,731 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
-2020-05-30 22:56:32,732 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
-2020-05-30 22:56:32,732 root         INFO     SYS_EMAIL: "apikey"
-2020-05-30 22:56:32,732 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
-2020-05-30 22:56:32,732 root         INFO     EMAIL_PORT: "587"
-2020-05-30 22:56:32,732 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
-2020-05-30 22:56:32,733 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
-2020-05-30 22:56:32,872 root         DEBUG    loaded TMSlib
-2020-05-30 22:56:32,932 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
-2020-05-30 22:56:32,932 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f5385972e80>
-2020-05-30 22:56:32,932 root         INFO     models import finished.
-2020-05-30 22:56:33,232 root         DEBUG    models import started.
-2020-05-30 22:56:33,232 root         DEBUG    loading TMSlib
-2020-05-30 22:56:33,232 root         DEBUG    loading TMSlib.TMS
-2020-05-30 22:56:33,232 root         DEBUG    logging JIRA_API imports
-2020-05-30 22:56:33,305 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
-2020-05-30 22:56:33,305 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
-2020-05-30 22:56:33,306 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
-2020-05-30 22:56:33,306 root         INFO     SYS_EMAIL: "apikey"
-2020-05-30 22:56:33,306 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
-2020-05-30 22:56:33,306 root         INFO     EMAIL_PORT: "587"
-2020-05-30 22:56:33,306 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
-2020-05-30 22:56:33,306 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
-2020-05-30 22:56:33,452 root         DEBUG    loaded TMSlib
-2020-05-30 22:56:33,515 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
-2020-05-30 22:56:33,515 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f6975b0def0>
-2020-05-30 22:56:33,515 root         INFO     models import finished.
-2020-05-30 22:56:33,577 root         DEBUG    TMSSerializer owner: ReadOnlyField(source='owner.username')
-2020-05-30 22:56:33,578 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
-2020-05-30 22:56:33,578 root         INFO     SYS_EMAIL: "apikey"
-2020-05-30 22:56:33,578 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
-2020-05-30 22:56:33,578 root         INFO     EMAIL_PORT: "587"
-2020-05-30 22:56:33,578 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
-2020-05-30 22:56:33,614 django.db.backends DEBUG    (0.001)
+2020-07-08 23:45:17,443 root         DEBUG    models import started.
+2020-07-08 23:45:17,443 root         DEBUG    loading TMSlib
+2020-07-08 23:45:17,445 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:45:17,445 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:45:17,615 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:45:17,615 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:45:17,617 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:45:17,617 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:45:17,617 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:45:17,617 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:45:17,617 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:45:17,618 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:45:17,968 root         DEBUG    loaded TMSlib
+2020-07-08 23:45:18,183 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:45:18,183 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f95f6ad4438>
+2020-07-08 23:45:18,183 root         INFO     models import finished.
+2020-07-08 23:45:18,473 root         DEBUG    models import started.
+2020-07-08 23:45:18,473 root         DEBUG    loading TMSlib
+2020-07-08 23:45:18,473 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:45:18,473 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:45:18,543 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:45:18,543 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:45:18,544 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:45:18,544 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:45:18,544 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:45:18,544 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:45:18,544 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:45:18,544 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:45:18,683 root         DEBUG    loaded TMSlib
+2020-07-08 23:45:18,732 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:45:18,732 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7fd97cd56470>
+2020-07-08 23:45:18,732 root         INFO     models import finished.
+2020-07-08 23:45:18,824 root         DEBUG    TMSSerializer owner: ReadOnlyField(source='owner.username')
+2020-07-08 23:45:18,825 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:45:18,825 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:45:18,825 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:45:18,825 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:45:18,825 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:51:10,119 root         DEBUG    models import started.
+2020-07-08 23:51:10,119 root         DEBUG    loading TMSlib
+2020-07-08 23:51:10,120 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:51:10,120 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:51:10,195 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:51:10,195 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:51:10,196 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:51:10,196 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:51:10,196 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:51:10,196 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:51:10,196 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:51:10,196 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:51:10,346 root         DEBUG    loaded TMSlib
+2020-07-08 23:51:10,398 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:51:10,398 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f66ee141438>
+2020-07-08 23:51:10,399 root         INFO     models import finished.
+2020-07-08 23:51:10,685 root         DEBUG    models import started.
+2020-07-08 23:51:10,685 root         DEBUG    loading TMSlib
+2020-07-08 23:51:10,685 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:51:10,686 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:51:10,760 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:51:10,760 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:51:10,761 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:51:10,761 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:51:10,761 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:51:10,761 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:51:10,761 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:51:10,762 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:51:10,911 root         DEBUG    loaded TMSlib
+2020-07-08 23:51:10,974 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:51:10,975 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f442aee4438>
+2020-07-08 23:51:10,975 root         INFO     models import finished.
+2020-07-08 23:51:11,032 root         DEBUG    TMSSerializer owner: ReadOnlyField(source='owner.username')
+2020-07-08 23:51:11,033 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:51:11,033 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:51:11,033 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:51:11,033 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:51:11,033 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:51:21,095 root         DEBUG    models import started.
+2020-07-08 23:51:21,096 root         DEBUG    loading TMSlib
+2020-07-08 23:51:21,096 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:51:21,096 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:51:21,174 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:51:21,174 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:51:21,176 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:51:21,176 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:51:21,176 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:51:21,176 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:51:21,176 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:51:21,176 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:51:21,311 root         DEBUG    loaded TMSlib
+2020-07-08 23:51:21,363 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:51:21,363 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f751543b400>
+2020-07-08 23:51:21,363 root         INFO     models import finished.
+2020-07-08 23:51:21,666 root         DEBUG    models import started.
+2020-07-08 23:51:21,666 root         DEBUG    loading TMSlib
+2020-07-08 23:51:21,666 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:51:21,666 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:51:21,741 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:51:21,741 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:51:21,742 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:51:21,742 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:51:21,742 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:51:21,742 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:51:21,742 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:51:21,742 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:51:21,888 root         DEBUG    loaded TMSlib
+2020-07-08 23:51:21,939 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:51:21,939 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7fecc6226438>
+2020-07-08 23:51:21,939 root         INFO     models import finished.
+2020-07-08 23:51:21,993 root         DEBUG    TMSSerializer owner: ReadOnlyField(source='owner.username')
+2020-07-08 23:51:21,994 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:51:21,994 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:51:21,994 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:51:21,994 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:51:21,994 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:51:42,025 root         DEBUG    models import started.
+2020-07-08 23:51:42,025 root         DEBUG    loading TMSlib
+2020-07-08 23:51:42,026 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:51:42,026 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:51:42,118 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:51:42,118 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:51:42,119 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:51:42,119 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:51:42,119 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:51:42,119 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:51:42,119 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:51:42,120 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:51:42,273 root         DEBUG    loaded TMSlib
+2020-07-08 23:51:42,326 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:51:42,326 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f4009d90470>
+2020-07-08 23:51:42,326 root         INFO     models import finished.
+2020-07-08 23:51:42,375 root         DEBUG    TMSSerializer owner: ReadOnlyField(source='owner.username')
+2020-07-08 23:51:42,376 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:51:42,376 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:51:42,376 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:51:42,376 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:51:42,376 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:53:24,421 root         DEBUG    models import started.
+2020-07-08 23:53:24,421 root         DEBUG    loading TMSlib
+2020-07-08 23:53:24,422 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:53:24,422 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:53:24,495 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:53:24,495 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:53:24,496 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:53:24,496 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:53:24,496 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:53:24,496 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:53:24,496 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:53:24,496 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:53:24,638 root         DEBUG    loaded TMSlib
+2020-07-08 23:53:24,708 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:53:24,708 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f7565d053c8>
+2020-07-08 23:53:24,708 root         INFO     models import finished.
+2020-07-08 23:53:25,000 root         DEBUG    models import started.
+2020-07-08 23:53:25,000 root         DEBUG    loading TMSlib
+2020-07-08 23:53:25,001 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:53:25,001 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:53:25,104 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:53:25,104 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:53:25,105 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:53:25,105 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:53:25,105 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:53:25,105 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:53:25,105 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:53:25,106 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:53:25,248 root         DEBUG    loaded TMSlib
+2020-07-08 23:53:25,297 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:53:25,297 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7fd45b1dc438>
+2020-07-08 23:53:25,297 root         INFO     models import finished.
+2020-07-08 23:53:25,349 root         DEBUG    TMSSerializer owner: ReadOnlyField(source='owner.username')
+2020-07-08 23:53:25,350 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:53:25,350 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:53:25,350 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:53:25,350 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:53:25,350 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:53:25,426 django.db.backends DEBUG    (0.026) 
             SELECT c.relname, c.relkind
             FROM pg_catalog.pg_class c
             LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
             WHERE c.relkind IN ('r', 'v')
                 AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
                 AND pg_catalog.pg_table_is_visible(c.oid); args=None
-2020-05-30 22:56:33,614 django.db.backends DEBUG    (0.001)
+2020-07-08 23:53:25,426 django.db.backends DEBUG    (0.026) 
             SELECT c.relname, c.relkind
             FROM pg_catalog.pg_class c
             LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
             WHERE c.relkind IN ('r', 'v')
                 AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
                 AND pg_catalog.pg_table_is_visible(c.oid); args=None
-2020-05-30 22:56:33,615 django.db.backends DEBUG    (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
-2020-05-30 22:56:33,615 django.db.backends DEBUG    (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+2020-07-08 23:53:25,430 django.db.backends DEBUG    (0.002) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+2020-07-08 23:53:25,430 django.db.backends DEBUG    (0.002) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+2020-07-08 23:53:30,216 root         DEBUG    models import started.
+2020-07-08 23:53:30,216 root         DEBUG    loading TMSlib
+2020-07-08 23:53:30,217 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:53:30,217 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:53:30,288 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:53:30,288 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:53:30,289 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:53:30,289 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:53:30,289 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:53:30,289 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:53:30,289 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:53:30,289 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:53:30,431 root         DEBUG    loaded TMSlib
+2020-07-08 23:53:30,480 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:53:30,480 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f79a0573438>
+2020-07-08 23:53:30,480 root         INFO     models import finished.
+2020-07-08 23:53:30,752 root         DEBUG    models import started.
+2020-07-08 23:53:30,752 root         DEBUG    loading TMSlib
+2020-07-08 23:53:30,753 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:53:30,753 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:53:30,823 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:53:30,823 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:53:30,824 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:53:30,824 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:53:30,824 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:53:30,824 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:53:30,824 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:53:30,825 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:53:30,965 root         DEBUG    loaded TMSlib
+2020-07-08 23:53:31,014 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:53:31,014 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7f7dcd957438>
+2020-07-08 23:53:31,014 root         INFO     models import finished.
+2020-07-08 23:53:31,067 root         DEBUG    TMSSerializer owner: ReadOnlyField(source='owner.username')
+2020-07-08 23:53:31,068 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:53:31,068 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:53:31,068 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:53:31,068 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:53:31,069 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:53:31,112 django.db.backends DEBUG    (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+2020-07-08 23:53:31,112 django.db.backends DEBUG    (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+2020-07-08 23:53:31,113 django.db.backends DEBUG    (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+2020-07-08 23:53:31,113 django.db.backends DEBUG    (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+2020-07-08 23:53:40,738 root         DEBUG    models import started.
+2020-07-08 23:53:40,738 root         DEBUG    loading TMSlib
+2020-07-08 23:53:40,738 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:53:40,739 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:53:40,811 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:53:40,811 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:53:40,812 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:53:40,812 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:53:40,812 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:53:40,812 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:53:40,812 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:53:40,812 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:53:40,948 root         DEBUG    loaded TMSlib
+2020-07-08 23:53:40,997 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:53:40,997 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7fe540d97438>
+2020-07-08 23:53:40,997 root         INFO     models import finished.
+2020-07-08 23:53:41,270 root         DEBUG    models import started.
+2020-07-08 23:53:41,270 root         DEBUG    loading TMSlib
+2020-07-08 23:53:41,270 root         DEBUG    loading TMSlib.TMS
+2020-07-08 23:53:41,270 root         DEBUG    logging JIRA_API imports
+2020-07-08 23:53:41,341 root         INFO     JIRA_CLOUD_API: https://api.atlassian.com/ex/jira/
+2020-07-08 23:53:41,342 root         DEBUG    loading TMSlib.TMS: loaded JIRA_API
+2020-07-08 23:53:41,342 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:53:41,342 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:53:41,343 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:53:41,343 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:53:41,343 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:53:41,343 root         WARNING  cannot load ETApredict or ETAreport due to "No module named 'etabot_algo'" Loading ETApredict_placeholder, ETAreport_placeholder instead
+2020-07-08 23:53:41,483 root         DEBUG    loaded TMSlib
+2020-07-08 23:53:41,532 root         DEBUG    atlassian_redirect_uri: "https://dev.etabot.ai/atlassian_callback"
+2020-07-08 23:53:41,532 root         DEBUG    oauth registered: <authlib.integrations.django_client.integration.DjangoRemoteApp object at 0x7fedde979438>
+2020-07-08 23:53:41,532 root         INFO     models import finished.
+2020-07-08 23:53:41,582 root         DEBUG    TMSSerializer owner: ReadOnlyField(source='owner.username')
+2020-07-08 23:53:41,583 root         INFO     SYS_DOMAIN: "http://127.0.0.1:8000"
+2020-07-08 23:53:41,583 root         INFO     SYS_EMAIL: "apikey"
+2020-07-08 23:53:41,583 root         INFO     EMAIL_HOST: "smtp.sendgrid.net"
+2020-07-08 23:53:41,583 root         INFO     EMAIL_PORT: "587"
+2020-07-08 23:53:41,583 root         INFO     TOKEN_EXPIRATION_PERIOD: "86400000"
+2020-07-08 23:53:41,615 django.db.backends DEBUG    (0.001) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+2020-07-08 23:53:41,615 django.db.backends DEBUG    (0.001) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+2020-07-08 23:53:41,617 django.db.backends DEBUG    (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+2020-07-08 23:53:41,617 django.db.backends DEBUG    (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+2020-07-08 23:53:46,496 root         DEBUG    format = "None"
+2020-07-08 23:53:46,496 root         DEBUG    path = ""
+2020-07-08 23:53:46,496 root         DEBUG    request = "<WSGIRequest: GET '/'>"
+2020-07-08 23:53:46,501 root         DEBUG    response: <HttpResponse status_code=200, "text/html; charset=utf-8">
+2020-07-08 23:53:46,501 django.server INFO     "GET / HTTP/1.1" 200 3035
+2020-07-08 23:53:46,501 django.server INFO     "GET / HTTP/1.1" 200 3035
+2020-07-08 23:53:46,581 django.server INFO     "GET /static/ng2_app/assets/RobotoFont.css HTTP/1.1" 200 384
+2020-07-08 23:53:46,581 django.server INFO     "GET /static/ng2_app/assets/RobotoFont.css HTTP/1.1" 200 384
+2020-07-08 23:53:46,581 django.server INFO     "GET /static/ng2_app/assets/MaterialIcons.css HTTP/1.1" 200 541
+2020-07-08 23:53:46,581 django.server INFO     "GET /static/ng2_app/assets/MaterialIcons.css HTTP/1.1" 200 541
+2020-07-08 23:53:46,582 django.server INFO     "GET /static/ng2_app/assets/JosefinJulius.css HTTP/1.1" 200 771
+2020-07-08 23:53:46,582 django.server INFO     "GET /static/ng2_app/assets/JosefinJulius.css HTTP/1.1" 200 771
+2020-07-08 23:53:46,582 django.server INFO     "GET /static/ng2_app/runtime.a66f828dca56eeb90e02.js HTTP/1.1" 304 0
+2020-07-08 23:53:46,582 django.server INFO     "GET /static/ng2_app/runtime.a66f828dca56eeb90e02.js HTTP/1.1" 304 0
+2020-07-08 23:53:46,585 django.server INFO     "GET /static/ng2_app/polyfills.b7b7642b82b357ed611c.js HTTP/1.1" 304 0
+2020-07-08 23:53:46,585 django.server INFO     "GET /static/ng2_app/polyfills.b7b7642b82b357ed611c.js HTTP/1.1" 304 0
+2020-07-08 23:53:46,586 django.server INFO     "GET /static/ng2_app/styles.4239603eb191f2f7bd67.css HTTP/1.1" 200 96667
+2020-07-08 23:53:46,586 django.server INFO     "GET /static/ng2_app/styles.4239603eb191f2f7bd67.css HTTP/1.1" 200 96667
+2020-07-08 23:53:46,586 django.server INFO     "GET /static/ng2_app/main.93c20afa7610e26523c9.js HTTP/1.1" 200 994970
+2020-07-08 23:53:46,586 django.server INFO     "GET /static/ng2_app/main.93c20afa7610e26523c9.js HTTP/1.1" 200 994970
+2020-07-08 23:53:46,587 django.server INFO     "GET /static/ng2_app/assets/materialize.css HTTP/1.1" 200 154435
+2020-07-08 23:53:46,587 django.server INFO     "GET /static/ng2_app/assets/materialize.css HTTP/1.1" 200 154435
+2020-07-08 23:53:47,110 django.server INFO     "GET /static/ng2_app/assets/fonts/roboto-v19-latin-regular.woff2 HTTP/1.1" 200 15736
+2020-07-08 23:53:47,110 django.server INFO     "GET /static/ng2_app/assets/fonts/roboto-v19-latin-regular.woff2 HTTP/1.1" 200 15736
+2020-07-08 23:53:47,116 django.server INFO     "GET /static/ng2_app/assets/fonts/josefin-sans-v13-latin-regular.woff2 HTTP/1.1" 200 16752
+2020-07-08 23:53:47,116 django.server INFO     "GET /static/ng2_app/assets/fonts/josefin-sans-v13-latin-regular.woff2 HTTP/1.1" 200 16752
+2020-07-08 23:53:47,138 django.server INFO     "GET /static/ng2_app/assets/ETAbot-150x150.png HTTP/1.1" 200 8192
+2020-07-08 23:53:47,138 django.server INFO     "GET /static/ng2_app/assets/ETAbot-150x150.png HTTP/1.1" 200 8192
