@@ -190,7 +190,7 @@ class TMS(models.Model):
 
 class Project(models.Model):
     """This class represents the project model."""
-    # jiraacount = models.ForeignKey(JIRAAccount, on_delete=models.CASCADE)
+
     owner = models.ForeignKey('auth.User', related_name='projects',
                               on_delete=models.CASCADE)
     project_tms = models.ForeignKey(TMS, on_delete=models.CASCADE)
@@ -252,35 +252,35 @@ def parse_projects_for_TMS(instance, **kwargs):
     for p in existing_projects:
         existing_projects_dict[p.name] = p
 
-    logging.info('passing parsed projects info to Django models.')
-    new_projects = []
-    updated_projects = []
-    if projects_dict is not None:
-        for project_name, attrs in projects_dict.items():
-            velocity_json = dc.get_velocity_json(
-                velocities, project_name)
+        logging.info('passing parsed projects info to Django models.')
+        new_projects = []
+        updated_projects = []
+        if projects_dict is not None:
+            for project_name, attrs in projects_dict.items():
+                velocity_json = dc.get_velocity_json(
+                    velocities, project_name)
 
-            if project_name not in existing_projects_dict:
-                new_django_project = Project(
-                    owner=instance.owner,
-                    project_tms=instance,
-                    name=project_name,
-                    mode=attrs.get('mode', 'unknown mode'),
-                    open_status=attrs.get('open_status', ''),
-                    velocities=velocity_json,
-                    grace_period=attrs.get('grace_period', 12.0),
-                    work_hours=attrs.get('work_hours', {}),
-                    vacation_days=attrs.get('vacation_days', {}),
-                    project_settings=attrs.get('project_settings', {}))
-                new_django_project.save()
-                new_projects.append(project_name)
-            else:
-                p.velocities = velocity_json
-                p.project_settings = attrs.get(
-                    'project_settings', p.project_settings)
-                p.mode = attrs.get('mode', p.mode)
-                p.save()
-                updated_projects.append(project_name)
+                if project_name not in existing_projects_dict:
+                    new_django_project = Project(
+                        owner=instance.owner,
+                        project_tms=instance,
+                        name=project_name,
+                        mode=attrs.get('mode', 'unknown mode'),
+                        open_status=attrs.get('open_status', ''),
+                        velocities=velocity_json,
+                        grace_period=attrs.get('grace_period', 12.0),
+                        work_hours=attrs.get('work_hours', {}),
+                        vacation_days=attrs.get('vacation_days', {}),
+                        project_settings=attrs.get('project_settings', {}))
+                    new_django_project.save()
+                    new_projects.append(project_name)
+                else:
+                    p.velocities = velocity_json
+                    p.project_settings = attrs.get(
+                        'project_settings', p.project_settings)
+                    p.mode = attrs.get('mode', p.mode)
+                    p.save()
+                    updated_projects.append(project_name)
     logging.info('parse_tms has finished')
     response_message = ''
     if len(new_projects) > 0:

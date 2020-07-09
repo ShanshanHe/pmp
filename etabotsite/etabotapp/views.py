@@ -419,6 +419,7 @@ def estimate_tms(celery, user, tms, global_params, project_id=None):
         'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
         (tms.id, projects, global_params))
 
+    #todo: stores task_id in database for this user
     return result.task_id
 
 
