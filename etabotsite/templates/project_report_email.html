@@ -44,16 +44,6 @@ It appears there were no open tasks selected for the report. Please modify filte
         {% else %}
           There are no tasks currently overdue for {{ project.project_name|default:"Project name not found" }}.<br>
         {% endif %}
-        {% if project.on_track|length > 0 %}
-        The following tasks are on track.
-          <ul>
-          {% for tracked in project.on_track %}
-            <li>{{ tracked.task|default:"Task name not found."}}</li>
-          {% endfor %}
-          </ul>
-        {% else %}
-          None of your tasks are on track for {{ project.project_name|default:"Project name not found" }}.<br>
-        {% endif %}
         {% if project.off_track|length > 0 %}
           The following tasks are off track.
           <ul>
@@ -63,6 +53,16 @@ It appears there were no open tasks selected for the report. Please modify filte
           </ul>
         {% else %}
           There are no tasks currently off track for {{ project.project_name|default:"Project name not found" }}.<br>
+        {% endif %}
+        {% if project.on_track|length > 0 %}
+        The following tasks are on track.
+          <ul>
+          {% for tracked in project.on_track %}
+            <li>{{ tracked.task|default:"Task name not found."}}</li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          None of your tasks are on track for {{ project.project_name|default:"Project name not found" }}.<br>
         {% endif %}
       {% else %}
         Project {{ project.project_name|default:"Project name not found" }} is on track.<br>
