@@ -1,11 +1,11 @@
 {% autoescape off %}
 Hi {{ username|default:"valued user" }},<br>
 <br>
-Here is your daily report regarding your projects.<br><br>
+Here is your report for your projects in {{ report.tms_name }}<br>
+Filters/parameters: {{ report.params|default:"no filters/parameters"}}).<br><br>
 
 {% if report.projects|length == 0 %}
-It appears you do not have projects linked to ETAbot.
-Please go to <a href="https://app.etabot.ai/tmss">accounts page</a> to fix this.
+It appears there were no open tasks selected for the report. Please modify filters and/or go to <a href="https://app.etabot.ai/tmss">accounts page</a> to ensure your projects are connected to ETAbot.
 {% else %}
   Here's a high level overview of your {{ report.projects|length }} projects(s):<br>
 
@@ -77,7 +77,7 @@ Please go to <a href="https://app.etabot.ai/tmss">accounts page</a> to fix this.
 Thanks,<br>
 The ETAbot Team<br>
 ____________________<br>
-<font color="white">
+<font color="grey">
   details:<br>
 {% for project in report.projects %}
   ___________________

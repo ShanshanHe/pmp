@@ -46,7 +46,7 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
         project_names=project_names,
         **kwargs)
     raw_status_report = tms_wrapper.generate_projects_status_report(**kwargs)
-    email_msg = email_reports.EmailReportProcess.format_email_msg(tms.owner ,raw_status_report)
+    email_msg = email_reports.EmailReportProcess.format_email_msg(tms.owner, raw_status_report)
     #Send email
     email_reports.EmailReportProcess.send_email(email_msg)
 

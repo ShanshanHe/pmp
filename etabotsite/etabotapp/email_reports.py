@@ -46,7 +46,7 @@ class EmailReportProcess(object):
 
     @staticmethod
     def format_email_msg(user, formatted_report: BasicReport):
-        #Format the Msg for email.
+        # Format the Msg for email.
         msg = MIMEMultipart()
         msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
         msg['To'] = user.email
