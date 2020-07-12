@@ -14,6 +14,7 @@ class BasicReport:
             deadlines_total: int,
             params: Dict,
             tms_name: str,
+            project_names: List[str],
             aux=None):
         self.projects_on_track_names = projects_on_track_names
         self.deadlines_on_track = deadlines_on_track
@@ -22,3 +23,4 @@ class BasicReport:
         self.aux = aux
         self.params = params
         self.tms_name = tms_name
+        self.project_names = ', '.join(sorted(project_names))

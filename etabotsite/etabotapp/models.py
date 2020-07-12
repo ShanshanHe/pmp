@@ -276,7 +276,7 @@ def parse_projects_for_TMS(instance, **kwargs):
                 new_django_project.save()
                 new_projects.append(project_name)
             else:
-                p = existing_projects_dict['project_name']
+                p = existing_projects_dict[project_name]
                 p.velocities = velocity_json
                 p.project_settings = attrs.get(
                     'project_settings', p.project_settings)

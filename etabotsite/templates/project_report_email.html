@@ -1,31 +1,32 @@
-<style type="text/css" media="screen">
-.df_table {
-    font-size: 11pt;
-    font-family: Arial;
-    border-collapse: collapse;
-    border: 1px solid silver;
+<head>
+  <style type="text/css" media="screen">
+  .df_table {
+      font-size: 11pt;
+      font-family: Arial;
+      border-collapse: collapse;
+      border: 1px solid silver;
 
-}
+  }
 
-.df_table td, th {
-    padding: 5px;
-}
+  .df_table td, th {
+      padding: 5px;
+  }
 
-.df_table tr:nth-child(even) {
-    background: #E0E0E0;
-}
+  .df_table tr:nth-child(even) {
+      background: #E0E0E0;
+  }
 
-.df_table tr:hover {
-    background: silver;
-    cursor: pointer;
-}
-</style>
-
+  .df_table tr:hover {
+      background: silver;
+      cursor: pointer;
+  }
+  </style>
+</head>
 {% autoescape off %}
 Hi {{ username|default:"valued user" }},<br>
 <br>
-Here is your report for your projects in {{ report.tms_name }}<br>
-Filters/parameters: {{ report.params|default:"no filters/parameters"}}.<br><br>
+Here is your report for your projects {{ report.project_names }} in {{ report.tms_name }}<br>
+Filters/parameters: {{ report.params|default:"include only active and future sprints"}}.<br><br>
 
 {% if report.projects|length == 0 %}
 It appears there were no open tasks selected for the report. Please modify filters and/or go to <a href="https://app.etabot.ai/tmss">accounts page</a> to ensure your projects are connected to ETAbot.
