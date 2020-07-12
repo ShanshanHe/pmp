@@ -62,7 +62,7 @@ def generate_email_report(tms, projects_set,user, **kwargs):
     Build report structure
     """
     logging.debug(
-        'geneating email report for TMS {}, projects: {}'.format(
+        'generating email report for TMS {}, projects: {}'.format(
             tms, projects_set))
     tms_wrapper = TMSlib.TMSWrapper(tms)
     tms_wrapper.init_ETApredict(projects_set)

@@ -50,7 +50,7 @@ class EmailReportProcess(object):
         msg = MIMEMultipart()
         msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
         msg['To'] = user.email
-        msg['Subject'] = '[ETAbot] Your Daily Project Report'
+        msg['Subject'] = '[ETAbot] Your ETAs Report'
         msg_body = EmailReportProcess.generate_html_report(
             user, formatted_report)
         msg.attach(MIMEText(msg_body, 'html'))
