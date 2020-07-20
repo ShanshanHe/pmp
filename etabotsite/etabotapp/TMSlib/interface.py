@@ -23,4 +23,11 @@ class BasicReport:
         self.aux = aux
         self.params = params
         self.tms_name = tms_name
-        self.project_names = ', '.join(sorted(project_names))
+        self.project_names = ''
+        if project_names:
+            self.project_names = ', '.join(sorted(project_names))
+        self.projects_dict = {}
+        for project in self.projects:
+            project_name = project.get('project_name')
+            if project_name:
+                self.projects_dict[project_name] = project

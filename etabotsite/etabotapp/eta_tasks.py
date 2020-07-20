@@ -47,9 +47,30 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
         **kwargs)
     raw_status_report = tms_wrapper.generate_projects_status_report(
         project_names=project_names, **kwargs)
-    email_msg = email_reports.EmailReportProcess.format_email_msg(tms.owner, raw_status_report)
+    html_report = email_reports.EmailReportProcess.generate_html_report(
+        tms.owner, raw_status_report)
+
+    email_msg = email_reports.EmailReportProcess.format_email_msg(
+        tms.owner, html_report=html_report)
     #Send email
     email_reports.EmailReportProcess.send_email(email_msg)
+    for project in projects_set:
+        project_settings = project.project_settings
+        project_settings['report'] = html_report
+
+        project_in_report = raw_status_report.projects_dict.get(
+            project.name)
+        if project_in_report:
+            project_settings['deadlines'] = project_in_report.get('deadlines')
+            project_settings['sprints'] = project_in_report.get('sprints')
+            logging.debug("saving project settings deadlines: {}".format(project_settings['deadlines']))
+            logging.debug("saving project settings sprints: {}".format(project_settings['sprints']))
+        else:
+            logging.error('no project_in_report for {}'.format(project))
+        logging.debug("saving project settings: {}".format(project_settings))
+        project.project_settings = project_settings
+
+        project.save()
 
     logging.debug('estimate_ETA_for_TMS finished')
 
@@ -68,6 +89,9 @@ def generate_email_report(tms, projects_set,user, **kwargs):
     tms_wrapper = TMSlib.TMSWrapper(tms)
     tms_wrapper.init_ETApredict(projects_set)
     raw_status_report = tms_wrapper.generate_projects_status_report(**kwargs)
-    email_msg = email_reports.EmailReportProcess.format_email_msg(user, raw_status_report)
+    email_msg = email_reports.EmailReportProcess.format_email_msg(
+        user,
+        email_reports.EmailReportProcess.generate_html_report(
+            user, raw_status_report))
     email_reports.EmailReportProcess.send_email(email_msg)
     logging.debug('generate_email_report finished.')

@@ -45,14 +45,13 @@ class EmailReportProcess(object):
         return msg_body
 
     @staticmethod
-    def format_email_msg(user, formatted_report: BasicReport):
+    def format_email_msg(user, html_report: str):
         # Format the Msg for email.
         msg = MIMEMultipart()
         msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
         msg['To'] = user.email
         msg['Subject'] = '[ETAbot] Your ETAs Report'
-        msg_body = EmailReportProcess.generate_html_report(
-            user, formatted_report)
+        msg_body = html_report
         msg.attach(MIMEText(msg_body, 'html'))
         logging.info("User Email: {}".format(user.email))
         return msg
