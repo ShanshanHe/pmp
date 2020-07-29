@@ -27,47 +27,40 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters':{
-        'file': {
+        'console': {
             'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
             }
     },
     'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'formatter':'file',
-            'filename': os.path.join(DJANGO_ROOT,'../loggingfiles/etabotapp.log'),
-        },
         'console':{
-            'level': 'INFO',
             'class': 'logging.StreamHandler',
+            'formatter':'console'
         },
+        'file':{
+            'class':'logging.FileHandler',
+            'filename':'/path/to/docker/file/storage' ######THIS SHOULD BE THE PATH TO THE FILE
+        }
     },
     'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
         '':{
-            'handlers':['file'],
-            'level': 'DEBUG',
-            'propagate': True,
+            'level': 'WARNING',
+            'handlers':['console']
         },
+        'django':{
+            'handlers': ['console','file'],
+            'propagate': False,
+        }
     },
 }
 
 logger = logging.getLogger('django')
 # from authlib.django.client import OAuth
 # oauth = OAuth()
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S')
 
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
 LOCAL_MODE = (PLATFORM == 'Darwin')
-LOCAL_MODE = True
+LOCAL_MODE = 0
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
 else:
