@@ -60,7 +60,6 @@ logger = logging.getLogger('django')
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
 LOCAL_MODE = (PLATFORM == 'Darwin')
-LOCAL_MODE = 0
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
 else:
