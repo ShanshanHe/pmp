@@ -14,7 +14,6 @@ etabotsite/etabotapp/misc_utils/__pycache__/
 etabotsite/sys_email_settings.json
 etabotsite/django_keys_prod.json
 etabotsite/custom_settings.json
-etabotsite/loggingfiles/
 # pycharm
 .idea/
 *.diff
