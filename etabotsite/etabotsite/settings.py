@@ -38,7 +38,7 @@ LOGGING = {
         },
         'file':{
             'class':'logging.FileHandler',
-            'filename':'/path/to/docker/file/storage' ######THIS SHOULD BE THE PATH TO THE FILE
+            'filename':'/usr/src/app/logging'
         }
     },
     'loggers': {
