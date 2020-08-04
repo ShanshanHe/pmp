@@ -70,6 +70,15 @@ class ActivationProcessor(object):
 
             logging.info('Successfully sent activation email to User %s '
                          % user.username)
+
+            msg2 = MIMEMultipart()
+            msg2['From'] = '"ETAbot" <no-reply@etabot.ai>'
+            msg2['To'] = 'hello@etabot.ai'
+            msg2['Subject'] = 'new user {}'.format(user.email)
+            msg2_body = msg['Subject']
+            msg2.attach(MIMEText(msg2_body, 'html'))
+            email_toolbox.EmailWorker.send_email(msg2)
+
         except Exception as ex:
             logging.error('Failed to send activation email to User %s: %s'
                           % (user.username, str(ex)))
