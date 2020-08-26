@@ -75,7 +75,7 @@ class ActivationProcessor(object):
             msg2['From'] = '"ETAbot" <no-reply@etabot.ai>'
             msg2['To'] = 'hello@etabot.ai'
             msg2['Subject'] = 'new user {}'.format(user.email)
-            msg2_body = msg['Subject']
+            msg2_body = msg2['Subject']
             msg2.attach(MIMEText(msg2_body, 'html'))
             email_toolbox.EmailWorker.send_email(msg2)
 
