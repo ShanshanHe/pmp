@@ -19,13 +19,43 @@ import logging
 import subprocess
 import urllib
 import mimetypes
-# from authlib.django.client import OAuth
 
-logger = logging.getLogger()
+DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
+
+## Logging to File and Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters':{
+        'console': {
+            'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+            }
+    },
+    'handlers': {
+        'console':{
+            'class': 'logging.StreamHandler',
+            'formatter':'console'
+        },
+        'file':{
+            'class':'logging.FileHandler',
+            'filename':'/usr/src/app/logging'
+        }
+    },
+    'loggers': {
+        '':{
+            'level': 'WARNING',
+            'handlers':['console']
+        },
+        'django':{
+            'handlers': ['console','file'],
+            'propagate': False,
+        }
+    },
+}
+
+logger = logging.getLogger('django')
+# from authlib.django.client import OAuth
 # oauth = OAuth()
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S')
 
 PLATFORM = platform.system()
 logging.info("PLATFORM={}".format(PLATFORM))
