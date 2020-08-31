@@ -210,7 +210,7 @@ cannot send connectivity issue email')
             assignee = 'currentUser()'
         extra_filter = self.construct_extra_filter(project_names=project_names)
 
-        return (assignee, extra_filter)
+        return assignee, extra_filter
 
     def get_future_sprints_tasks_ranked(self, assignee=None, project_names=None):
         """Get all open tasks sorted by rank from future sprints.

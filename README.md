@@ -170,7 +170,7 @@ $ pytest <path to dir with tests>
 {
     "local_host_url":"<your local host url for testing, e.g. http://127.0.0.1:8000">,
     "prod_host_url":"<your production host url for testing, e.g. https://app.etabot.ai>"
-
+    "log_filename_with_path":"path to log file. use /usr/src/app/logging/django_log.txt for Docker use case"
     "db": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "your_db_name",

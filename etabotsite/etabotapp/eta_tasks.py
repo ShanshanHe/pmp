@@ -52,8 +52,8 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
 
     email_msg = email_reports.EmailReportProcess.format_email_msg(
         tms.owner, html_report=html_report)
-    #Send email
     email_reports.EmailReportProcess.send_email(email_msg)
+
     for project in projects_set:
         project_settings = project.project_settings
         project_settings['report'] = html_report
@@ -73,6 +73,7 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
         project.save()
 
     logging.debug('estimate_ETA_for_TMS finished')
+
 
 def generate_email_report(tms, projects_set,user, **kwargs):
     """Generate the email report for a given TMS and projects_set.

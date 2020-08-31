@@ -109,7 +109,7 @@ It appears there were no open tasks selected for the report. Please modify filte
         {% endif %}
       <br><hr>
       {{ project.sprints.summary_table }}
-      {% if project.sprints.tasks.at_risk|length > 0 or project.tasks.sprints.off_track|length > 0 or project.tasks.sprints.overdue|length > 0%}
+      {% if project.sprints.tasks.at_risk|length > 0 or project.sprints.tasks.off_track|length > 0 or project.sprints.tasks.overdue|length > 0%}
       The following tasks may not fit into sprint:
         <ul>
         {% for p in project.sprints.tasks.off_track %}
@@ -121,8 +121,10 @@ It appears there were no open tasks selected for the report. Please modify filte
         {% endfor %}
         </ul>
       {% else %}
-        Everything is on track for the sprint in {{ project.project_name|default:"Project name not found" }}.<br>
-      {% endif %}
+          {% if project.sprints.tasks.on_track|length > 0 %}
+            Everything is on track for the sprint in {{ project.project_name|default:"Project name not found" }}.<br>
+          {% endif %}
+      {% endif %} 
     <hr>
 
     {% endfor %}
@@ -132,7 +134,9 @@ It appears there were no open tasks selected for the report. Please modify filte
 <br>
 Filters/parameters: {{ report.params|default:"include only active and future sprints"}}.<br><br>
 <br>
-
+<br>
+Noticed a discrepancy or have a gift of feedback for us? Please email us at <a href="mailto:hello@etabot.ai">hello@etabot.ai</a>
+<br>
 <br>
 Thanks,<br>
 The ETAbot Team<br>
