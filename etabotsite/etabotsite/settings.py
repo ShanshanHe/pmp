@@ -21,49 +21,7 @@ import urllib
 import mimetypes
 
 DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
-
-## Logging to File and Logging Configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters':{
-        'console': {
-            'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-            }
-    },
-    'handlers': {
-        'console':{
-            'class': 'logging.StreamHandler',
-            'formatter':'console'
-        },
-        'file':{
-            'class':'logging.FileHandler',
-            'filename':'/usr/src/app/logging'
-        }
-    },
-    'loggers': {
-        '':{
-            'level': 'WARNING',
-            'handlers':['console']
-        },
-        'django':{
-            'handlers': ['console','file'],
-            'propagate': False,
-        }
-    },
-}
-
-logger = logging.getLogger('django')
-# from authlib.django.client import OAuth
-# oauth = OAuth()
-
 PLATFORM = platform.system()
-logging.info("PLATFORM={}".format(PLATFORM))
-LOCAL_MODE = (PLATFORM == 'Darwin')
-if LOCAL_MODE:
-    logger.setLevel(logging.DEBUG)
-else:
-    logger.setLevel(logging.INFO)
 
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
@@ -82,10 +40,57 @@ try:
 except Exception as e:
     logging.warning('cannot load custom_settings.json due to "{}"'.format(
         e))
+
+
+log_filename_with_path = custom_settings.get('log_filename_with_path', '/usr/src/app/logging')
+## Logging to File and Logging Configuration
+logging_config = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'django_format': {
+            'format': 'django %(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+            }
+    },
+    'handlers': {
+        'django_console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'django_format'
+        },
+        'django_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'django_format',
+            'filename': log_filename_with_path,
+            'mode': 'a',
+            'maxBytes': 10111000,
+            'backupCount': 7
+        }
+    },
+    'loggers': {
+        '': {
+            'level': 'INFO',
+            'handlers': ['django_console', 'django_file']
+        },
+        'django': {
+            'handlers': ['django_console', 'django_file'],
+            'propagate': False,
+        }
+    },
+}
+
+logging.config.dictConfig(logging_config)
 CUSTOM_SETTINGS = custom_settings
 PROD_HOST_URL = prod_host_url
+logger = logging.getLogger('django')
+logging.info("PLATFORM={}".format(PLATFORM))
+LOCAL_MODE = (PLATFORM == 'Darwin')
+if LOCAL_MODE:
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
 
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
+
 logging.info('HOST_URL="{}"'.format(HOST_URL))
 
 mimetypes.add_type("image/svg+xml", ".svg", True)
@@ -319,7 +324,7 @@ USE_TZ = True
 
 SYS_DOMAIN = local_host_url if LOCAL_MODE else prod_host_url
 
-if 'SYS_EMAIL_SETTINGS'  in custom_settings:
+if 'SYS_EMAIL_SETTINGS' in custom_settings:
     sys_email_settings = custom_settings.get('SYS_EMAIL_SETTINGS')
     logging.debug('loaded SYS_EMAIL_SETTINGS')
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -413,5 +418,4 @@ logging.info('BROKER_URL: {}'.format(BROKER_URL))
 logging.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
 logging.debug('setting.py is done')
 
-import datetime
 EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=1)

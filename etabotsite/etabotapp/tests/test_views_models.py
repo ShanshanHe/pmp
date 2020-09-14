@@ -133,7 +133,7 @@ class TMSViewTestCase(TestCase):
             url,
             format='json',
             follow=True)
-        self.assertEquals(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
 
 class ProjectModelTestCase(TestCase):
@@ -245,4 +245,4 @@ class ProjectViewTestCase(APITestCase):
         project = Project.objects.get()
         url = '{}{}{}'.format('/api/projects/', project.id, '/')
         response = self.client.delete(url, format='json', follow=True)
-        self.assertEquals(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

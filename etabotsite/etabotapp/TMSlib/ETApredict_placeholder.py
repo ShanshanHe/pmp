@@ -25,7 +25,6 @@ class ETApredict():
             self,
             TMS_interface=None):
         self.TMS_interface = TMS_interface
-        self.user_velocity_per_project = {}
         self.eta_engine = ETAengine()
         self.df_tasks_with_ETAs = None
         logging.debug('ETApredict placeholder initialized')
@@ -119,7 +118,7 @@ class ETApredict():
 
         ]
 
-        self.user_velocity_per_project = {
+        self.eta_engine.user_velocity_per_project = {
             'Project Cheburashka': Measurement(1.2),
             'Project Buckwheat': Measurement(2.3)
         }

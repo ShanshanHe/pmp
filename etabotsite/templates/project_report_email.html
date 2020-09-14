@@ -1,79 +1,158 @@
+<head>
+  <style type="text/css" media="screen">
+  .summary_table {
+      border-collapse: collapse;
+      border: 1px solid silver;
+  }
+
+  .summary_table td, th, tr {
+      padding: 5px;
+      border-collapse: collapse;
+      border: 1px solid silver;
+      text-align: center;
+  }
+
+  .df_table {
+      font-size: 11pt;
+      font-family: Arial;
+      border-collapse: collapse;
+      border: 1px solid silver;
+
+  }
+
+  .df_table td, th {
+      padding: 5px;
+  }
+
+  .df_table tr:nth-child(even) {
+      background: #E0E0E0;
+  }
+
+  .df_table tr:hover {
+      background: silver;
+      cursor: pointer;
+  }
+  </style>
+</head>
 {% autoescape off %}
-Hi {{ username|default:"valued user" }},<br>
-<br>
-Here is your daily report regarding your projects.<br><br>
-
+Here is your report for your projects {{ report.project_names }} in {{ report.tms_name }}<br>
 {% if report.projects|length == 0 %}
-It appears you do not have projects linked to ETAbot.
-Please go to <a href="https://app.etabot.ai/tmss">accounts page</a> to fix this.
+It appears there were no open tasks selected for the report. Please modify filters and/or go to <a href="https://app.etabot.ai/tmss">accounts page</a> to ensure your projects are connected to ETAbot.
 {% else %}
-  Here's a high level overview of your {{ report.projects|length }} projects(s):<br>
-
-  <br>
-  You have {{ report.projects_on_track_names|length }} project(s) on track:<br>
   {% if report.projects_on_track_names|length > 0 %}
+  Project(s) on track:<br>
     <ul>
     {% for project in report.projects_on_track_names %}
         <li>{{ project|default:"Hmm... Project name not found" }}</li>
     {% endfor %}
     </ul>
+  {% else %}
+    No projects out of {{ report.project_names }} are on track.
   {% endif %}
 
 
-  {% if report.deadlines_total > 0 %}
-    Out of {{ report.deadlines_total|default:"0" }} deadlines, {{ report.deadlines_on_track|default:"0"}} of them are on track.<br>
-  {% else %}
+  {% if report.deadlines_total == 0 %}
     You have no deadlines currently.<br>
   {% endif %}
+
   <br>
 
-  {% if report.projects|length != report.projects_on_track_names|length %}
-    Let's look at your projects more indepth.<br>
-    {% for project in report.projects %}
-      {% if project.overdue|length > 0 or project.off_track|length > 0 %}
-        <br>
-        Project: {{ project.project_name|default:"Project name not found" }}'s Detailed Report:
-        <br>
-        {% if project.overdue|length > 0 %}
-          The following tasks are overdue.
-          <ul>
-          {% for over in project.overdue %}
-            <li>{{ over.task|default:"Task name not found." }}</li>
-          {% endfor %}
-          </ul>
-        {% else %}
-          There are no tasks currently overdue for {{ project.project_name|default:"Project name not found" }}.<br>
-        {% endif %}
-        {% if project.on_track|length > 0 %}
-        The following tasks are on track.
-          <ul>
-          {% for tracked in project.on_track %}
-            <li>{{ tracked.task|default:"Task name not found."}}</li>
-          {% endfor %}
-          </ul>
-        {% else %}
-          None of your tasks are on track for {{ project.project_name|default:"Project name not found" }}.<br>
-        {% endif %}
-        {% if project.off_track|length > 0 %}
-          The following tasks are off track.
-          <ul>
-          {% for off in project.off_track %}
-            <li>{{ off.task|default:"Task name not found." }}</li>
-          {% endfor %}
-          </ul>
-        {% else %}
-          There are no tasks currently off track for {{ project.project_name|default:"Project name not found" }}.<br>
-        {% endif %}
-      {% else %}
-        Project {{ project.project_name|default:"Project name not found" }} is on track.<br>
-      {% endif %}
-    {% endfor %}
-  {% else %}
-    Congratulations on having all your projects on track. We'll continue to keep you updated as you progress. <br>
+  {% if report.projects|length == report.projects_on_track_names|length %}
+    Congratulations on having all your projects on track.<br>
   {% endif %}
+    <br>
+    {% for project in report.projects %}
+    <h1>{{ project.project_name|default:"Project name not found" }}.</h1>
+      {{project.velocity_report|default:"Hmmm... Could not fetch velocity report"}}
+      {{ project.deadlines.summary_table }}
+
+        <br>
+        {% if project.deadlines.tasks.overdue|length > 0 %}
+          <span style="background-color:#e9a2ad">The following tasks are overdue </span>- consider renegotiating due date to the suggested ETA.
+          <ul>
+            {% for over in project.deadlines.tasks.overdue %}
+              <li >{{ over.task|default:"Task name not found." }}. {% if 'ETA' not in over.task %} {{ over.ETA|default:"?" }}. {% endif %} Due: {{ over.due_date|default:"?" }}. </li>
+            {% endfor %}
+          </ul>
+
+        {% endif %}
+
+        {% if project.deadlines.tasks.off_track|length > 0 %}
+          <span style="background-color:#f3c19d">The following tasks are off track (even optimistically)</span> - consider reprioritizing, descoping, renegotiating due date.
+          <ul>
+            {% for off in project.deadlines.tasks.off_track %}
+              <li>{{ off.task|default:"Task name not found." }}. {% if 'ETA' not in off.task %} {{ off.ETA|default:"?" }}. {% endif %} Due: {{ off.due_date|default:"?" }}. </li>
+            {% endfor %}
+          </ul>
+
+        {% endif %}
+
+        {% if project.deadlines.tasks.at_risk|length > 0 %}
+          <span style="background-color:#fbe192">The following tasks are at risk </span> (optimistically on track, pessimistically off track) - consider reprioritizing, descoping, renegitiating due date or take calculated risk.
+          <ul>
+            {% for p in project.deadlines.tasks.at_risk %}
+              <li>{{ p.task|default:"Task name not found." }}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} Due: {{ p.due_date|default:"?" }}. </li>
+            {% endfor %}
+          </ul>
+
+        {% endif %}
+
+        {% if project.deadlines.tasks.on_track|length > 0 %}
+          <span style="background-color:#8dd7cf">The following tasks are on track </span> (either there is no due date, or ETA (even pessimistic one) is before due date.
+          <ul>
+          {% for p in project.deadlines.tasks.on_track %}
+            <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
+          {% endfor %}
+          </ul>
+        {% else %}
+          No on track tasks with deadlines for {{ project.project_name|default:"Project name not found" }}.<br>
+        {% endif %}
+      <br><hr>
+      {{ project.sprints.summary_table }}
+      {% if project.sprints.tasks.at_risk|length > 0 or project.sprints.tasks.off_track|length > 0 or project.sprints.tasks.overdue|length > 0%}
+      The following tasks may not fit into sprint:
+        <ul>
+        {% for p in project.sprints.tasks.off_track %}
+          <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
+        {% endfor %}
+
+        {% for p in project.sprints.tasks.at_risk %}
+          <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
+        {% endfor %}
+        </ul>
+      {% else %}
+          {% if project.sprints.tasks.on_track|length > 0 %}
+            Everything is on track for the sprint in {{ project.project_name|default:"Project name not found" }}.<br>
+          {% endif %}
+      {% endif %}
+    <hr>
+
+    {% endfor %}
+
 
 {% endif %}
 <br>
+Filters/parameters: {{ report.params|default:"include only active and future sprints"}}.<br><br>
+<br>
+<br>
+Noticed a discrepancy or have a gift of feedback for us? Please email us at <a href="mailto:hello@etabot.ai">hello@etabot.ai</a>
+<br>
+<br>
 Thanks,<br>
 The ETAbot Team<br>
+____________________<br>
+<font color="grey">
+  PS Here are excruciating details if you are interested:<br>
+{% for project in report.projects %}
+  ___________________
+  {{project.project_name}}
+  ___________________
+       {{ project.aux|default:"no aux info"}}
+  ___________________<br>
+{% endfor %}
+  ___________________<br>
+  ___________________<br>
+  All projects: <br>
+  {{ report.aux|default:"no aux info"}}
+</font>
 {% endautoescape %}

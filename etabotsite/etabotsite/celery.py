@@ -11,7 +11,6 @@ from django.apps import apps
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'etabotsite.settings')
 
 django.setup()
-
 # print('celery os.environ: {}'.format(os.environ))
 app = Celery('etabotapp')
 # Celery will apply all configuration keys with defined namespace
@@ -60,3 +59,4 @@ def debug_task(self):
 #         'task': 'tasks.estimate_all',
 #         'schedule': 10.0
 #     }
+logging.info('celery.py finished')

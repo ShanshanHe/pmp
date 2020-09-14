@@ -44,7 +44,7 @@ else:
 
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
-celery_app = clry.Celery('etabotapp')
+# celery_app = clry.Celery('etabotapp')
 
 
 @ensure_csrf_cookie
@@ -406,7 +406,7 @@ def check_celery_worker_available():
     #     raise NameError('no celery workers available')
 
 
-def estimate_tms(celery, user, tms, global_params, project_id=None):
+def estimate_tms(user, tms, global_params, project_id=None):
     if project_id:
         projects = [int(project_id)]
     else:
@@ -475,7 +475,7 @@ class EstimateTMSView(APIView):
 
         tms_id_to_celery_task_id = {
             tms.id: estimate_tms(
-                celery, self.request.user, tms, global_params,
+                self.request.user, tms, global_params,
                 request.query_params.get('project_id', None))
             for tms in tms_set
         }
