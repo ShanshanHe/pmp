@@ -201,7 +201,7 @@ FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if LOCAL_MODE else False
-DEBUG = False
+#DEBUG = False
 
 # Update this in production environment to host ip for security reason
 ALLOWED_HOSTS = [
