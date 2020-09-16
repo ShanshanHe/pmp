@@ -14,17 +14,16 @@ from django.conf import settings
 import logging
 
 
-
-logger = logging.getLogger('django')
-#logging.getLoggerClass()
+logger = logging.getLogger(__name__)
 test_tms_data = getattr(settings, "TEST_TMS_DATA", {})
 
 class TestEmailAlert(TestCase):
     def test_failure(self):
         #We want to cause an error that's garunteed to throw an error and log!
         logger.warning("Testing Email Alert with Divide by Zero Error!")
-        logger.info("EMAIL BACKEND: {}".format(settings.EMAIL_HOST))
         try:
             fail = 1/0
-        except Exception:
-            logger.exception("Test")
+        except Exception as e:
+            logger.exception('While testing test_alert in etabotapp/tests/ \
+                            the following exception was encountered: \n \
+                            '.format(e))

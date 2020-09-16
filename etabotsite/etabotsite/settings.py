@@ -26,6 +26,8 @@ PLATFORM = platform.system()
 LOCAL_MODE = (PLATFORM == 'Darwin')
 LOCAL_MODE = True
 
+
+
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
 custom_settings = {}
@@ -46,8 +48,10 @@ except Exception as e:
 
 
 # System email settings
+# Must be gathered before logging is initiatied to use for email alerts!
 
 SYS_DOMAIN = local_host_url if LOCAL_MODE else prod_host_url
+ADMIN_EMAILS = [""]
 if 'SYS_EMAIL_SETTINGS' in custom_settings:
     sys_email_settings = custom_settings.get('SYS_EMAIL_SETTINGS')
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -60,13 +64,14 @@ if 'SYS_EMAIL_SETTINGS' in custom_settings:
     EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
         'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
     DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
+    ADMIN_EMAILS = sys_email_settings.get('ADMIN_EMAILS',[])
 else:
     if not LOCAL_MODE:
         raise NameError('cannot load sys_email_settings as its not in custom_settings.json')
     else:
-        logger.warning('cannot load sys_email_settings as its not in custom_settings.json')
+        logging.warning('cannot load sys_email_settings as its not in custom_settings.json')
 
-adminsToEmail = ['lewis.cj11@gmail.com']
+
 log_filename_with_path = custom_settings.get('log_filename_with_path', '/usr/src/app/logging')
 
 ## Logging to File and Logging Configuration
@@ -85,11 +90,12 @@ logging_config = {
     },
     'handlers': {
         'django_console': {
+            'level':'CRITICAL',
             'class': 'logging.StreamHandler',
             'formatter': 'django_format'
         },
         'django_file': {
-            'level':'INFO',
+            'level':'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'django_format',
             'filename': log_filename_with_path,
@@ -105,37 +111,23 @@ logging_config = {
             'SYS_EMAIL_PWD': SYS_EMAIL_PWD,
             'EMAIL_HOST': EMAIL_HOST,
             'EMAIL_PORT': EMAIL_PORT,
-            'ADMINS': adminsToEmail,
+            'ADMINS': ADMIN_EMAILS,
         }
     },
     'loggers': {
-        'django': {
-            'handlers': ['django_console', 'django_file'],
+        '': {
+            'handlers': ['mail_admins','django_console', 'django_file'],
             'propagate': True,
         },
-        '' : {
-            'handlers': ['django_console', 'django_file'],
-            'propagate': True
-        }
     },
 }
 
-        # 'mail_admins':{
-        #     'level': 'ERROR',
-        #     'filters': ['require_debug_false'],
-        #     'class': 'logging.handlers.SMTPHandler',
-        #     'mailhost': '',
-        #     'fromaddr': '',
-        #     'toaddrs': '',
-        #     'subject': 'Email Alert regarding ETABot Server',
-        #     'credentials': ('',''),
-        #     'secure': ('',''),
-        #
-        # }
 logging.config.dictConfig(logging_config)
+#ogging.setLoggerClass(DjangoLogger)
 CUSTOM_SETTINGS = custom_settings
 PROD_HOST_URL = prod_host_url
-logger = logging.getLogger('django')
+logger = logging.getLogger(__name__)
+
 logger.info("PLATFORM={}".format(PLATFORM))
 
 ##Set Logger Level
@@ -191,7 +183,7 @@ FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if LOCAL_MODE else False
-DEBUG = False
+#DEBUG = False
 
 # Update this in production environment to host ip for security reason
 ALLOWED_HOSTS = [

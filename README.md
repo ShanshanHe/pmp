@@ -227,7 +227,8 @@ $ pytest <path to dir with tests>
         "DJANGO_EMAIL_HOST":"email server host, e.g. smtp.sendgrid.net",
         "DJANGO_EMAIL_USE_TLS":bool for TLS,
         "DJANGO_EMAIL_PORT":email server port number port number,
-        "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":Django email token expiration period in seconds (86400 = 24h)
+        "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":Django email token expiration period in seconds (86400 = 24h),
+        "ADMIN_EMAILS": ["emails","ofadmins","inlist"],
       },
 
 
