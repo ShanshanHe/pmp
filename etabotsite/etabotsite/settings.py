@@ -22,11 +22,10 @@ import mimetypes
 from etabotapp.email_alert import SendEmailAlert
 
 DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
-PLATFORM = platform.system()
-LOCAL_MODE = (PLATFORM == 'Darwin')
-LOCAL_MODE = True
 
 
+
+#Import custom_settings.json or throw warning if not provided.
 
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
@@ -45,6 +44,15 @@ try:
 except Exception as e:
     logging.warning('cannot load custom_settings.json due to "{}"'.format(
         e))
+
+CUSTOM_SETTINGS = custom_settings
+PROD_HOST_URL = prod_host_url
+
+# Determine if we are running on local mode or production mode
+# This is based on custom settings config.
+# This makes control of prod environment more controlable cross-platform
+LOCAL_MODE = custom_settings.get("LOCAL_MODE")
+print("-------------------------{}----------------------".format(LOCAL_MODE))
 
 
 # System email settings
@@ -75,6 +83,12 @@ else:
 log_filename_with_path = custom_settings.get('log_filename_with_path', '/usr/src/app/logging')
 
 ## Logging to File and Logging Configuration
+# Logger will modify root logger
+# Handlers's levels can be changed to meet the needs of the dev
+# django_console controls print outs to the console.
+# django_file controls print outs to the logging file either locally or on docker.
+# mail_admins controls mailing admins through SendEmailAlert class in email_alert.py
+
 logging_config = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -121,25 +135,30 @@ logging_config = {
         },
     },
 }
+# Load logger configuration
+# Create logger for settings, shows as root in logs.
+# Use logger = logging.getLogger(__name__) at top of modules. This provides
+# location information on logging. See etabotapp/tests/test_alert.py for
+# example.
 
 logging.config.dictConfig(logging_config)
-#ogging.setLoggerClass(DjangoLogger)
-CUSTOM_SETTINGS = custom_settings
-PROD_HOST_URL = prod_host_url
 logger = logging.getLogger(__name__)
 
-logger.info("PLATFORM={}".format(PLATFORM))
-
 ##Set Logger Level
+#If we're in production we don't want anything lower than INFO to show.
+#Effectively raises all logging handlers to INFO level and above, ignores
+#anything lower.
+
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
 else:
     logger.setLevel(logging.INFO)
 
-
+#Set HOST_URL based on production or development mode
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
-
 logger.info('HOST_URL="{}"'.format(HOST_URL))
+
+
 
 mimetypes.add_type("image/svg+xml", ".svg", True)
 mimetypes.add_type("image/svg+xml", ".svgz", True)

@@ -4,6 +4,8 @@ September 2020
 
 This script handles the email logger for email admins.
 
+We are required to repeat the email_toolbox to ensure that it can be used
+without a looping import.
 """
 
 import base64
@@ -57,7 +59,18 @@ class EmailAlertWorker(object):
         return msg
 
 
+#
+
+#
 class SendEmailAlert(logging.StreamHandler):
+    """ Send Email Alerts on Errors and above
+
+        SendEmailAlert is a subclass of logging.StreamHandler
+        It is used in the custom logger outlined in settings.py
+        It will use the EmailAlertWorker to send emails to listed admins.
+
+        All variables are defined in custom_settings.json.
+    """
     def __init__(self, SYS_DOMAIN,
                 SYS_EMAIL,
                 SYS_EMAIL_PWD,
@@ -73,6 +86,8 @@ class SendEmailAlert(logging.StreamHandler):
         self.ADMINS = ADMINS
 
     def emit(self, record):
+        '''This method is called automatically when handling a log'''
+
         self.email_from = '"ETAbot" <no-reply@etabot.ai>'
         self.email_subjet = "Email Alert for Django Error"
         #Send an Email to all admins
