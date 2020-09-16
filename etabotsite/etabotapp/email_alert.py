@@ -92,6 +92,5 @@ class SendEmailAlert(logging.StreamHandler):
         self.email_subjet = "Email Alert for Django Error"
         #Send an Email to all admins
         for emailTo in self.ADMINS:
-            print(emailTo)
             msg = EmailAlertWorker.format_email_msg(self.email_from,emailTo, self.email_subjet, self.format(record))
             EmailAlertWorker.send_email(msg,self.EMAIL_HOST, self.EMAIL_PORT, self.SYS_EMAIL, self.SYS_EMAIL_PWD)

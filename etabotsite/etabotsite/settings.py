@@ -52,7 +52,6 @@ PROD_HOST_URL = prod_host_url
 # This is based on custom settings config.
 # This makes control of prod environment more controlable cross-platform
 LOCAL_MODE = custom_settings.get("LOCAL_MODE")
-print("-------------------------{}----------------------".format(LOCAL_MODE))
 
 
 # System email settings
@@ -202,7 +201,7 @@ FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if LOCAL_MODE else False
-#DEBUG = False
+DEBUG = False
 
 # Update this in production environment to host ip for security reason
 ALLOWED_HOSTS = [
@@ -294,7 +293,7 @@ else:
 ROOT_URLCONF = 'etabotsite.urls'
 
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
-print('TEMPLATE_DIR = "{}"'.format(TEMPLATE_DIR))
+logger.info('TEMPLATE_DIR = "{}"'.format(TEMPLATE_DIR))
 
 TEMPLATES = [
     {
@@ -397,7 +396,7 @@ logger.info('updating UI with api endpoint: "{}"'.format(api_url))
 byteOutput = subprocess.check_output(
     ['python', 'set_api_url.py', 'static/ng2_app', api_url],
     cwd='etabotapp/')
-print(byteOutput)
+logger.debug(byteOutput)
 logger.info(byteOutput.decode('UTF-8'))
 
 STATIC_URL = '/static/'
