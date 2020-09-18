@@ -51,10 +51,7 @@ PROD_HOST_URL = prod_host_url
 # Determine if we are running on local mode or production mode
 # This is based on custom settings config.
 # This makes control of prod environment more controlable cross-platform
-if 'LOCAL_MODE' in custom_settings:
-    LOCAL_MODE = custom_settings.get("LOCAL_MODE")
-else:
-    LOCAL_MODE = False
+LOCAL_MODE = custom_settings.get("LOCAL_MODE", False)
 
 
 # System email settings
@@ -74,10 +71,7 @@ if 'SYS_EMAIL_SETTINGS' in custom_settings:
     EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
         'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
     DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
-
-    # To Prevent needing to change Production Settings for now.
-    if 'ADMIN_EMAILS' in sys_email_settings:
-        ADMIN_EMAILS = sys_email_settings.get('ADMIN_EMAILS',[])
+    ADMIN_EMAILS = sys_email_settings.get('ADMIN_EMAILS',[])
 else:
     if not LOCAL_MODE:
         raise NameError('cannot load sys_email_settings as its not in custom_settings.json')
