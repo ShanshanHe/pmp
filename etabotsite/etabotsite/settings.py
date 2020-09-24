@@ -31,7 +31,7 @@ local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
 custom_settings = {}
 try:
-    with open('custom_settings.json') as f:
+    with open('custom_settings_local.json') as f:
         custom_settings = json.load(f)
     logging.debug('loaded custom_settings.json with keys: \
 "{}"'.format(custom_settings.keys()))
