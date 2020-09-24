@@ -76,7 +76,8 @@ class SendEmailAlert(logging.StreamHandler):
                 SYS_EMAIL_PWD,
                 EMAIL_HOST,
                 EMAIL_PORT,
-                ADMINS):
+                ADMINS,
+                alertWorker = EmailAlertWorker()):
         logging.StreamHandler.__init__(self)
         self.SYS_DOMAIN = SYS_DOMAIN
         self.SYS_EMAIL = SYS_EMAIL
@@ -84,6 +85,7 @@ class SendEmailAlert(logging.StreamHandler):
         self.EMAIL_HOST = EMAIL_HOST
         self.EMAIL_PORT = EMAIL_PORT
         self.ADMINS = ADMINS
+        self._emailAlertWorker = alertWorker
 
     def emit(self, record):
         '''This method is called automatically when handling a log'''
@@ -92,5 +94,5 @@ class SendEmailAlert(logging.StreamHandler):
         self.email_subjet = "Email Alert for Django Error"
         #Send an Email to all admins
         for emailTo in self.ADMINS:
-            msg = EmailAlertWorker.format_email_msg(self.email_from,emailTo, self.email_subjet, self.format(record))
-            EmailAlertWorker.send_email(msg,self.EMAIL_HOST, self.EMAIL_PORT, self.SYS_EMAIL, self.SYS_EMAIL_PWD)
+            msg = self._emailAlertWorker.format_email_msg(self.email_from,emailTo, self.email_subjet, self.format(record))
+            self._emailAlertWorker.send_email(msg,self.EMAIL_HOST, self.EMAIL_PORT, self.SYS_EMAIL, self.SYS_EMAIL_PWD)
