@@ -134,8 +134,16 @@ and test the results.
 If needed, edit new migration files manually.
 Add migration files to commit.
 
-## Trouble Shooting
-production app.etabot.ai can't be reached - check that your /etc/hosts is not pointing to localhost
+## Troubleshooting
+### production app.etabot.ai can't be reached
+Ensure that your /etc/hosts is not pointing to localhost
+
+### UI from ng serve has issues with API
+e.g.: Access to XMLHttpRequest at 'http://localhost:8000/api/get-token/' from origin 'http://localhost:4200' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+Ensure LOCAL_MODE is true in custom_settings.json to disable CORS for local development
+
+### TypeError: the JSON object must be str, not 'bytes'
+Ensure correct python version in your environment
 
 
 ## Testing
