@@ -47,31 +47,33 @@ def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
         **kwargs)
     raw_status_report = tms_wrapper.generate_projects_status_report(
         project_names=project_names, **kwargs)
-    html_report = email_reports.EmailReportProcess.generate_html_report(
-        tms.owner, raw_status_report)
+    if raw_status_report is not None:
+        html_report = email_reports.EmailReportProcess.generate_html_report(
+            tms.owner, raw_status_report)
 
-    email_msg = email_reports.EmailReportProcess.format_email_msg(
-        tms.owner, html_report=html_report)
-    email_reports.EmailReportProcess.send_email(email_msg)
+        email_msg = email_reports.EmailReportProcess.format_email_msg(
+            tms.owner, html_report=html_report)
+        email_reports.EmailReportProcess.send_email(email_msg)
 
-    for project in projects_set:
-        project_settings = project.project_settings
-        project_settings['report'] = html_report
+        for project in projects_set:
+            project_settings = project.project_settings
+            project_settings['report'] = html_report
 
-        project_in_report = raw_status_report.projects_dict.get(
-            project.name)
-        if project_in_report:
-            project_settings['deadlines'] = project_in_report.get('deadlines')
-            project_settings['sprints'] = project_in_report.get('sprints')
-            logging.debug("saving project settings deadlines: {}".format(project_settings['deadlines']))
-            logging.debug("saving project settings sprints: {}".format(project_settings['sprints']))
-        else:
-            logging.error('no project_in_report for {}'.format(project))
-        logging.debug("saving project settings: {}".format(project_settings))
-        project.project_settings = project_settings
+            project_in_report = raw_status_report.projects_dict.get(
+                project.name)
+            if project_in_report:
+                project_settings['deadlines'] = project_in_report.get('deadlines')
+                project_settings['sprints'] = project_in_report.get('sprints')
+                logging.debug("saving project settings deadlines: {}".format(project_settings['deadlines']))
+                logging.debug("saving project settings sprints: {}".format(project_settings['sprints']))
+            else:
+                logging.error('no project_in_report for {}'.format(project))
+            logging.debug("saving project settings: {}".format(project_settings))
+            project.project_settings = project_settings
 
-        project.save()
-
+            project.save()
+    else:
+        logging.warning('raw_status_report is None.')
     logging.debug('estimate_ETA_for_TMS finished')
 
 
