@@ -2,8 +2,18 @@
 # uncomment for syntax error for ensuring placeholder is not used 
 
 import logging
+import time
 # import TMSlib.TMS_project as TMS_project
 
+class Measurement():
+    def __init__(self, value):
+        self.value = value
+
+    def lower_estimate(self, confidence_level=0.95):
+        return self.value / 1.2
+
+    def higher_estimate(self, confidence_level=0.95):
+        return self.value * 1.2
 
 class ETAengine():
     def __init__(self):
@@ -15,22 +25,26 @@ class ETApredict():
             self,
             TMS_interface=None):
         self.TMS_interface = TMS_interface
-        self.user_velocity_per_project = {}
         self.eta_engine = ETAengine()
+        self.df_tasks_with_ETAs = None
         logging.debug('ETApredict placeholder initialized')
 
     def init_with_Django_models(
             self,
             tms_config,
             projects):
-        if len(projects) > 0:
+        if projects is not None and len(projects) > 0:
             self.projects = projects
         else:
             self.get_projects()
 
     def generate_task_list_view_with_ETA(
-            self, project_names=None, include_active_sprints=False):
+            self,
+            project_names=None,
+            include_active_sprints=False,
+            **extra_kwargs):
         self.TMS_interface.connect_to_TMS()
+        time.sleep(5)
         logging.info('placeholder ETAs have been generated')
 
     def get_projects(self):
@@ -103,5 +117,10 @@ class ETApredict():
             {"start": "2018-09-14", "end": "2018-09-21"}
 
         ]
+
+        self.eta_engine.user_velocity_per_project = {
+            'Project Cheburashka': Measurement(1.2),
+            'Project Buckwheat': Measurement(2.3)
+        }
 
         logging.debug('get_projects finished')

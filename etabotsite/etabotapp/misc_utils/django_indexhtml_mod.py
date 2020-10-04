@@ -1,5 +1,4 @@
-"""
-purpose: modifies index.html for django template
+"""purpose: modifies index.html for django template
          by adding static files directives
 
 Author: Alex Radnaev

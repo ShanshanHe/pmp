@@ -10,7 +10,7 @@ from django.utils.encoding import force_bytes
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum
-
+import email_toolbox
 from requests.utils import quote
 
 logging.getLogger().setLevel(logging.INFO)
@@ -40,23 +40,10 @@ class ResponseCode(Enum):
     ALREADY_ACTIVATE_ERROR = 3
     NOT_EXIST_ERROR = 4
     SUCCESS = 5
+    EXPIRATION_RESEND_ERROR = 6
 
 
 class ActivationProcessor(object):
-    @staticmethod
-    def send_email(msg):
-        logging.debug('starting send_email.')
-        server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
-        server.set_debuglevel(1)
-        server.ehlo()
-        server.starttls()
-        logging.debug('login("{}","***")'.format(SYS_EMAIL))
-        server.login(SYS_EMAIL, SYS_EMAIL_PWD)
-
-        server.send_message(msg)
-        logging.info('email sent.')
-        del server
- 
     @staticmethod
     def email_token(user):
         try:
@@ -79,10 +66,19 @@ class ActivationProcessor(object):
             })
             msg.attach(MIMEText(msg_body, 'html'))
 
-            ActivationProcessor.send_email(msg)
+            email_toolbox.EmailWorker.send_email(msg)
 
             logging.info('Successfully sent activation email to User %s '
                          % user.username)
+
+            msg2 = MIMEMultipart()
+            msg2['From'] = '"ETAbot" <no-reply@etabot.ai>'
+            msg2['To'] = 'hello@etabot.ai'
+            msg2['Subject'] = 'new user {}'.format(user.email)
+            msg2_body = msg2['Subject']
+            msg2.attach(MIMEText(msg2_body, 'html'))
+            email_toolbox.EmailWorker.send_email(msg2)
+
         except Exception as ex:
             logging.error('Failed to send activation email to User %s: %s'
                           % (user.username, str(ex)))
@@ -110,8 +106,15 @@ class ActivationProcessor(object):
 
         if user is not None and user.is_active is False:
             if time_delta > TOKEN_EXPIRATION_PERIOD:
-                logging.error('Token has expired')
-                return ResponseCode.EXPIRATION_ERROR
+                try:
+                    ActivationProcessor.email_token(user)
+                    logging.error('Token has expired, activation link re-sent')
+                    return ResponseCode.EXPIRATION_ERROR
+                except Exception as ex:
+                    logging.error(
+                        'Token has expired, activation link resend fail: %s',
+                        ex)
+                    return ResponseCode.EXPIRATION_RESEND_ERROR
             else:
                 user.is_active = True
                 user.save()

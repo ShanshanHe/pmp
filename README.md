@@ -2,14 +2,13 @@
 
 backend data infrastructure and server for Smart project management tool made for teams to meet their deadline
 
-
 ## To deploy pmp, you have two choices:
 - Docker version (typically used in production)
 - non-Docker version (typically used for development to allow faster iterations)
 
 
 ## non-Docker version deployment
-### To run django seperately for development, please follow the process below:
+### To run django separately for development, please follow the process below:
 
 #### Prerequisite:
 * Have python 3.6 installed on your development machine (anaconda distribution is pretty good)
@@ -24,7 +23,7 @@ If you already know how to create a python virtual environment, you can skip thi
     create virtual environement following https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 E.g.:
 ```
-conda create -n etabot python=3.5
+conda create -n etabot python=3.6
 ```
 Activate
 ```
@@ -65,7 +64,7 @@ conda activate etabot
 (see Advanced settings for details of file definitions)
 - add custom_settings.json to etabotsite directory
 - optionally add django_keys_prod.json with your secret keys etabotsite directory (same format as django_keys.json)
-- optionally add ETA algorithm as a git submodule (see section "Optinal: connecting ETA algorithm instead of a placeholder")
+- optionally add ETA algorithm as a git submodule (see section "Optional: connecting ETA algorithm instead of a placeholder")
 
 ### Database setup
 We support Postgres database, we no longer support sqlite3 (default local Django Database).
@@ -74,12 +73,17 @@ For local development you can setup a postgres database in a few minutes using d
 
 ```docker pull postgres```
 
+
 ```docker run --name postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -v ~/dir/:/var/lib/postgresql/data -d postgres```
 
-Execute commands (e.g. in a SQLWorkbench)
+
+```docker ps```
+
+Execute database commands in your favorite tool (e.g. in a SQLWorkbench https://www.sql-workbench.eu/downloads.html)
 ```SET AUTOCOMMIT = ON;```
 ```CREATE USER etabot WITH PASSWORD 'somepassword';```
 ```CREATE DATABASE etabot_db WITH OWNER etabot;```
+```ALTER USER etabot CREATEDB;```
 
 change custom_settings.json with the new db interface (see section *Settings jsons*)
 
@@ -92,7 +96,7 @@ $ cd etabotsite/
 
 #### Run django server locally
 
-*Prerequisite*: enable your virtual environemnt
+*Prerequisite*: enable your virtual environment
 
 go to our project root directory, install the dependencies:
 ```
@@ -138,8 +142,14 @@ production app.etabot.ai can't be reached - check that your /etc/hosts is not po
 
 To run all the unit tests - from etabotsite directory:
 ```
-$ python manage.py test
+$ pytest
 ```
+
+To run a subset of the unit tests - from etabotsite directory:
+```
+$ pytest <path to dir with tests>
+```
+
 
 ## Advanced settings
 
@@ -160,7 +170,8 @@ $ python manage.py test
 {
     "local_host_url":"<your local host url for testing, e.g. http://127.0.0.1:8000">,
     "prod_host_url":"<your production host url for testing, e.g. https://app.etabot.ai>"
-
+    "log_filename_with_path":"path to log file. use /usr/src/app/logging/django_log.txt for Docker use case"
+    "LOCAL_MODE":true or false #Used to deteremine production mode or development mode
     "db": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "your_db_name",
@@ -217,7 +228,8 @@ $ python manage.py test
         "DJANGO_EMAIL_HOST":"email server host, e.g. smtp.sendgrid.net",
         "DJANGO_EMAIL_USE_TLS":bool for TLS,
         "DJANGO_EMAIL_PORT":email server port number port number,
-        "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":Django email token expiration period in seconds (86400 = 24h)
+        "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":Django email token expiration period in seconds (86400 = 24h),
+        "ADMIN_EMAILS": ["emails","ofadmins","inlist"],
       },
 
 
@@ -257,7 +269,7 @@ $ python set_api_url.py static/ng2_app/ <end point url, e.g. http://app.etabot.a
 
 
 
-#### Optinal: connecting ETA algorithm instead of a placeholder
+#### Optional: connecting ETA algorithm instead of a placeholder
 ```
 $ cd etabotsite/
 $ git submodule add <your git URL to repo called "etabot_algo">
@@ -276,7 +288,7 @@ For manual start: in a separate terminal start process with:
 $ celery -A etabotsite worker -l info
 ```
 
-in another seprate terminal start a process with:
+in another separate terminal start a process with:
 ```
 celery -A etabotsite beat -l INFO
 ```
@@ -374,6 +386,9 @@ please follow these steps:
     1. custom_settings.json - general custom settings (end points, database, messenging service, system email settings, etc)
     2. django_keys_prod.json - Django encryption keys used in production mode
 - git http url to an ETA algorithm
+
+Note from https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach
+If you run postgres database locally from a docker container If you are using Docker-for-mac or Docker-for-Windows 18.03+, just connect to your postgres service using the host host.docker.internal (instead of the 127.0.0.1 in your connection string).
 
 #### Bring up pmp services which include nginx and django
 Clone the repo to your server

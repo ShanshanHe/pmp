@@ -165,13 +165,13 @@ class TMS(models.Model):
     def get_fresh_token(self):
         token = self.oauth2_token
         logging.debug('initial token: {}'.format(token))
-        logging.info('initial token vars: {}'.format(vars(token)))
+        logging.debug('initial token vars: {}'.format(vars(token)))
         token_dict = token.to_token()
         logging.debug('initial token dict: {}'.format(token_dict))
         logging.info('priming TMS GET with oauth...')
         res = oauth.atlassian.get(
             Atlassian_API.ATLASSIAN_CLOUD_PROFILE, token=token_dict)
-        logging.info(res)
+        logging.debug(res)
         logging.debug(vars(res))
         logging.debug('self.oauth2_token: {}'.format(self.oauth2_token))
         logging.debug('vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
@@ -190,7 +190,7 @@ class TMS(models.Model):
 
 class Project(models.Model):
     """This class represents the project model."""
-    # jiraacount = models.ForeignKey(JIRAAccount, on_delete=models.CASCADE)
+
     owner = models.ForeignKey('auth.User', related_name='projects',
                               on_delete=models.CASCADE)
     project_tms = models.ForeignKey(TMS, on_delete=models.CASCADE)
@@ -232,7 +232,7 @@ def parse_projects_for_TMS(instance, **kwargs):
     """Parse projects for the given TMS.
 
     Creates new Django model projects objects with parsed data.
-
+    Returns response_message.
     Arguments:
         instance - Django TMS object instance
     """
@@ -245,16 +245,17 @@ def parse_projects_for_TMS(instance, **kwargs):
     TMS_w1.init_ETApredict([])
 
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
-    velocities = TMS_w1.ETApredict_obj.user_velocity_per_project
+    velocities = TMS_w1.ETApredict_obj.eta_engine.user_velocity_per_project
     logging.debug('parse_tms: velocities found: {}'.format(velocities))
 
     existing_projects_dict = {}
+    new_projects = []
+    updated_projects = []
+    logging.info('existing_projects: {}'.format(existing_projects))
     for p in existing_projects:
         existing_projects_dict[p.name] = p
 
     logging.info('passing parsed projects info to Django models.')
-    new_projects = []
-    updated_projects = []
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
             velocity_json = dc.get_velocity_json(
@@ -275,12 +276,15 @@ def parse_projects_for_TMS(instance, **kwargs):
                 new_django_project.save()
                 new_projects.append(project_name)
             else:
+                p = existing_projects_dict[project_name]
                 p.velocities = velocity_json
                 p.project_settings = attrs.get(
                     'project_settings', p.project_settings)
                 p.mode = attrs.get('mode', p.mode)
                 p.save()
                 updated_projects.append(project_name)
+    else:
+        logging.warning('projects_dict is None')
     logging.info('parse_tms has finished')
     response_message = ''
     if len(new_projects) > 0:
@@ -289,6 +293,7 @@ def parse_projects_for_TMS(instance, **kwargs):
     if len(updated_projects) > 0:
         response_message += " Updated existing projects: {}.".format(
             ', '.join(updated_projects))
+    logging.info('parse_tms response: {}'.format(response_message))
     return response_message
 
 

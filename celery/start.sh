@@ -6,5 +6,4 @@ echo Starting Celery.
 cd $PROJECT_ROOT
 cd etabotsite
 
-nohup celery -A etabotsite worker -l info &
-celery -A etabotsite beat -l INFO
+celery -A etabotsite worker -l info --max-tasks-per-child=3
