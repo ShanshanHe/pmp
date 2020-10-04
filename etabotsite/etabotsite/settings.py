@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 import platform
-import base64
 import datetime
 import json
 import logging
@@ -20,6 +19,8 @@ import subprocess
 import urllib
 import mimetypes
 from etabotapp.email_alert import SendEmailAlert
+from helpers import ensure_keys_exist, get_key_value
+# from authlib.django.client import OAuth
 
 DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
 
@@ -29,7 +30,7 @@ DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
-custom_settings = {}
+
 try:
     with open('custom_settings.json') as f:
         custom_settings = json.load(f)
@@ -44,6 +45,9 @@ try:
 except Exception as e:
     logging.warning('cannot load custom_settings.json due to "{}"'.format(
         e))
+    logging.info('loading default settings')
+    with open('default_settings.json') as f:
+        custom_settings = json.load(f)
 
 CUSTOM_SETTINGS = custom_settings
 PROD_HOST_URL = prod_host_url
@@ -293,6 +297,7 @@ else:
 ROOT_URLCONF = 'etabotsite.urls'
 
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
+
 logger.info('TEMPLATE_DIR = "{}"'.format(TEMPLATE_DIR))
 
 TEMPLATES = [
@@ -322,8 +327,20 @@ local_db = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 
+
+
+
+if 'db' in custom_settings:
+    database_dict = custom_settings['db']
+    ensure_keys_exist(database_dict, ['USER', 'PASSWORD'])
+else:
+    database_dict = local_db
+    logging.warning('local db sqlite is no longer supported. please provide postgres database credentials.')
+
+logging.debug('database_dict: {}'.format(database_dict))
+
 DATABASES = {
-    'default': custom_settings.get('db', local_db)
+    'default': database_dict
 }
 
 logger.debug('database: Engine={} Name={} Host={}'.format(
@@ -426,9 +443,9 @@ CELERY_RESULT_BACKEND = 'db+postgresql://{}:{}@{}:5432/{}'.format(
 # Configuring the message broker for Celery Task Scheduling
 if custom_settings['MESSAGE_BROKER'].lower() == 'aws':
     # AWS Credentials
-    AWS_ACCESS_KEY_ID = custom_settings.get('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = custom_settings.get('AWS_SECRET_ACCESS_KEY')
-    CELERY_DEFAULT_QUEUE = custom_settings.get('CELERY_DEFAULT_QUEUE', 'etabotqueue')
+    AWS_ACCESS_KEY_ID = get_key_value(custom_settings, 'AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = get_key_value(custom_settings, 'AWS_SECRET_ACCESS_KEY')
+    CELERY_DEFAULT_QUEUE = get_key_value(custom_settings, 'CELERY_DEFAULT_QUEUE', default='etabotqueue')
     if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
         logger.warning(
             'AWS credentials not found. Skipping Celery settings setup.')
