@@ -35,4 +35,4 @@ class TestDjangoIndexHTMLmod(unittest.TestCase):
             'ng_app_js/')
         ute.assertFileEqual(target_html, reference_html, self)
         os.remove(target_html)
-unittest.main()
+# unittest.main()

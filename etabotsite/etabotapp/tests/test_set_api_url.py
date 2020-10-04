@@ -33,4 +33,4 @@ class TestSetAPIUrl(unittest.TestCase):
         ute.assertFileEqual(new_js_filename, reference_js, self)
         os.remove(new_js_filename)
 
-unittest.main()
+# unittest.main()

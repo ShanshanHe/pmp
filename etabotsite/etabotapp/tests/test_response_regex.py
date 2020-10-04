@@ -150,4 +150,4 @@ captcha_sig = \
 
 logging.debug(captcha_sig in response)
 
-unittest.main()
+# unittest.main()
