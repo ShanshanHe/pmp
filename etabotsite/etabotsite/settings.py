@@ -502,4 +502,4 @@ logger.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
 logger.debug('setting.py is done')
 EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=1)
 
-logger.error("Yup")
+logger.error("This is a test of error notification.")

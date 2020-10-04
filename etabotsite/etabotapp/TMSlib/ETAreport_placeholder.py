@@ -3,6 +3,7 @@
 from etabotapp.TMSlib.interface import BasicReport
 import logging
 
+
 def generate_status_report(ETApredict_obj, **kwargs):
     """Generate total report.
 
