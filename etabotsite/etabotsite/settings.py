@@ -48,6 +48,7 @@ except Exception as e:
     logging.info('loading default settings')
     with open('default_settings.json') as f:
         custom_settings = json.load(f)
+    logging.info('loaded default settings.')
 
 CUSTOM_SETTINGS = custom_settings
 PROD_HOST_URL = prod_host_url
@@ -83,7 +84,9 @@ else:
         logging.warning('cannot load sys_email_settings as its not in custom_settings.json')
 
 
-log_filename_with_path = custom_settings.get('log_filename_with_path', '/usr/src/app/logging')
+log_filename_with_path = get_key_value(
+    custom_settings, 'LOG_FILENAME_WITH_PATH', default='/usr/src/app/logging/django_log.txt')
+print('log_filename_with_path: {}'.format(log_filename_with_path))
 
 ## Logging to File and Logging Configuration
 # Logger will modify root logger
@@ -112,7 +115,7 @@ logging_config = {
             'formatter': 'django_format'
         },
         'django_file': {
-            'level':'DEBUG',
+            'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'django_format',
             'filename': log_filename_with_path,
@@ -120,7 +123,7 @@ logging_config = {
             'maxBytes': 10111000,
             'backupCount': 7
         },
-        'mail_admins':{
+        'mail_admins': {
             'level': 'ERROR',
             'class': 'etabotapp.email_alert.SendEmailAlert',
             'SYS_DOMAIN': SYS_DOMAIN,
@@ -133,7 +136,7 @@ logging_config = {
     },
     'loggers': {
         '': {
-            'handlers': ['mail_admins','django_console', 'django_file'],
+            'handlers': ['mail_admins', 'django_console', 'django_file'],
             'propagate': True,
         },
     },
