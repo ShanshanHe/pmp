@@ -1,17 +1,12 @@
 """Django tasks for celery."""
 
-from datetime import datetime
 from celery import shared_task
 import celery as clry
 from .models import Project, TMS
 from .models import parse_projects_for_TMS
-import TMSlib.TMS as TMSlib
 from django.contrib.auth.models import User
-
-import eta_tasks
 import logging
-import email_reports
-
+import etabotapp.eta_tasks as eta_tasks
 
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')

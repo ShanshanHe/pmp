@@ -1,7 +1,6 @@
 """test suite for set_api_url.py."""
 
 import unittest
-import sys
 import os
 import logging
 import etabotapp.misc_utils.unittest_extend as ute
