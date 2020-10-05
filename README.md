@@ -183,8 +183,8 @@ $ pytest <path to dir with tests>
     "db": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "your_db_name",
-        "USER": "your_username",
-        "PASSWORD": "your_password",
+        "DB_USER": "your_username",
+        "DB_PASSWORD": "your_password",
         "HOST": "host, e.g. localhost"
     },    
 
