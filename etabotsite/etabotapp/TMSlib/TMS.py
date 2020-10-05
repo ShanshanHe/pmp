@@ -19,7 +19,7 @@ import datetime
 from typing import List
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
+import etabotapp.email_toolbox as email_toolbox
 print('TMS main import complete.')
 
 try:
@@ -30,8 +30,8 @@ try:
 except Exception as e:
     logging.warning('cannot load ETApredict or ETAreport due to "{}"\
  Loading ETApredict_placeholder, ETAreport_placeholder instead'.format(e))
-    import TMSlib.ETApredict_placeholder as ETApredict
-    import TMSlib.ETAreport_placeholder as ETAreport
+    import etabotapp.TMSlib.ETApredict_placeholder as ETApredict
+    import etabotapp.TMSlib.ETAreport_placeholder as ETAreport
 logging.debug('loading TMSlib.TMS: done')
 print('loading TMSlib.TMS: done')
 logger = logging.getLogger()
