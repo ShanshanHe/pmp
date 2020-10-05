@@ -13,7 +13,7 @@
         "ENGINE": "django.db.backends.postgresql",
         "NAME": "etabot_db",
         "HOST_LOCAL": "postgres",
-        "HOST": "localhost",
+        "HOST": "host.docker.internal",
         "HOST_DOCKER": "host.docker.internal"
     },    
     "AUTHLIB_OAUTH_CLIENTS": {
