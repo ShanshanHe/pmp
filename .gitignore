@@ -19,3 +19,5 @@ etabotsite/custom_settings.json
 .idea/
 *.diff
 *.bk
+.env
+

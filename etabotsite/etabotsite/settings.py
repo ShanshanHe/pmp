@@ -330,15 +330,15 @@ local_db = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 
-
-
-
 if 'db' in custom_settings:
     database_dict = custom_settings['db']
-    ensure_keys_exist(database_dict, ['USER', 'PASSWORD'])
+    ensure_keys_exist(database_dict, ['DB_USER', 'DB_PASSWORD'])
 else:
     database_dict = local_db
     logging.warning('local db sqlite is no longer supported. please provide postgres database credentials.')
+
+database_dict['USER'] = database_dict['DB_USER']
+database_dict['PASSWORD'] = database_dict['DB_PASSWORD']
 
 logging.debug('database_dict: {}'.format(database_dict))
 
