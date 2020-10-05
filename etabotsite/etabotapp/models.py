@@ -1,36 +1,33 @@
 import sys
-import os
 import logging
-
+import os
 logging.getLogger().setLevel(logging.DEBUG)
 logging.debug('models import started.')
-sys.path.append(os.path.abspath('etabotapp'))
+# sys.path.append(os.path.abspath('etabotapp'))
 logging.debug('loading TMSlib')
-import TMSlib.TMS as TMSlib
+print('loading TMSlib')
+import etabotapp.TMSlib.TMS as TMSlib
 logging.debug('loaded TMSlib')
-import TMSlib.data_conversion as dc
-import TMSlib.Atlassian_API as Atlassian_API
-sys.path.pop(0)
+print('loaded TMSlib')
+import etabotapp.TMSlib.data_conversion as dc
+import etabotapp.TMSlib.Atlassian_API as Atlassian_API
+print('loaded TMSlib data_conversion, Atlassian_API ')
 
 from django.db import models
-# from jsonfield import JSONField
 from django.contrib.postgres.fields import JSONField
-
 from django.db.models.signals import post_save, pre_save
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from django.dispatch import receiver
-from django.core.exceptions import ValidationError
-from user_activation import ActivationProcessor
-
+print('loaded django modules')
+from etabotapp.user_activation import ActivationProcessor
+print('loaded user_activation')
 from encrypted_model_fields.fields import EncryptedCharField
-from django.utils.translation import gettext as _
-import datetime
 import time
-import pytz
 
 from django.conf import settings
 from authlib.django.client import OAuth
+
 
 class OAuth1Token(models.Model):
     owner = models.ForeignKey('auth.User', related_name='OAuth1Tokens',
@@ -38,13 +35,13 @@ class OAuth1Token(models.Model):
     name = models.CharField(max_length=40)
     oauth_token = models.CharField(max_length=200)
     oauth_token_secret = models.CharField(max_length=200)
-    
 
     def to_token(self):
         return dict(
             oauth_token=self.access_token,
             oauth_token_secret=self.alt_token,
         )
+
 
 class OAuth2CodeRequest(models.Model):
     """Model for Stracking OAuth2 states and users."""
@@ -53,6 +50,7 @@ class OAuth2CodeRequest(models.Model):
     name = models.CharField(max_length=40)
     state = models.CharField(max_length=200)
     timestamp = models.DateTimeField(null=True)
+
 
 class OAuth2Token(models.Model):
     """Model for Storing tokens from OAuth2."""
@@ -75,6 +73,7 @@ class OAuth2Token(models.Model):
             refresh_token=self.refresh_token,
             expires_at=self.expires_at,
         )
+
     @classmethod
     def find(cls, **kwargs):
         res = cls.objects.all().filter(**kwargs)
@@ -86,6 +85,7 @@ class OAuth2Token(models.Model):
             return res[len(res)]
         else:
             return None
+
 
 def fetch_oauth_token(name, request):
     """Authlib support function."""
@@ -143,6 +143,7 @@ def update_oauth_token(name, token, refresh_token=None, access_token=None):
         logging.debug(tms_instance.oauth2_token)
         logging.debug(vars(tms_instance.oauth2_token))
     logging.debug('update_oauth_token is done.')
+
 
 class TMS(models.Model):
     """This class represents the TMS account model."""

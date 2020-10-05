@@ -1,7 +1,7 @@
 import unittest
 import sys
 sys.path.append('..')
-import response_regex as rr
+import etabotapp.response_regex as rr
 import logging
 
 logger = logging.getLogger()

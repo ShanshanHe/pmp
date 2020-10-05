@@ -13,24 +13,13 @@ import logging
 logging.debug('logging JIRA_API imports')
 from Crypto.Cipher import AES
 from jira import JIRA
-from jira.client import GreenHopper
-
-from inspect import getsourcefile
-import os.path
-import sys
 import threading
-import TMSlib.Atlassian_API as Atlassian_API
-# current_path = os.path.abspath(getsourcefile(lambda: 0))
-# current_dir = os.path.dirname(current_path)
-# parent_dir = current_dir[:current_dir.rfind(os.path.sep)]
-# sys.path.insert(0, parent_dir)
-
-# from passwords.encrypted_passwords import passwords_dict
-# import keyring
+import etabotapp.TMSlib.Atlassian_API as Atlassian_API
 JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
 JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.            
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
 logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
+
 
 class JIRA_wrapper():
     """Handles communication with JIRA API."""

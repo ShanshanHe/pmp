@@ -14,22 +14,22 @@ from .models import atlassian_redirect_uri
 from .models import TMS, Project
 from .models import oauth
 from .permissions import IsOwnerOrReadOnly, IsOwner
-import TMSlib.TMS as TMSlib
-import TMSlib.data_conversion as dc
+# import etabotapp.TMSlib.TMS as TMSlib
+# import etabotapp.TMSlib.data_conversion as dc
 from .user_activation import ActivationProcessor, ResponseCode
-import email_toolbox
-import threading
+# import etabotapp.email_toolbox
+# import threading
 import json
-import mimetypes
+# import mimetypes
 import logging
 import celery as clry
-import os
+# import os
 
 from django.conf import settings
 import datetime
 import pytz
 import hashlib
-import TMSlib.Atlassian_API as Atlassian_API
+import etabotapp.TMSlib.Atlassian_API as Atlassian_API
 # import oauth_support
 
 logger = logging.getLogger('django')
@@ -419,7 +419,7 @@ def estimate_tms(user, tms, global_params, project_id=None):
         'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
         (tms.id, projects, global_params))
 
-    #todo: stores task_id in database for this user
+    # todo: stores task_id in database for this user
     return result.task_id
 
 

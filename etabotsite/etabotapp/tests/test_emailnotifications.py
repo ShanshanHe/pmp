@@ -16,6 +16,7 @@ import logging
 
 test_tms_data = getattr(settings, "TEST_TMS_DATA", {})
 
+
 class TestEmailNotificationsTestCases(TestCase):
     def setUp(self):
         # We want to go ahead and originally create a user.
