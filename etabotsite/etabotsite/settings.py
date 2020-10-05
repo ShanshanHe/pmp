@@ -339,7 +339,7 @@ else:
 database_dict['USER'] = database_dict['DB_USER']
 database_dict['PASSWORD'] = database_dict['DB_PASSWORD']
 
-logging.debug('database_dict: {}'.format(database_dict))
+logger.debug('database_dict: {}'.format(database_dict))
 
 DATABASES = {
     'default': database_dict

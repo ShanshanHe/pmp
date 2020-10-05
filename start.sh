@@ -18,9 +18,13 @@ cd etabotsite
 NUM_WORKERS=3
 TIMEOUT=120
 
-nohup celery -A etabotsite beat -l INFO & 
-exec gunicorn etabotsite.wsgi:application \
-    --bind 0.0.0.0:8000 \
-    --workers $NUM_WORKERS \
-    --worker-class gevent \
-    --timeout $TIMEOUT
+if [ $MODE = "PYTEST" ]; then
+  exec pytest
+else
+  nohup celery -A etabotsite beat -l INFO &
+  exec gunicorn etabotsite.wsgi:application \
+      --bind 0.0.0.0:8000 \
+      --workers $NUM_WORKERS \
+      --worker-class gevent \
+      --timeout $TIMEOUT
+fi
