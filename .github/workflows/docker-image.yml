@@ -32,6 +32,7 @@ jobs:
       env:
         DB_USER: postgres
         DB_PASSWORD: postgres
+        DB_HOST: host.docker.internal
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         DJANGO_SYS_EMAIL: ${{ secrets.DJANGO_SYS_EMAIL }}
