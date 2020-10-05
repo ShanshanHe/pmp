@@ -10,6 +10,7 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - DJANGO_SYS_EMAIL
       - DJANGO_SYS_EMAIL_PWD
+      - MODE
     build:
       context: .
     networks:
