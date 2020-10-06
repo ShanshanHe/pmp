@@ -49,5 +49,5 @@ jobs:
         DJANGO_SYS_EMAIL_PWD: ${{ secrets.DJANGO_SYS_EMAIL_PWD }}
         MODE: "PYTEST"
       run: |
-        docker-compose build --no-cache
-        docker-compose up --force-recreate
+        docker-compose -f docker-compose-pytest-django.yml build --no-cache
+        docker-compose -f docker-compose-pytest-django.yml up --force-recreate
