@@ -331,12 +331,14 @@ local_db = {
 
 if 'db' in custom_settings:
     database_dict = custom_settings['db']
-    ensure_keys_exist(database_dict, ['DB_USER', 'DB_PASSWORD'])
+    ensure_keys_exist(database_dict, ['DB_USER', 'DB_PASSWORD', "DB_HOST", "DB_NAME"])
 else:
     database_dict = local_db
     logging.warning('local db sqlite is no longer supported. please provide postgres database credentials.')
 
+database_dict['HOST'] = database_dict['DB_HOST']
 database_dict['USER'] = database_dict['DB_USER']
+database_dict['NAME'] = database_dict['DB_NAME']
 database_dict['PASSWORD'] = database_dict['DB_PASSWORD']
 
 logger.debug('database_dict: {}'.format(database_dict))

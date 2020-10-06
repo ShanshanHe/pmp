@@ -15,6 +15,6 @@ RUN pip install -r /usr/src/app/requirements.txt
 # EXPOSE port 8000 to allow communication to/from server
 EXPOSE 8000
 
-# CMD specifcies the command to execute to start the server running.
+# CMD specifies the command to execute to start the server running.
 CMD ["/start.sh", "-docker"]
 # done!
