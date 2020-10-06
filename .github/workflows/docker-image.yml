@@ -26,13 +26,23 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
     steps:
     - uses: actions/checkout@v2
+    - name: Test Postgres
+      - run: |
+        npm ci
+        node client.js
+      env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
     - name: Build the Docker image
       env:
         DB_USER: postgres
         DB_PASSWORD: postgres
-        DB_HOST: host.docker.internal
+        DB_HOST: localhost
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         DJANGO_SYS_EMAIL: ${{ secrets.DJANGO_SYS_EMAIL }}
