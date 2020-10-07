@@ -512,6 +512,7 @@ class VoteView(APIView):
         return Response(
             status=status.HTTP_200_OK)
 
+
 class CeleryTaskStatusView(APIView):
 
     def get(self, request, id):

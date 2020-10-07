@@ -188,6 +188,7 @@ class TMS(models.Model):
         logging.debug('token vars: {}'.format(vars(token)))
         return token
 
+
 class Project(models.Model):
     """This class represents the project model."""
 
