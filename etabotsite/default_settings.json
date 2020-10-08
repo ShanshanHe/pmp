@@ -12,10 +12,10 @@
     "RMQ_VHOST" : "etabotvhost",
     "db": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "etabot_db",
-        "HOST_LOCAL": "postgres",
-        "HOST": "host.docker.internal",
-        "HOST_DOCKER": "host.docker.internal"
+        "DB_NAME": "etabot_db",
+        "DB_HOST_LOCAL": "postgres",
+        "DB_HOST": "host.docker.internal",
+        "DB_HOST_DOCKER": "host.docker.internal"
     },    
     "AUTHLIB_OAUTH_CLIENTS": {
         "atlassian": {
