@@ -182,10 +182,10 @@ $ pytest <path to dir with tests>
     "LOCAL_MODE":true or false #Used to deteremine production mode or development mode
     "db": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "your_db_name",
+        "DB_NAME": "your_db_name",
         "DB_USER": "your_username",
         "DB_PASSWORD": "your_password",
-        "HOST": "host, e.g. localhost"
+        "DB_HOST": "host, e.g. localhost"
     },    
 
     "MESSAGE_BROKER":"rabbitmq" or "aws",
