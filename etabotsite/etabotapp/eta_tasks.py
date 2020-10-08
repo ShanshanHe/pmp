@@ -1,9 +1,9 @@
 """Collection of tasks for updating ETAs."""
 
-import TMSlib.data_conversion as dc
-import TMSlib.TMS as TMSlib
+import etabotapp.TMSlib.data_conversion as dc
+import etabotapp.TMSlib.TMS as TMSlib
 import logging
-import email_reports
+import etabotapp.email_reports as email_reports
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 

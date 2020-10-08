@@ -6,9 +6,9 @@ from .models import Project, TMS
 from .models import oauth
 from django.conf import settings
 import logging
-import TMSlib.TMS as TMSlib
+import etabotapp.TMSlib.TMS as TMSlib
 from copy import copy
-import response_regex as rr
+import etabotapp.response_regex as rr
 
 LOCAL_MODE = getattr(settings, "LOCAL_MODE", False)
 

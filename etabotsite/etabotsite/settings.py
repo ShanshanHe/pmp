@@ -12,24 +12,22 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 import platform
-import base64
 import datetime
 import json
 import logging
 import subprocess
 import urllib
+
+from helpers import ensure_keys_exist, get_key_value
+
 import mimetypes
-from etabotapp.email_alert import SendEmailAlert
 
 DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
 
 
-
-#Import custom_settings.json or throw warning if not provided.
-
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
-custom_settings = {}
+
 try:
     with open('custom_settings.json') as f:
         custom_settings = json.load(f)
@@ -45,12 +43,17 @@ except Exception as e:
     logging.warning('cannot load custom_settings.json due to "{}"'.format(
         e))
 
+    logging.info('loading default settings.')
+    with open('default_settings.json') as f:
+        custom_settings = json.load(f)
+    logging.info('loaded default settings.')
+
 CUSTOM_SETTINGS = custom_settings
 PROD_HOST_URL = prod_host_url
 
 # Determine if we are running on local mode or production mode
 # This is based on custom settings config.
-# This makes control of prod environment more controlable cross-platform
+# This makes control of prod environment more controllable cross-platform
 LOCAL_MODE = custom_settings.get("LOCAL_MODE", False)
 
 
@@ -71,7 +74,7 @@ if 'SYS_EMAIL_SETTINGS' in custom_settings:
     EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
         'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
     DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
-    ADMIN_EMAILS = sys_email_settings.get('ADMIN_EMAILS',[])
+    ADMIN_EMAILS = sys_email_settings.get('ADMIN_EMAILS', [])
 else:
     if not LOCAL_MODE:
         raise NameError('cannot load sys_email_settings as its not in custom_settings.json')
@@ -79,7 +82,9 @@ else:
         logging.warning('cannot load sys_email_settings as its not in custom_settings.json')
 
 
-log_filename_with_path = custom_settings.get('log_filename_with_path', '/usr/src/app/logging')
+log_filename_with_path = get_key_value(
+    custom_settings, 'LOG_FILENAME_WITH_PATH', default='/usr/src/app/logging/django_log.txt')
+print('log_filename_with_path: {}'.format(log_filename_with_path))
 
 ## Logging to File and Logging Configuration
 # Logger will modify root logger
@@ -108,7 +113,7 @@ logging_config = {
             'formatter': 'django_format'
         },
         'django_file': {
-            'level':'DEBUG',
+            'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'formatter': 'django_format',
             'filename': log_filename_with_path,
@@ -116,7 +121,7 @@ logging_config = {
             'maxBytes': 10111000,
             'backupCount': 7
         },
-        'mail_admins':{
+        'mail_admins': {
             'level': 'ERROR',
             'class': 'etabotapp.email_alert.SendEmailAlert',
             'SYS_DOMAIN': SYS_DOMAIN,
@@ -129,7 +134,7 @@ logging_config = {
     },
     'loggers': {
         '': {
-            'handlers': ['mail_admins','django_console', 'django_file'],
+            'handlers': ['mail_admins', 'django_console', 'django_file'],
             'propagate': True,
         },
     },
@@ -293,7 +298,9 @@ else:
 ROOT_URLCONF = 'etabotsite.urls'
 
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
+
 logger.info('TEMPLATE_DIR = "{}"'.format(TEMPLATE_DIR))
+
 
 TEMPLATES = [
     {
@@ -322,8 +329,22 @@ local_db = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 
+if 'db' in custom_settings:
+    database_dict = custom_settings['db']
+    ensure_keys_exist(database_dict, ['DB_USER', 'DB_PASSWORD', "DB_HOST", "DB_NAME"])
+else:
+    database_dict = local_db
+    logging.warning('local db sqlite is no longer supported. please provide postgres database credentials.')
+
+database_dict['HOST'] = database_dict['DB_HOST']
+database_dict['USER'] = database_dict['DB_USER']
+database_dict['NAME'] = database_dict['DB_NAME']
+database_dict['PASSWORD'] = database_dict['DB_PASSWORD']
+
+logger.debug('database_dict: {}'.format(database_dict))
+
 DATABASES = {
-    'default': custom_settings.get('db', local_db)
+    'default': database_dict
 }
 
 logger.debug('database: Engine={} Name={} Host={}'.format(
@@ -388,6 +409,26 @@ USE_TZ = True
 
 
 
+
+if 'SYS_EMAIL_SETTINGS' in custom_settings:
+    sys_email_settings = custom_settings.get('SYS_EMAIL_SETTINGS')
+    logging.debug('loaded SYS_EMAIL_SETTINGS')
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST_USER = SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
+    EMAIL_HOST_PASSWORD = SYS_EMAIL_PWD = sys_email_settings.get(
+        'DJANGO_SYS_EMAIL_PWD', '')
+    EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST', '')
+    EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
+    EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
+    EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
+        'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
+    DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
+else:
+    if not LOCAL_MODE:
+        raise NameError('cannot load sys_email_settings as its not in custom_settings.json')
+    else:
+        logging.warning('cannot load sys_email_settings as its not in custom_settings.json')
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
@@ -426,9 +467,9 @@ CELERY_RESULT_BACKEND = 'db+postgresql://{}:{}@{}:5432/{}'.format(
 # Configuring the message broker for Celery Task Scheduling
 if custom_settings['MESSAGE_BROKER'].lower() == 'aws':
     # AWS Credentials
-    AWS_ACCESS_KEY_ID = custom_settings.get('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = custom_settings.get('AWS_SECRET_ACCESS_KEY')
-    CELERY_DEFAULT_QUEUE = custom_settings.get('CELERY_DEFAULT_QUEUE', 'etabotqueue')
+    AWS_ACCESS_KEY_ID = get_key_value(custom_settings, 'AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = get_key_value(custom_settings, 'AWS_SECRET_ACCESS_KEY')
+    CELERY_DEFAULT_QUEUE = get_key_value(custom_settings, 'CELERY_DEFAULT_QUEUE', default='etabotqueue')
     if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
         logger.warning(
             'AWS credentials not found. Skipping Celery settings setup.')

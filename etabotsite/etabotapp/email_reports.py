@@ -18,8 +18,8 @@ from django.template.loader import render_to_string
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 # from enum import Enum
-import email_toolbox
-from TMSlib.interface import BasicReport
+import etabotapp.email_toolbox as email_toolbox
+from etabotapp.TMSlib.interface import BasicReport
 
 SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1")
 SYS_EMAIL = getattr(settings, "SYS_EMAIL", None)

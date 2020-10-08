@@ -1,6 +1,5 @@
 import base64
 import logging
-import smtplib
 import time
 
 from django.conf import settings
@@ -10,7 +9,7 @@ from django.utils.encoding import force_bytes
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum
-import email_toolbox
+import etabotapp.email_toolbox as email_toolbox
 from requests.utils import quote
 
 logging.getLogger().setLevel(logging.INFO)

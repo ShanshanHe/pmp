@@ -1,0 +1,46 @@
+{
+    "LOG_FILENAME_WITH_PATH": "~/pmp.log",
+    "LOCAL_MODE": true,
+    "DOCKER_MODE": true,
+    "local_host_url":"http://127.0.0.1:8000",
+    "prod_host_url":"http://localhost:8000",
+    "AWS_SQS_REGION": "us-west-2",
+    "CELERY_DEFAULT_QUEUE": "etabotqueue",
+    "_MESSAGE_BROKER_comment":"rabbitmq or aws",
+    "MESSAGE_BROKER":"aws",
+    "RMQ_HOST" : "localhost",
+    "RMQ_VHOST" : "etabotvhost",
+    "db": {
+        "ENGINE": "django.db.backends.postgresql",
+        "DB_NAME": "etabot_db",
+        "DB_HOST_LOCAL": "postgres",
+        "DB_HOST": "host.docker.internal",
+        "DB_HOST_DOCKER": "host.docker.internal"
+    },    
+    "AUTHLIB_OAUTH_CLIENTS": {
+        "atlassian": {
+            "access_token_url": "https://auth.atlassian.com/oauth/token",
+            "refresh_token_url": "https://auth.atlassian.com/oauth/token",
+            "authorize_url": "https://auth.atlassian.com/authorize",
+            "authorize_params": {"audience": "api.atlassian.com"},
+            "client_kwargs": {
+                "scope": "read:jira-work read:jira-user read:me write:jira-work offline_access",
+                "token_endpoint_auth_method": "client_secret_post",
+                "token_placement": "header",
+                "prompt": "consent"}
+        }            
+    },
+    "eta_crontab_args": {
+        "hour": 8,
+        "minute": 52},
+    "eta_crontab_args2": {
+        "day_of_week": "sunday",
+        "hour": 7,
+        "minute": 0},
+
+    "SYS_EMAIL_SETTINGS": {
+        "DJANGO_EMAIL_USE_TLS":true,
+        "DJANGO_EMAIL_PORT":587,
+        "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":86400     
+    }
+}

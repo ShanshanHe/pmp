@@ -5,11 +5,12 @@ TODO: FakeToken({"need_to_setup":"shared_token_pull"}
 
 import logging
 logging.debug('loading jira api test')
-import TMSlib.JIRA_API as JIRA_API
+import etabotapp.TMSlib.JIRA_API as JIRA_API
 from django.test import TestCase
 
 
 logging.debug('imports done')
+
 
 class FakeToken():
     """Simulate Django token class."""

@@ -9,17 +9,18 @@ Python Version: 3.6
 import logging
 
 logging.debug('loading TMSlib.TMS')
-from enum import Enum
-import TMSlib.JIRA_API as JIRA_API
+print('loading TMSlib.TMS')
+
+import etabotapp.TMSlib.JIRA_API as JIRA_API
 logging.debug('loading TMSlib.TMS: loaded JIRA_API')
+print('loading TMSlib.TMS: loaded JIRA_API')
 import sys
 import datetime
-import user_activation
 from typing import List
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import email_toolbox
-
+import etabotapp.email_toolbox as email_toolbox
+print('TMS main import complete.')
 
 try:
     sys.path.append('etabot_algo/')
@@ -29,10 +30,10 @@ try:
 except Exception as e:
     logging.warning('cannot load ETApredict or ETAreport due to "{}"\
  Loading ETApredict_placeholder, ETAreport_placeholder instead'.format(e))
-    import TMSlib.ETApredict_placeholder as ETApredict
-    import TMSlib.ETAreport_placeholder as ETAreport
+    import etabotapp.TMSlib.ETApredict_placeholder as ETApredict
+    import etabotapp.TMSlib.ETAreport_placeholder as ETAreport
 logging.debug('loading TMSlib.TMS: done')
-
+print('loading TMSlib.TMS: done')
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
