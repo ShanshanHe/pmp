@@ -158,6 +158,11 @@ To run a subset of the unit tests - from etabotsite directory:
 $ pytest <path to dir with tests>
 ```
 
+To run all unit tests using docker container run this from the project root directory
+```
+$ docker-compose -f docker-compose-pytest-django.yml build --no-cache
+$ docker-compose -f docker-compose-pytest-django.yml up --force-recreate
+```
 
 ## Advanced settings
 
@@ -171,14 +176,31 @@ $ pytest <path to dir with tests>
   127.0.0.1 app.etabot.ai
   ```
 
-### Settings jsons
+### Settings
+
+Settings can be set via custom_settings.json file. If there is no custom_settings.json, default_settings.json will be used.
+If the following keys are missing in jsons, they will be searched for in the environmental variables:
+DB_USER, DB_PASSWORD, DB_HOST", DB_NAME,
+AWS_SECRET_ACCESS_KEY, AWS_ACCESS_KEY_ID, CELERY_DEFAULT_QUEUE
+LOG_FILENAME_WITH_PATH
+
+For docker compose command one can use .env file in the project root dir to set environmental variables, 
+for example:
+```
+DB_USER="database user"
+DB_PASSWORD="database password"
+AWS_ACCESS_KEY_ID="your key id"
+AWS_SECRET_ACCESS_KEY="your access key"
+DJANGO_SYS_EMAIL="email"
+DJANGO_SYS_EMAIL_PWD="email password"
+```
 
 #### custom_settings.json - general custom settings
 ```
 {
     "local_host_url":"<your local host url for testing, e.g. http://127.0.0.1:8000">,
     "prod_host_url":"<your production host url for testing, e.g. https://app.etabot.ai>"
-    "log_filename_with_path":"path to log file. use /usr/src/app/logging/django_log.txt for Docker use case"
+    "LOG_FILENAME_WITH_PATH":"path to log file. use /usr/src/app/logging/django_log.txt for Docker use case"
     "LOCAL_MODE":true or false #Used to deteremine production mode or development mode
     "db": {
         "ENGINE": "django.db.backends.postgresql",
@@ -289,7 +311,11 @@ The repo must have module ETApredict.py following pattern ETApredict_placeholder
 
 #### Periodic tasks with Celery
 
-Celery container will start automatically with Docker deployment.
+To start Celery container with Docker deployment:
+```
+$ docker-compose -f docker-compose.yml build --no-cache
+$ docker-compose -f docker-compose.yml up --force-recreate
+```
 
 For manual start: in a separate terminal start process with:
 ```
