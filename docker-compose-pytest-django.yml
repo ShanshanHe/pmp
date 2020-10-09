@@ -11,6 +11,9 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - DJANGO_SYS_EMAIL
       - DJANGO_SYS_EMAIL_PWD
+      - JIRA_ENDPOINT
+      - JIRA_USERNAME
+      - JIRA_TOKEN
       - MODE
     build:
       context: .
