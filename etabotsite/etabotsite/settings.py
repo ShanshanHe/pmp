@@ -17,6 +17,9 @@ import json
 import logging
 import subprocess
 import urllib
+
+from helpers import ensure_keys_exist, get_key_value, deep_update_dict_with_environ
+
 import mimetypes
 from etabotapp.email_alert import SendEmailAlert
 from helpers import ensure_keys_exist, get_key_value
@@ -49,6 +52,8 @@ except Exception as e:
     with open('default_settings.json') as f:
         custom_settings = json.load(f)
     logging.info('loaded default settings.')
+    deep_update_dict_with_environ(custom_settings)
+
 
 CUSTOM_SETTINGS = custom_settings
 PROD_HOST_URL = prod_host_url
