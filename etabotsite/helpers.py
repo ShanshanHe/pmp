@@ -9,6 +9,9 @@ def ensure_keys_exist(d: Dict, keys: List[str]) -> None:
 
 
 def get_key_value(d: Dict, key, default=None) -> Any:
+    """Return value for the key either from the dict or environmental variable or default.
+    Raises error if value is not found and there is no default."""
+
     if key not in d:
         if key in os.environ:
             value = os.environ[key]
