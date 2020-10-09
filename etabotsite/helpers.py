@@ -26,3 +26,13 @@ def get_key_value(d: Dict, key, default=None) -> Any:
         value = d[key]
         logging.info('key "{}" is in dict.')
     return value
+
+
+def deep_update_dict_with_environ(d: Dict):
+    for k, v in d.items():
+        if isinstance(v, dict):
+            deep_update_dict_with_environ(v)
+        else:
+            if k in os.environ:
+                d[k] = os.environ[k]
+                logging.info('updated {} with {}'.format(k, d[k]))

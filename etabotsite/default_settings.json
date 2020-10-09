@@ -1,5 +1,5 @@
 {
-    "LOG_FILENAME_WITH_PATH": "~/pmp.log",
+    "LOG_FILENAME_WITH_PATH": "pmp.log",
     "LOCAL_MODE": true,
     "DOCKER_MODE": true,
     "local_host_url":"http://127.0.0.1:8000",
