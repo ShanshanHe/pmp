@@ -54,4 +54,4 @@ jobs:
         MODE: "PYTEST"
       run: |
         docker-compose -f docker-compose-pytest-django.yml build --no-cache
-        docker-compose -f docker-compose-pytest-django.yml up --force-recreate --exit-code-from pmp-django
+        docker-compose -f docker-compose-pytest-django.yml up --force-recreate --exit-code-from django
