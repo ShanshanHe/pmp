@@ -18,7 +18,7 @@ import logging
 import subprocess
 import urllib
 
-from helpers import ensure_keys_exist, get_key_value
+from helpers import ensure_keys_exist, get_key_value, deep_update_dict_with_environ
 
 import mimetypes
 
@@ -47,6 +47,8 @@ except Exception as e:
     with open('default_settings.json') as f:
         custom_settings = json.load(f)
     logging.info('loaded default settings.')
+    deep_update_dict_with_environ(custom_settings)
+
 
 CUSTOM_SETTINGS = custom_settings
 PROD_HOST_URL = prod_host_url
@@ -101,7 +103,7 @@ logging_config = {
             'format': 'django %(asctime)s %(name)-12s %(levelname)-8s %(message)s'
             }
     },
-    'filters':{
+    'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse',
         }
@@ -148,21 +150,19 @@ logging_config = {
 logging.config.dictConfig(logging_config)
 logger = logging.getLogger(__name__)
 
-##Set Logger Level
-#If we're in production we don't want anything lower than INFO to show.
-#Effectively raises all logging handlers to INFO level and above, ignores
-#anything lower.
+# Set Logger Level
+# If we're in production we don't want anything lower than INFO to show.
+# Effectively raises all logging handlers to INFO level and above, ignores
+# anything lower.
 
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
 else:
     logger.setLevel(logging.INFO)
 
-#Set HOST_URL based on production or development mode
+# Set HOST_URL based on production or development mode
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
 logger.info('HOST_URL="{}"'.format(HOST_URL))
-
-
 
 mimetypes.add_type("image/svg+xml", ".svg", True)
 mimetypes.add_type("image/svg+xml", ".svgz", True)
@@ -171,9 +171,6 @@ mimetypes.add_type("image/svg+xml", ".svgz", True)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 django_keys = {}
 try:
@@ -381,19 +378,17 @@ else:
     else:
         logger.warning('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
 
-TEST_TMS_CREDENTIALS = {}  # Type: Dict[str, str]
-if 'TEST_TMS_CREDENTIALS' in custom_settings:
-    TEST_TMS_CREDENTIALS = custom_settings.get('TEST_TMS_CREDENTIALS')
-else:
-    logger.warning('no TEST_TMS_CREDENTIALS in custom_settings - some tests will not run')
+TEST_TMS_CREDENTIALS = custom_settings.get('TEST_TMS_CREDENTIALS', {})
+ensure_keys_exist(TEST_TMS_CREDENTIALS, ['JIRA_ENDPOINT', 'JIRA_USERNAME', "JIRA_TOKEN"])
 
 TEST_TMS_DATA = {
-    'endpoint': TEST_TMS_CREDENTIALS.get("endpoint", "localhost:8888"),
-    'username': TEST_TMS_CREDENTIALS.get("username", "testuser@example.com"),
-    'password': TEST_TMS_CREDENTIALS.get("password", "testpassword"),
+    'endpoint': TEST_TMS_CREDENTIALS["JIRA_ENDPOINT"],
+    'username': TEST_TMS_CREDENTIALS["JIRA_USERNAME"],
+    'password': TEST_TMS_CREDENTIALS["JIRA_TOKEN"],
     'type': 'JI',
     'connectivity_status': {}
 }
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
@@ -406,9 +401,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-
-
 
 if 'SYS_EMAIL_SETTINGS' in custom_settings:
     sys_email_settings = custom_settings.get('SYS_EMAIL_SETTINGS')

@@ -48,7 +48,10 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         DJANGO_SYS_EMAIL: ${{ secrets.DJANGO_SYS_EMAIL }}
         DJANGO_SYS_EMAIL_PWD: ${{ secrets.DJANGO_SYS_EMAIL_PWD }}
+        JIRA_ENDPOINT: ${{ secrets.JIRA_ENDPOINT }}
+        JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
+        JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
         MODE: "PYTEST"
       run: |
         docker-compose -f docker-compose-pytest-django.yml build --no-cache
-        docker-compose -f docker-compose-pytest-django.yml up --force-recreate
+        docker-compose -f docker-compose-pytest-django.yml up --force-recreate --exit-code-from django
