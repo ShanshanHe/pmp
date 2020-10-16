@@ -9,6 +9,7 @@ import etabotapp.TMSlib.JIRA_API as JIRA_API
 from django.test import TestCase
 
 
+
 logging.debug('imports done')
 
 
@@ -45,10 +46,11 @@ class TestJIRAwrapper(TestCase):
             jira = self.jira_wrapper.jira
             search_string = 'assignee=currentUser() ORDER BY Rank ASC'
             logging.debug('test jira query with search string: {}'.format(search_string))
-            res =jira.search_issues(search_string)         
+            res =jira.search_issues(search_string)
             issue = res[0]
             logging.info(issue)
             jira.add_comment(issue, "Django test_jira_api")
         else:
             logging.warning('no access token to test JIRA OAuth')
+
 logging.debug('loaded jira api test')

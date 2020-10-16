@@ -16,7 +16,7 @@ from jira import JIRA
 import threading
 import etabotapp.TMSlib.Atlassian_API as Atlassian_API
 JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
-JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.            
+JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
 logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
 
@@ -57,7 +57,7 @@ class JIRA_wrapper():
         elif self.TMSconfig is not None and self.TMSconfig.oauth2_token is not None:
             auth_method = 'oauth2'
             jira_timout_seconds = JIRA_TIMEOUT_FOR_OAUTH2_SECONDS
-        else:    
+        else:
             raise NameError('JIRA API key or TMSconfig with token must be provided')
 
         options = {
@@ -87,12 +87,12 @@ class JIRA_wrapper():
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',
-                            'Content-Type': 'application/json'}     
-                        logging.debug('connecting with options: {}'.format(options))                      
+                            'Content-Type': 'application/json'}
+                        logging.debug('connecting with options: {}'.format(options))
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'
                         logging.debug('test jira query with search string: {}'.format(search_string))
-                        res =jira.search_issues(search_string) 
+                        res =jira.search_issues(search_string)
                         logging.debug('search result: {}'.format(res))
                         logging.info('found {} issues'.format(len(res)))
                     logging.debug('Authenticated with JIRA. {}'.format(jira))
@@ -153,3 +153,46 @@ Errors: "{}"'.format(jira, errors_place))
 
         print('{}: got {} issues'.format(search_string, len(jira_issues)))
         return jira_issues
+
+    def get_team_members(self,project,get_all=True,timeFrame=365):
+        '''This function will gather all the team members in a given time range.
+        Default is one 1 year'''
+        #Error Checking
+        if(timeFrame < 0):
+            timeFrame = 365
+            
+        returned_result_length = 50
+        jira_issues = []
+        search_string = 'project={project} AND \
+            (created > -{timeFrame}d and created < now()) \
+            AND assignee IS NOT EMPTY \
+            ORDER BY assignee'.format(project=project,timeFrame=timeFrame)
+
+        while get_all and returned_result_length == self.max_results_jira_api:
+            all_issues_in_last_year = self.jira.search_issues(
+                search_string,
+                maxResults=self.max_results_jira_api,
+                startAt=len(jira_issues),
+                json_result=True)
+
+
+            if returned_result_length > self.max_results_jira_api:
+                raise NameError(
+                    'JIRA API problem: returned more results {} \
+                    than max = {}'.format(
+                        returned_result_length, self.max_results_jira_api))
+            returned_result_length = len(all_issues_in_last_year['issues'])
+            jira_issues += all_issues_in_last_year['issues']
+
+        # Gather Team members and create a dictionary using accountId as
+        # key. accountId is unique, so we avoid same displayName issues.
+        team_members = {}
+        for item in jira_issues:
+            accountId = item['fields']['assignee']['accountId']
+            if(accountId in team_members):
+                continue
+
+            displayName = item['fields']['assignee']['displayName']
+            team_members[accountId] = displayName
+
+        return team_members
