@@ -261,7 +261,11 @@ DJANGO_SYS_EMAIL_PWD="email password"
         "DJANGO_EMAIL_TOKEN_EXPIRATION_PERIOD_S":Django email token expiration period in seconds (86400 = 24h),
         "ADMIN_EMAILS": ["emails","ofadmins","inlist"],
       },
-
+    "TEST_TMS_CREDENTIALS": {
+         "JIRA_ENDPOINT": "https://<xxx>.atlassian.net",
+         "JIRA_USERNAME": "username",
+         "JIRA_TOKEN": "token"
+    }
 
 }
 ```
@@ -474,6 +478,10 @@ Now we run the following commands again:
 ```
 $ docker-compose build --no-cache
 $ docker-compose up --force-recreate
+
+for celery:
+$ docker-compose -f docker-compose_celery.yml build --no-cache
+$ docker-compose -f docker-compose_celery.yml up --force-recreate
 ```
 Ensure all containers are up and running by:
 ```
