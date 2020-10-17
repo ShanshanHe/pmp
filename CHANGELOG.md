@@ -15,6 +15,7 @@
 - added max tasks per celery worker to prevent out of memory issues
 - better logging
 - setup testing pipeline in GitHub
+- updated Django and other dependencies
 
 #### Bug Fixes:
 
