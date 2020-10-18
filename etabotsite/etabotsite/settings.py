@@ -21,6 +21,11 @@ import urllib
 from helpers import ensure_keys_exist, get_key_value, deep_update_dict_with_environ
 
 import mimetypes
+from etabotapp.email_alert import SendEmailAlert
+from helpers import ensure_keys_exist, get_key_value
+# from authlib.django.client import OAuth
+
+import mimetypes
 
 DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
 
@@ -42,6 +47,12 @@ try:
 except Exception as e:
     logging.warning('cannot load custom_settings.json due to "{}"'.format(
         e))
+    logging.info('loading default settings')
+    with open('default_settings.json') as f:
+        custom_settings = json.load(f)
+    logging.info('loaded default settings.')
+    deep_update_dict_with_environ(custom_settings)
+
 
     logging.info('loading default settings.')
     with open('default_settings.json') as f:
@@ -401,25 +412,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-if 'SYS_EMAIL_SETTINGS' in custom_settings:
-    sys_email_settings = custom_settings.get('SYS_EMAIL_SETTINGS')
-    logging.debug('loaded SYS_EMAIL_SETTINGS')
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST_USER = SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
-    EMAIL_HOST_PASSWORD = SYS_EMAIL_PWD = sys_email_settings.get(
-        'DJANGO_SYS_EMAIL_PWD', '')
-    EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST', '')
-    EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
-    EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
-    EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
-        'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
-    DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
-else:
-    if not LOCAL_MODE:
-        raise NameError('cannot load sys_email_settings as its not in custom_settings.json')
-    else:
-        logging.warning('cannot load sys_email_settings as its not in custom_settings.json')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
