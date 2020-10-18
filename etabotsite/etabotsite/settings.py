@@ -25,11 +25,10 @@ from etabotapp.email_alert import SendEmailAlert
 from helpers import ensure_keys_exist, get_key_value
 # from authlib.django.client import OAuth
 
+import mimetypes
+
 DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
 
-
-
-#Import custom_settings.json or throw warning if not provided.
 
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
@@ -55,12 +54,19 @@ except Exception as e:
     deep_update_dict_with_environ(custom_settings)
 
 
+    logging.info('loading default settings.')
+    with open('default_settings.json') as f:
+        custom_settings = json.load(f)
+    logging.info('loaded default settings.')
+    deep_update_dict_with_environ(custom_settings)
+
+
 CUSTOM_SETTINGS = custom_settings
 PROD_HOST_URL = prod_host_url
 
 # Determine if we are running on local mode or production mode
 # This is based on custom settings config.
-# This makes control of prod environment more controlable cross-platform
+# This makes control of prod environment more controllable cross-platform
 LOCAL_MODE = custom_settings.get("LOCAL_MODE", False)
 
 
@@ -81,7 +87,7 @@ if 'SYS_EMAIL_SETTINGS' in custom_settings:
     EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
         'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
     DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
-    ADMIN_EMAILS = sys_email_settings.get('ADMIN_EMAILS',[])
+    ADMIN_EMAILS = sys_email_settings.get('ADMIN_EMAILS', [])
 else:
     if not LOCAL_MODE:
         raise NameError('cannot load sys_email_settings as its not in custom_settings.json')
@@ -303,6 +309,7 @@ TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 
 logger.info('TEMPLATE_DIR = "{}"'.format(TEMPLATE_DIR))
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -405,7 +412,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
