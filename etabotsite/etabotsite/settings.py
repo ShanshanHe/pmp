@@ -12,30 +12,27 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 import platform
-import base64
 import datetime
 import json
 import logging
 import subprocess
 import urllib
+
+from helpers import ensure_keys_exist, get_key_value, deep_update_dict_with_environ
+
 import mimetypes
+from etabotapp.email_alert import SendEmailAlert
+from helpers import ensure_keys_exist, get_key_value
 # from authlib.django.client import OAuth
 
-logger = logging.getLogger()
-# oauth = OAuth()
+import mimetypes
 
-PLATFORM = platform.system()
-logging.info("PLATFORM={}".format(PLATFORM))
-LOCAL_MODE = (PLATFORM == 'Darwin')
+DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
 
-if LOCAL_MODE:
-    logger.setLevel(logging.DEBUG)
-else:
-    logger.setLevel(logging.INFO)
 
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
-custom_settings = {}
+
 try:
     with open('custom_settings.json') as f:
         custom_settings = json.load(f)
@@ -50,20 +47,141 @@ try:
 except Exception as e:
     logging.warning('cannot load custom_settings.json due to "{}"'.format(
         e))
+    logging.info('loading default settings')
+    with open('default_settings.json') as f:
+        custom_settings = json.load(f)
+    logging.info('loaded default settings.')
+    deep_update_dict_with_environ(custom_settings)
+
+
+    logging.info('loading default settings.')
+    with open('default_settings.json') as f:
+        custom_settings = json.load(f)
+    logging.info('loaded default settings.')
+    deep_update_dict_with_environ(custom_settings)
+
+
 CUSTOM_SETTINGS = custom_settings
 PROD_HOST_URL = prod_host_url
 
-HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
-logging.info('HOST_URL="{}"'.format(HOST_URL))
+# Determine if we are running on local mode or production mode
+# This is based on custom settings config.
+# This makes control of prod environment more controllable cross-platform
+LOCAL_MODE = custom_settings.get("LOCAL_MODE", False)
 
+
+# System email settings
+# Must be gathered before logging is initiatied to use for email alerts!
+
+SYS_DOMAIN = local_host_url if LOCAL_MODE else prod_host_url
+ADMIN_EMAILS = []
+if 'SYS_EMAIL_SETTINGS' in custom_settings:
+    sys_email_settings = custom_settings.get('SYS_EMAIL_SETTINGS')
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST_USER = SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
+    EMAIL_HOST_PASSWORD = SYS_EMAIL_PWD = sys_email_settings.get(
+        'DJANGO_SYS_EMAIL_PWD', '')
+    EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST', '')
+    EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
+    EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
+    EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
+        'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
+    DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
+    ADMIN_EMAILS = sys_email_settings.get('ADMIN_EMAILS', [])
+else:
+    if not LOCAL_MODE:
+        raise NameError('cannot load sys_email_settings as its not in custom_settings.json')
+    else:
+        logging.warning('cannot load sys_email_settings as its not in custom_settings.json')
+
+
+log_filename_with_path = get_key_value(
+    custom_settings, 'LOG_FILENAME_WITH_PATH', default='/usr/src/app/logging/django_log.txt')
+print('log_filename_with_path: {}'.format(log_filename_with_path))
+
+## Logging to File and Logging Configuration
+# Logger will modify root logger
+# Handlers's levels can be changed to meet the needs of the dev
+# django_console controls print outs to the console.
+# django_file controls print outs to the logging file either locally or on docker.
+# mail_admins controls mailing admins through SendEmailAlert class in email_alert.py
+
+logging_config = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'django_format': {
+            'format': 'django %(asctime)s %(name)-12s %(levelname)-8s %(message)s'
+            }
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        }
+    },
+    'handlers': {
+        'django_console': {
+            'level':'WARNING',
+            'class': 'logging.StreamHandler',
+            'formatter': 'django_format'
+        },
+        'django_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'formatter': 'django_format',
+            'filename': log_filename_with_path,
+            'mode': 'a',
+            'maxBytes': 10111000,
+            'backupCount': 7
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'etabotapp.email_alert.SendEmailAlert',
+            'SYS_DOMAIN': SYS_DOMAIN,
+            'SYS_EMAIL': SYS_EMAIL,
+            'SYS_EMAIL_PWD': SYS_EMAIL_PWD,
+            'EMAIL_HOST': EMAIL_HOST,
+            'EMAIL_PORT': EMAIL_PORT,
+            'ADMINS': ADMIN_EMAILS,
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['mail_admins', 'django_console', 'django_file'],
+            'propagate': True,
+        },
+    },
+}
+# Load logger configuration
+# Create logger for settings, shows as root in logs.
+# Use logger = logging.getLogger(__name__) at top of modules. This provides
+# location information on logging. See etabotapp/tests/test_alert.py for
+# example.
+
+logging.config.dictConfig(logging_config)
+logger = logging.getLogger(__name__)
+
+# Set Logger Level
+# If we're in production we don't want anything lower than INFO to show.
+# Effectively raises all logging handlers to INFO level and above, ignores
+# anything lower.
+
+if LOCAL_MODE:
+    logger.setLevel(logging.DEBUG)
+else:
+    logger.setLevel(logging.INFO)
+
+# Set HOST_URL based on production or development mode
+HOST_URL = local_host_url if LOCAL_MODE else prod_host_url
+logger.info('HOST_URL="{}"'.format(HOST_URL))
+
+mimetypes.add_type("image/svg+xml", ".svg", True)
+mimetypes.add_type("image/svg+xml", ".svgz", True)
 # mimetypes.add_type("text/css", ".css", True)
 # logging.debug('css type guessed: {}'.format(mimetypes.guess_type('test.css')))
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 django_keys = {}
 try:
@@ -75,11 +193,11 @@ try:
             'N4h4avmBpgu_QTDr4k5jO9yUfsMIvfNGnQr21aCLbzw='):
         raise NameError('production keys from django_keys_prod.json are default \
 keys - not allowed in production for security reasons')
-    logging.info('loaded production keys from django_keys_prod.json')
+    logger.info('loaded production keys from django_keys_prod.json')
 except Exception as e:
-    logging.warning('django_keys_prod.json not loaded due to "{}"'.format(e))
+    logger.warning('django_keys_prod.json not loaded due to "{}"'.format(e))
     if LOCAL_MODE:
-        logging.warning('production keys "django_keys_prod.json" not found, \
+        logger.warning('production keys "django_keys_prod.json" not found, \
 loading default keys in local mode (for production please provide \
 "django_keys_prod.json"')
         with open('django_keys.json') as f:
@@ -87,7 +205,7 @@ loading default keys in local mode (for production please provide \
     else:
         raise NameError('production keys "django_keys_prod.json" not found.\
  Cannot proceed in non-local mode')
-logging.debug('loaded django_keys: "{}"'.format(django_keys.keys()))
+logger.debug('loaded django_keys: "{}"'.format(django_keys.keys()))
 
 SECRET_KEY = django_keys['DJANGO_SECRET_KEY']
 
@@ -96,7 +214,7 @@ FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if LOCAL_MODE else False
-# DEBUG = True
+#DEBUG = False
 
 # Update this in production environment to host ip for security reason
 ALLOWED_HOSTS = [
@@ -188,7 +306,9 @@ else:
 ROOT_URLCONF = 'etabotsite.urls'
 
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
-print('TEMPLATE_DIR = "{}"'.format(TEMPLATE_DIR))
+
+logger.info('TEMPLATE_DIR = "{}"'.format(TEMPLATE_DIR))
+
 
 TEMPLATES = [
     {
@@ -217,11 +337,25 @@ local_db = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 
+if 'db' in custom_settings:
+    database_dict = custom_settings['db']
+    ensure_keys_exist(database_dict, ['DB_USER', 'DB_PASSWORD', "DB_HOST", "DB_NAME"])
+else:
+    database_dict = local_db
+    logging.warning('local db sqlite is no longer supported. please provide postgres database credentials.')
+
+database_dict['HOST'] = database_dict['DB_HOST']
+database_dict['USER'] = database_dict['DB_USER']
+database_dict['NAME'] = database_dict['DB_NAME']
+database_dict['PASSWORD'] = database_dict['DB_PASSWORD']
+
+logger.debug('database_dict: {}'.format(database_dict))
+
 DATABASES = {
-    'default': custom_settings.get('db', local_db)
+    'default': database_dict
 }
 
-logging.debug('database: Engine={} Name={} Host={}'.format(
+logger.debug('database: Engine={} Name={} Host={}'.format(
     DATABASES['default']['ENGINE'],
     DATABASES['default']['NAME'],
     DATABASES['default'].get('HOST')))
@@ -248,12 +382,23 @@ AUTH_PASSWORD_VALIDATORS = [
 # OAuth
 if 'AUTHLIB_OAUTH_CLIENTS' in custom_settings:
     AUTHLIB_OAUTH_CLIENTS = custom_settings.get('AUTHLIB_OAUTH_CLIENTS')
-    logging.debug('loaded AUTHLIB_OAUTH_CLIENTS={}'.format(AUTHLIB_OAUTH_CLIENTS))
+    logger.debug('loaded AUTHLIB_OAUTH_CLIENTS={}'.format(AUTHLIB_OAUTH_CLIENTS))
 else:
     if not LOCAL_MODE:
         raise NameError('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
     else:
-        logging.warning('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
+        logger.warning('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
+
+TEST_TMS_CREDENTIALS = custom_settings.get('TEST_TMS_CREDENTIALS', {})
+ensure_keys_exist(TEST_TMS_CREDENTIALS, ['JIRA_ENDPOINT', 'JIRA_USERNAME', "JIRA_TOKEN"])
+
+TEST_TMS_DATA = {
+    'endpoint': TEST_TMS_CREDENTIALS["JIRA_ENDPOINT"],
+    'username': TEST_TMS_CREDENTIALS["JIRA_USERNAME"],
+    'password': TEST_TMS_CREDENTIALS["JIRA_TOKEN"],
+    'type': 'JI',
+    'connectivity_status': {}
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -268,38 +413,16 @@ USE_L10N = True
 
 USE_TZ = True
 
-# System email settings
-
-SYS_DOMAIN = local_host_url if LOCAL_MODE else prod_host_url
-
-if 'SYS_EMAIL_SETTINGS'  in custom_settings:
-    sys_email_settings = custom_settings.get('SYS_EMAIL_SETTINGS')
-    logging.debug('loaded SYS_EMAIL_SETTINGS')
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST_USER = SYS_EMAIL = sys_email_settings.get('DJANGO_SYS_EMAIL', '')
-    EMAIL_HOST_PASSWORD = SYS_EMAIL_PWD = sys_email_settings.get(
-        'DJANGO_SYS_EMAIL_PWD', '')
-    EMAIL_HOST = sys_email_settings.get('DJANGO_EMAIL_HOST', '')
-    EMAIL_USE_TLS = sys_email_settings.get('DJANGO_EMAIL_USE_TLS', True)
-    EMAIL_PORT = sys_email_settings.get('DJANGO_EMAIL_PORT', 587)
-    EMAIL_TOKEN_EXPIRATION_PERIOD_MS = 1000 * sys_email_settings.get(
-        'EMAIL_TOKEN_EXPIRATION_PERIOD_S', 24 * 60 * 60)
-    DEFAULT_FROM_EMAIL = 'no-reply@etabot.ai'
-else:
-    if not LOCAL_MODE:
-        raise NameError('cannot load sys_email_settings as its not in custom_settings.json')
-    else:
-        logging.warning('cannot load sys_email_settings as its not in custom_settings.json')
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 api_url = HOST_URL + '/api/'
-logging.info('updating UI with api endpoint: "{}"'.format(api_url))
+logger.info('updating UI with api endpoint: "{}"'.format(api_url))
 byteOutput = subprocess.check_output(
     ['python', 'set_api_url.py', 'static/ng2_app', api_url],
     cwd='etabotapp/')
-print(byteOutput)
-logging.info(byteOutput.decode('UTF-8'))
+logger.debug(byteOutput)
+logger.info(byteOutput.decode('UTF-8'))
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '../static'
@@ -318,16 +441,21 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_DEFAULT_QUEUE = 'etabotqueue'
-CELERY_RESULT_BACKEND = None  # Disabling the results backend
+CELERY_RESULT_BACKEND = 'db+postgresql://{}:{}@{}:5432/{}'.format(
+    DATABASES['default']['USER'],
+    DATABASES['default']['PASSWORD'],
+    DATABASES['default']['HOST'],
+    DATABASES['default']['NAME'],
+)  # Disabling the results backend
 
 # Configuring the message broker for Celery Task Scheduling
 if custom_settings['MESSAGE_BROKER'].lower() == 'aws':
     # AWS Credentials
-    AWS_ACCESS_KEY_ID = custom_settings.get('AWS_ACCESS_KEY_ID')
-    AWS_SECRET_ACCESS_KEY = custom_settings.get('AWS_SECRET_ACCESS_KEY')
-    CELERY_DEFAULT_QUEUE = custom_settings.get('CELERY_DEFAULT_QUEUE', 'etabotqueue')
+    AWS_ACCESS_KEY_ID = get_key_value(custom_settings, 'AWS_ACCESS_KEY_ID')
+    AWS_SECRET_ACCESS_KEY = get_key_value(custom_settings, 'AWS_SECRET_ACCESS_KEY')
+    CELERY_DEFAULT_QUEUE = get_key_value(custom_settings, 'CELERY_DEFAULT_QUEUE', default='etabotqueue')
     if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
-        logging.warning(
+        logger.warning(
             'AWS credentials not found. Skipping Celery settings setup.')
     else:
         # Celery Task Scheduling
@@ -356,10 +484,10 @@ elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
         vhost=urllib.parse.quote(RMQ_VHOST, safe='')
     )
 
-    logging.debug('celery settings setup complete')
-logging.info('BROKER_URL: {}'.format(BROKER_URL))
-logging.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
-logging.debug('setting.py is done')
-
-import datetime
+    logger.debug('celery settings setup complete')
+logger.info('BROKER_URL: {}'.format(BROKER_URL))
+logger.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
+logger.debug('setting.py is done')
 EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=1)
+
+logger.error("This is a test of error notification.")

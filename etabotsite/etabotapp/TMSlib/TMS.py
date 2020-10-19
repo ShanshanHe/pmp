@@ -9,15 +9,18 @@ Python Version: 3.6
 import logging
 
 logging.debug('loading TMSlib.TMS')
-from enum import Enum
-import TMSlib.JIRA_API as JIRA_API
+print('loading TMSlib.TMS')
+
+import etabotapp.TMSlib.JIRA_API as JIRA_API
 logging.debug('loading TMSlib.TMS: loaded JIRA_API')
+print('loading TMSlib.TMS: loaded JIRA_API')
 import sys
 import datetime
-import user_activation
+from typing import List
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-
+import etabotapp.email_toolbox as email_toolbox
+print('TMS main import complete.')
 
 try:
     sys.path.append('etabot_algo/')
@@ -27,10 +30,10 @@ try:
 except Exception as e:
     logging.warning('cannot load ETApredict or ETAreport due to "{}"\
  Loading ETApredict_placeholder, ETAreport_placeholder instead'.format(e))
-    import TMSlib.ETApredict_placeholder as ETApredict
-    import TMSlib.ETAreport_placeholder as ETAreport
+    import etabotapp.TMSlib.ETApredict_placeholder as ETApredict
+    import etabotapp.TMSlib.ETAreport_placeholder as ETAreport
 logging.debug('loading TMSlib.TMS: done')
-
+print('loading TMSlib.TMS: done')
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
@@ -70,6 +73,7 @@ class ProtoTMS():
         raise NotImplementedError(
             'generate_projects_status_report is not implemented yet')
 
+
 class TMS_JIRA(ProtoTMS):
 
     default_open_status_values = ['Open', 'To Do', 'Selected for Development']
@@ -83,7 +87,7 @@ class TMS_JIRA(ProtoTMS):
         if task_system_schema is None:
             task_system_schema = {
                 'done_status_values': ['Done'],
-                'open_status_values': default_open_status_values
+                'open_status_values': self.default_open_status_values
             }
 
         ProtoTMS.__init__(
@@ -132,7 +136,7 @@ JIRA_wrapper: {}'.format(e))
         and fix credentials for account {}</h3></body></html>'.format(
                         self.server_end_point)
                     msg.attach(MIMEText(msg_body, 'html'))
-                    user_activation.ActivationProcessor.send_email(msg)
+                    email_toolbox.EmailWorker.send_email(msg)
                 else:
                     logging.warning('username is not email - \
 cannot send connectivity issue email')
@@ -149,12 +153,16 @@ cannot send connectivity issue email')
 # skipping saving connectivity status'.format(self.tms_config.owner_id))
         return result
 
-    def construct_extra_filter(self, project_names=None):
+    def construct_extra_filter(
+            self,
+            project_names: List[str]=None,
+            recent_time_period: str = None):
         extra_filter = ' AND type != "Epic" '
         project_filter_string = ''
         if project_names is not None and len(project_names) > 0:
             project_filter_string = ' AND project in ({})'.format(
                 ', '.join(["'{}'".format(p) for p in project_names]))
+
         # open_status_values = self.task_system_schema.get(
         #         'open_status_values',
         #         self.default_open_status_values)
@@ -164,12 +172,20 @@ cannot send connectivity issue email')
         #     '"{}"'.format(x)
         #     for x in open_status_values]
         # open_status_values_css = ', '.join(open_status_vals_list)
+        extra_filter += project_filter_string
+        if recent_time_period is not None:
+            extra_filter += ' AND resolutiondate > -{}'.format(
+                recent_time_period)
 
-        extra_filter = project_filter_string
         return extra_filter
 
-    def get_all_done_tasks_ranked(self, assignee=None, project_names=None):
-        extra_filter = self.construct_extra_filter(project_names=project_names)
+    def get_all_done_tasks_ranked(
+            self, assignee=None,
+            project_names=None,
+            recent_time_period: str = None):
+        extra_filter = self.construct_extra_filter(
+            project_names=project_names,
+            recent_time_period=recent_time_period)
         if self.jira is None:
             raise NameError('not connected to JIRA')
 
@@ -178,11 +194,12 @@ cannot send connectivity issue email')
 
         done_issues = self.jira.get_jira_issues(
             'assignee={assignee} AND status in ({done_status_values}) \
-ORDER BY Rank ASC'.format(
+{extra_filter} ORDER BY Rank ASC'.format(
                 assignee=assignee,
                 done_status_values=', '.join(
                     ['"{}"'.format(x) for x in self.task_system_schema.get(
-                        'done_status_values', ['Done'])])))
+                        'done_status_values', ['Done'])]),
+                extra_filter=extra_filter))
         logging.debug('acquired done tasks count: {}'.format(
             len(done_issues)))
         return done_issues
@@ -195,7 +212,7 @@ ORDER BY Rank ASC'.format(
             assignee = 'currentUser()'
         extra_filter = self.construct_extra_filter(project_names=project_names)
 
-        return (assignee, extra_filter)
+        return assignee, extra_filter
 
     def get_future_sprints_tasks_ranked(self, assignee=None, project_names=None):
         """Get all open tasks sorted by rank from future sprints.
@@ -211,7 +228,7 @@ AND sprint in futureSprints() {extra_filter} ORDER BY Rank ASC'.format(
                 assignee=assignee, extra_filter=extra_filter))
         return future_sprints_tasks
 
-    def get_all_open_tasks_ranked(self, assignee=None, project_names=None):
+    def get_all_open_tasks_ranked(self, assignee=None, project_names=None) -> List:
         """Get all open tasks sorted by rank.
 
         Sort buckets:
@@ -221,6 +238,7 @@ AND sprint in futureSprints() {extra_filter} ORDER BY Rank ASC'.format(
             open not open sprint
             backlog
         """
+        result = []
         (assignee, extra_filter) = self.prepare_for_get_tasks(
             assignee=assignee, project_names=project_names)
 
@@ -228,6 +246,7 @@ AND sprint in futureSprints() {extra_filter} ORDER BY Rank ASC'.format(
             'assignee={assignee} AND status="In Progress" \
 AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
                 assignee=assignee, extra_filter=extra_filter))
+        result += in_progress_issues_current_sprint
 
         if len(in_progress_issues_current_sprint) > 0:
             logging.debug('task sample')
@@ -240,44 +259,56 @@ AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
                 assignee=assignee,
                 extra_filter=extra_filter))
 
-        in_progress_issues = self.jira.get_jira_issues(
-            'assignee={assignee} AND status="In Progress" \
+        result += open_issues_current_sprint
+
+        open_issues_not_current_sprint = self.jira.get_jira_issues(
+            'assignee={assignee} AND status not in ("Done") \
 AND sprint not in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
                 assignee=assignee, extra_filter=extra_filter))
-
-        open_issues = self.jira.get_jira_issues(
-            'assignee={assignee} AND status not in ("In Progress", "Done") \
-AND sprint not in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
-                assignee=assignee,
-                extra_filter=extra_filter))
-
-        backlog_issues = self.jira.get_jira_issues(
-            'assignee={assignee} AND sprint = null \
-{extra_filter} ORDER BY Rank ASC'.format(
-                assignee=assignee,
-                extra_filter=extra_filter))
-
+        result += open_issues_not_current_sprint
+#
+#         in_progress_issues = self.jira.get_jira_issues(
+#             'assignee={assignee} AND status="In Progress" \
+# AND sprint not in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
+#                 assignee=assignee, extra_filter=extra_filter))
+#         result += in_progress_issues
+#
+#         open_issues = self.jira.get_jira_issues(
+#             'assignee={assignee} AND status not in ("In Progress", "Done") \
+# AND sprint not in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
+#                 assignee=assignee,
+#                 extra_filter=extra_filter))
+#         result += open_issues
+#
+#         backlog_issues = self.jira.get_jira_issues(
+#             'assignee={assignee} AND sprint = null \
+# {extra_filter} ORDER BY Rank ASC'.format(
+#                 assignee=assignee,
+#                 extra_filter=extra_filter))
+#         result += backlog_issues
         # else:
         #     open_issues_current_sprint = []
         #     open_issues = []
 
+#         logging.debug("""acquired open tasks counts:
+# in_progress_issues_current_sprint: {},
+# open_issues_current_sprint: {},
+# in_progress_issues: {},
+# open_issues: {}
+# backlog_issues: {}""".format(
+#                     len(in_progress_issues_current_sprint),
+#                     len(open_issues_current_sprint),
+#                     len(in_progress_issues),
+#                     len(open_issues),
+#                     len(backlog_issues)))
         logging.debug("""acquired open tasks counts:
 in_progress_issues_current_sprint: {},
 open_issues_current_sprint: {},
-in_progress_issues: {},
-open_issues: {}
-backlog_issues: {}""".format(
-                    len(in_progress_issues_current_sprint),
-                    len(open_issues_current_sprint),
-                    len(in_progress_issues),
-                    len(open_issues),
-                    len(backlog_issues)))
-
-        return in_progress_issues_current_sprint \
-            + open_issues_current_sprint \
-            + in_progress_issues \
-            + open_issues \
-            + backlog_issues
+open_issues_not_current_sprint: {}""".format(
+                            len(in_progress_issues_current_sprint),
+                            len(open_issues_current_sprint),
+                            len(open_issues_not_current_sprint)))
+        return result
 
 
 class TMSWrapper(TMS_JIRA):
@@ -286,7 +317,7 @@ class TMSWrapper(TMS_JIRA):
             tms_config,
             projects=None):
         """
-        Task Management System Wrapper - generalized TMS to 
+        Task Management System Wrapper - generalized TMS to
         support multiple platforms (JIRA, Asana, Trello, etc)
 
         Arguments:
@@ -345,12 +376,14 @@ server_end_point: {}, username_login: {}'.format(
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
         try:
             logging.debug('user_velocity_per_project: {}'.format(
-                self.ETApredict_obj.user_velocity_per_project))
+                self.ETApredict_obj.eta_engine.user_velocity_per_project))
         except Exception as e:
             logging.warning('user_velocity_per_project error: {}'.format(e))
         self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)
         logging.info('TMSwrapper: init_ETApredict finished. \
 Connectivity status: {}'.format(self.tms_config.connectivity_status))
+        logging.debug('self.ETApredict_obj.df_tasks_with_ETAs={}'.format(
+            self.ETApredict_obj.df_tasks_with_ETAs))
 
     def estimate_tasks(self, project_names=None, **kwargs):
         logging.info('Estimating tasks for TMS "{}", \
@@ -358,13 +391,16 @@ projects: "{}", hold tight!'.format(self, project_names))
         self.ETApredict_obj.generate_task_list_view_with_ETA(
             project_names, **kwargs)
 
-    def generate_projects_status_report(self):
+    def generate_projects_status_report(self, **kwargs):
         """Generate JSON with a report.
 
         To be reported periodically (e.g. daily) or on demand
         via email, dashboard, Slack, etc.
 
         """
-        report_json = ETAreport.generate_status_report(
+        if self.ETApredict_obj.df_tasks_with_ETAs is None:
+            self.estimate_tasks(**kwargs)
+        rg = ETAreport.ReportGenerator()
+        report_json = rg.generate_status_report(
             self.ETApredict_obj, **kwargs)
         return report_json
