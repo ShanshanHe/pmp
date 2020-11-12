@@ -9,12 +9,12 @@
 
     Python Version: 3.6
 """
+import threading
 import logging
-logging.debug('logging JIRA_API imports')
+import etabotapp.TMSlib.Atlassian_API as Atlassian_API
 from Crypto.Cipher import AES
 from jira import JIRA
-import threading
-import etabotapp.TMSlib.Atlassian_API as Atlassian_API
+
 JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
 JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
@@ -154,19 +154,19 @@ Errors: "{}"'.format(jira, errors_place))
         print('{}: got {} issues'.format(search_string, len(jira_issues)))
         return jira_issues
 
-    def get_team_members(self,project,get_all=True,timeFrame=365):
+    def get_team_members(self,project,get_all=True,time_frame=365):
         '''This function will gather all the team members in a given time range.
         Default is one 1 year'''
         #Error Checking
-        if(timeFrame < 0):
-            timeFrame = 365
-            
+        if time_frame < 0:
+            time_frame = 365
+
         returned_result_length = 50
         jira_issues = []
         search_string = 'project={project} AND \
             (created > -{timeFrame}d and created < now()) \
             AND assignee IS NOT EMPTY \
-            ORDER BY assignee'.format(project=project,timeFrame=timeFrame)
+            ORDER BY assignee'.format(project=project,timeFrame=time_frame)
 
         while get_all and returned_result_length == self.max_results_jira_api:
             all_issues_in_last_year = self.jira.search_issues(
@@ -188,11 +188,11 @@ Errors: "{}"'.format(jira, errors_place))
         # key. accountId is unique, so we avoid same displayName issues.
         team_members = {}
         for item in jira_issues:
-            accountId = item['fields']['assignee']['accountId']
-            if(accountId in team_members):
+            account_id = item['fields']['assignee']['accountId']
+            if account_id in team_members:
                 continue
 
-            displayName = item['fields']['assignee']['displayName']
-            team_members[accountId] = displayName
+            display_name = item['fields']['assignee']['displayName']
+            team_members[account_id] = display_name
 
         return team_members
