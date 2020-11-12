@@ -73,6 +73,7 @@ class ProtoTMS():
         raise NotImplementedError(
             'generate_projects_status_report is not implemented yet')
 
+
 class TMS_JIRA(ProtoTMS):
 
     default_open_status_values = ['Open', 'To Do', 'Selected for Development']

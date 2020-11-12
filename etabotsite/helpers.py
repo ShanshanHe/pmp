@@ -9,6 +9,9 @@ def ensure_keys_exist(d: Dict, keys: List[str]) -> None:
 
 
 def get_key_value(d: Dict, key, default=None) -> Any:
+    """Return value for the key either from the dict or environmental variable or default.
+    Raises error if value is not found and there is no default."""
+
     if key not in d:
         if key in os.environ:
             value = os.environ[key]
@@ -23,3 +26,13 @@ def get_key_value(d: Dict, key, default=None) -> Any:
         value = d[key]
         logging.info('key "{}" is in dict.')
     return value
+
+
+def deep_update_dict_with_environ(d: Dict):
+    for k, v in d.items():
+        if isinstance(v, dict):
+            deep_update_dict_with_environ(v)
+        else:
+            if k in os.environ:
+                d[k] = os.environ[k]
+                logging.info('updated {} with {}'.format(k, d[k]))
