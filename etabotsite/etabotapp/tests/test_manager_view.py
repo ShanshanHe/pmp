@@ -12,11 +12,13 @@ class TestJIRAwrapper(TestCase):
 
     def setUp(self):
         self.jira = None
-        self.server_end_point = 'https://api.atlassian.com/ex/jira/d1083787-4491-40c9-9581-8625f52baf7e'
+        self.server_end_point = '\
+        https://api.atlassian.com/ex/jira/d1083787-4491-40c9-9581-8625f52baf7e'
         self.username_login = test_tms_data['username']
         self.token = test_tms_data['password']
 
     def test_get_all_team_members(self):
+        """Test the get all team members functionality of JIRA API"""
         logging.debug("testing JIRA_wrapper")
         if self.token is not None:
             self.jira_wrapper = JIRA_API.JIRA_wrapper(
@@ -27,8 +29,8 @@ class TestJIRAwrapper(TestCase):
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             team_members = self.jira_wrapper.get_team_members(
                 project="ET",
-                timeFrame=-1)
+                time_frame=-1)
             logging.info(team_members)
-            self.assertTrue(type(team_members) is type({}))
+            self.assertTrue(isinstance(team_members,dict))
         else:
             logging.warning('no access token to test JIRA OAuth')
