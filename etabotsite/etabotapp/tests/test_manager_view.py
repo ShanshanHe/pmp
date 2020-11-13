@@ -28,7 +28,7 @@ class TestJIRAwrapper(TestCase):
                 TMSconfig=None)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             team_members = self.jira_wrapper.get_team_members(
-                project="ET",
+                project="ED",
                 time_frame=-1)
             logging.info(team_members)
             self.assertTrue(isinstance(team_members,dict))
