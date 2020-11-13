@@ -7,10 +7,12 @@ import logging
 logging.debug('loading jira api test')
 import etabotapp.TMSlib.JIRA_API as JIRA_API
 from django.test import TestCase
+from django.conf import settings
 
 
 
 logging.debug('imports done')
+test_tms_data = getattr(settings, "TEST_TMS_DATA", {})
 
 
 class FakeToken():
@@ -28,9 +30,9 @@ class TestJIRAwrapper(TestCase):
     def setUp(self):
         self.jira = None
         self.server_end_point = 'https://api.atlassian.com/ex/jira/d1083787-4491-40c9-9581-8625f52baf7e'
-        self.username_login = None
+        self.username_login = test_tms_data['username']
         logging.debug('creating fake token')
-        self.token = FakeToken({"need_to_setup":"shared_token_pull", "access_token": None})
+        self.token = FakeToken({"need_to_setup":"shared_token_pull", "access_token": 1})
         logging.debug('created fake token with access token:')
         logging.debug(self.token.access_token)
 
@@ -40,7 +42,7 @@ class TestJIRAwrapper(TestCase):
             self.jira_wrapper = JIRA_API.JIRA_wrapper(
                 self.server_end_point,
                 self.username_login,
-                password=None,
+                password=test_tms_data['password'],
                 TMSconfig=None)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             jira = self.jira_wrapper.jira
