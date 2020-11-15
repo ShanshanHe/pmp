@@ -45,16 +45,8 @@ try:
         prod_host_url = custom_settings['prod_host_url']
 
 except Exception as e:
-    logging.warning('cannot load custom_settings.json due to "{}"'.format(
+    logging.warning('cannot load custom_settings.json due to "{}". Loading default settings.'.format(
         e))
-    logging.info('loading default settings')
-    with open('default_settings.json') as f:
-        custom_settings = json.load(f)
-    logging.info('loaded default settings.')
-    deep_update_dict_with_environ(custom_settings)
-
-
-    logging.info('loading default settings.')
     with open('default_settings.json') as f:
         custom_settings = json.load(f)
     logging.info('loaded default settings.')

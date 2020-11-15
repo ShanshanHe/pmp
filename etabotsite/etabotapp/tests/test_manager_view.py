@@ -13,9 +13,9 @@ class TestJIRAwrapper(TestCase):
     def setUp(self):
         self.jira = None
         self.server_end_point = '\
-        https://api.atlassian.com/ex/jira/d1083787-4491-40c9-9581-8625f52baf7e'
+            https://api.atlassian.com/ex/jira/d1083787-4491-40c9-9581-8625f52baf7e'
         self.username_login = test_tms_data['username']
-        self.token = test_tms_data['password']
+        self.token = True
 
     def test_get_all_team_members(self):
         """Test the get all team members functionality of JIRA API"""
@@ -24,7 +24,7 @@ class TestJIRAwrapper(TestCase):
             self.jira_wrapper = JIRA_API.JIRA_wrapper(
                 self.server_end_point,
                 self.username_login,
-                password=self.token,
+                password=test_tms_data['password'],
                 TMSconfig=None)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             team_members = self.jira_wrapper.get_team_members(

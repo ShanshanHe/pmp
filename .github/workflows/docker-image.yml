@@ -51,7 +51,13 @@ jobs:
         JIRA_ENDPOINT: ${{ secrets.JIRA_ENDPOINT }}
         JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
         JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+        LOG_FILENAME_WITH_PATH: "/usr/src/app/logging/django_log.txt"
         MODE: "PYTEST"
       run: |
         docker-compose -f docker-compose-pytest-django.yml build --no-cache
         docker-compose -f docker-compose-pytest-django.yml up --force-recreate --exit-code-from django
+    - name: Expose Django logs
+      uses: actions/upload-artifact@v2
+      with:
+        name: django-logs
+        path: /usr/src/app/logging/django_log.txt
