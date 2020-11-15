@@ -393,6 +393,8 @@ TEST_TMS_DATA = {
     'connectivity_status': {}
 }
 
+logging.info('TEST_TMS_DATA username@endpoint: {}@{}'.format(
+    TEST_TMS_DATA['username'], TEST_TMS_DATA['password']))
 if TEST_TMS_DATA['username'] == '':
     logging.warning('test_tms_data username is an empty string. Some tests will not run.')
 
