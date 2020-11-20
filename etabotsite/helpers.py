@@ -26,7 +26,7 @@ def get_key_value(d: Dict, key, default=None) -> Any:
         value = d[key]
         logging.warning('key "{}" is already in dict.'.format(key))
     if isinstance(value, str) and len(value) == 0:
-        logging.warning('Zero length string for key "{}" value.')
+        logging.warning('Zero length string for key "{}" value.'.format(key))
     return value
 
 
