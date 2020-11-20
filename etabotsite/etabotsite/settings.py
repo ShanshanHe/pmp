@@ -44,7 +44,7 @@ except Exception as e:
         e))
     with open('default_settings.json') as f:
         custom_settings = json.load(f)
-    logging.info('loaded default settings.')
+    logging.warning('loaded default settings.')
     deep_update_dict_with_environ(custom_settings)
 
 if 'local_host_url' in custom_settings:

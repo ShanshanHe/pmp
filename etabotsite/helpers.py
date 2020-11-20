@@ -24,7 +24,7 @@ def get_key_value(d: Dict, key, default=None) -> Any:
                     'key "{}" must be either in a settings json file or environmental variable'.format(key))
     else:
         value = d[key]
-        logging.warning('key "{}" is already in dict.')
+        logging.warning('key "{}" is already in dict.'.format(key))
     return value
 
 
