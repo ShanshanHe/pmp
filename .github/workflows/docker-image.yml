@@ -58,6 +58,7 @@ jobs:
         docker-compose -f docker-compose-pytest-django.yml up --force-recreate --exit-code-from django
     - name: Expose Django logs
       uses: actions/upload-artifact@v2
+      if: always()
       with:
         name: django-logs
         path: /usr/src/app/logging/django_log.txt
