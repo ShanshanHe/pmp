@@ -15,7 +15,7 @@ def get_key_value(d: Dict, key, default=None) -> Any:
     if key not in d:
         if key in os.environ:
             value = os.environ[key]
-            logging.info('got key "{}" from environment.'.format(key))
+            logging.warning('got key "{}" from environment.'.format(key))
         else:
             if default is not None:
                 value = default
@@ -24,7 +24,9 @@ def get_key_value(d: Dict, key, default=None) -> Any:
                     'key "{}" must be either in a settings json file or environmental variable'.format(key))
     else:
         value = d[key]
-        logging.info('key "{}" is in dict.')
+        logging.warning('key "{}" is already in dict.'.format(key))
+    if isinstance(value, str) and len(value) == 0:
+        logging.warning('Zero length string for key "{}" value.'.format(key))
     return value
 
 

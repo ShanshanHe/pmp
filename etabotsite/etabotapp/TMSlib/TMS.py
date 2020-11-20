@@ -202,6 +202,7 @@ cannot send connectivity issue email')
                 extra_filter=extra_filter))
         logging.debug('acquired done tasks count: {}'.format(
             len(done_issues)))
+
         return done_issues
 
     def prepare_for_get_tasks(self, assignee=None, project_names=None):

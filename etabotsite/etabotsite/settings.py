@@ -38,27 +38,20 @@ try:
         custom_settings = json.load(f)
     logging.debug('loaded custom_settings.json with keys: \
 "{}"'.format(custom_settings.keys()))
-    if 'local_host_url' in custom_settings:
-        local_host_url = custom_settings['local_host_url']
-
-    if 'prod_host_url' in custom_settings:
-        prod_host_url = custom_settings['prod_host_url']
 
 except Exception as e:
-    logging.warning('cannot load custom_settings.json due to "{}"'.format(
+    logging.warning('cannot load custom_settings.json due to "{}". Loading default settings.'.format(
         e))
-    logging.info('loading default settings')
     with open('default_settings.json') as f:
         custom_settings = json.load(f)
-    logging.info('loaded default settings.')
+    logging.warning('loaded default settings.')
     deep_update_dict_with_environ(custom_settings)
 
+if 'local_host_url' in custom_settings:
+    local_host_url = custom_settings['local_host_url']
 
-    logging.info('loading default settings.')
-    with open('default_settings.json') as f:
-        custom_settings = json.load(f)
-    logging.info('loaded default settings.')
-    deep_update_dict_with_environ(custom_settings)
+if 'prod_host_url' in custom_settings:
+    prod_host_url = custom_settings['prod_host_url']
 
 
 CUSTOM_SETTINGS = custom_settings
@@ -99,7 +92,7 @@ log_filename_with_path = get_key_value(
     custom_settings, 'LOG_FILENAME_WITH_PATH', default='/usr/src/app/logging/django_log.txt')
 print('log_filename_with_path: {}'.format(log_filename_with_path))
 
-## Logging to File and Logging Configuration
+# Logging to File and Logging Configuration
 # Logger will modify root logger
 # Handlers's levels can be changed to meet the needs of the dev
 # django_console controls print outs to the console.
@@ -390,6 +383,7 @@ else:
         logger.warning('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
 
 TEST_TMS_CREDENTIALS = custom_settings.get('TEST_TMS_CREDENTIALS', {})
+logging.info('TEST_TMS_CREDENTIALS keys from custom_settings: {}'.format(TEST_TMS_CREDENTIALS.keys()))
 ensure_keys_exist(TEST_TMS_CREDENTIALS, ['JIRA_ENDPOINT', 'JIRA_USERNAME', "JIRA_TOKEN"])
 
 TEST_TMS_DATA = {
@@ -399,6 +393,11 @@ TEST_TMS_DATA = {
     'type': 'JI',
     'connectivity_status': {}
 }
+
+logging.info('TEST_TMS_DATA username@endpoint: {}@{}'.format(
+    TEST_TMS_DATA['username'], TEST_TMS_DATA['password']))
+if TEST_TMS_DATA['username'] == '':
+    logging.warning('test_tms_data username is an empty string. Some tests will not run.')
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
@@ -489,5 +488,8 @@ logger.info('BROKER_URL: {}'.format(BROKER_URL))
 logger.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
 logger.debug('setting.py is done')
 EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=1)
+
+
+
 
 logger.error("This is a test of error notification.")
