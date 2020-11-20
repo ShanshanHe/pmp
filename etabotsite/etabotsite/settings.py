@@ -383,6 +383,7 @@ else:
         logger.warning('cannot load AUTHLIB_OAUTH_CLIENTS as its not in custom_settings.json')
 
 TEST_TMS_CREDENTIALS = custom_settings.get('TEST_TMS_CREDENTIALS', {})
+logging.info('TEST_TMS_CREDENTIALS keys from custom_settings: {}'.format(TEST_TMS_CREDENTIALS.keys()))
 ensure_keys_exist(TEST_TMS_CREDENTIALS, ['JIRA_ENDPOINT', 'JIRA_USERNAME', "JIRA_TOKEN"])
 
 TEST_TMS_DATA = {
