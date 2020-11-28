@@ -7,6 +7,7 @@ from .models import parse_projects_for_TMS
 from django.contrib.auth.models import User
 import logging
 import etabotapp.eta_tasks as eta_tasks
+import datetime
 
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
@@ -32,7 +33,8 @@ following TMS entries ({}): {}'.format(
             result.task_id, tms, projects))
     return True
 
-def get_tms_by_id(tms_id):
+
+def get_tms_by_id(tms_id) -> TMS:
     logging.info('searching for TMS with id: {}'.format(tms_id))
     tms_list = TMS.objects.all().filter(
             pk=tms_id)
@@ -45,6 +47,7 @@ def get_tms_by_id(tms_id):
     else:
         tms = tms_list[0]
     return tms
+
 
 @shared_task
 def estimate_ETA_for_TMS_project_set_ids(
@@ -61,6 +64,7 @@ def estimate_ETA_for_TMS_project_set_ids(
         raise NameError('Simulating failure')
     eta_tasks.estimate_ETA_for_TMS(tms, projects_set, **params)
 
+
 @shared_task
 def parse_projects_for_tms_id(
         tms_id,
@@ -70,7 +74,13 @@ def parse_projects_for_tms_id(
     if tms is None:
         raise NameError('cannot find TMS with id {}'.format(tms_id))
 
-    parse_projects_for_TMS(tms, **params)
+    result = parse_projects_for_TMS(tms, **params)
+    tms.connectivity_status['description'] = '{} Import projects result: {}. \n {}'.format(
+        datetime.datetime.utcnow().isoformat(),
+        result,
+        tms.connectivity_status.get('description', ''))
+    tms.save()
+
 
 @shared_task
 def send_daily_project_report(**kwargs):

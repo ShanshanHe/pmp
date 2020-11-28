@@ -20,6 +20,7 @@ from typing import List
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import etabotapp.email_toolbox as email_toolbox
+# from etabotapp.views import TMS
 print('TMS main import complete.')
 
 try:
@@ -155,7 +156,7 @@ cannot send connectivity issue email')
 
     def construct_extra_filter(
             self,
-            project_names: List[str]=None,
+            project_names: List[str] = None,
             recent_time_period: str = None):
         extra_filter = ' AND type != "Epic" '
         project_filter_string = ''
@@ -315,7 +316,7 @@ open_issues_not_current_sprint: {}""".format(
 class TMSWrapper(TMS_JIRA):
     def __init__(
             self,
-            tms_config,
+            tms_config: 'TMS',
             projects=None):
         """
         Task Management System Wrapper - generalized TMS to
