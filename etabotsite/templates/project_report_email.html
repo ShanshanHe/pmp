@@ -112,6 +112,10 @@ It appears there were no open tasks selected for the report. Please modify filte
       {% if project.sprints.tasks.at_risk|length > 0 or project.sprints.tasks.off_track|length > 0 or project.sprints.tasks.overdue|length > 0%}
       The following tasks may not fit into sprint:
         <ul>
+        {% for p in project.sprints.tasks.overdue %}
+          <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
+        {% endfor %}
+
         {% for p in project.sprints.tasks.off_track %}
           <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
         {% endfor %}

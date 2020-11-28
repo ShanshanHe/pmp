@@ -17,7 +17,7 @@ from .permissions import IsOwnerOrReadOnly, IsOwner
 # import etabotapp.TMSlib.TMS as TMSlib
 # import etabotapp.TMSlib.data_conversion as dc
 from .user_activation import ActivationProcessor, ResponseCode
-# import etabotapp.email_toolbox
+import etabotapp.email_toolbox as email_toolbox
 # import threading
 import json
 # import mimetypes
@@ -288,14 +288,14 @@ class AtlassianOAuthCallback(APIView):
             try:
                 token['expires_in'] = int(token['expires_in'])
             except Exception as e:
-                token['expires_in'] = 3600*24*30
+                token['expires_in'] = 3600 * 24 * 30
         else:
-            token['expires_in'] = 3600*24*365
+            token['expires_in'] = 3600 * 24 * 365
 
         users_set = OAuth2CodeRequest.objects.all().filter(
             state=state)
 
-        if len(users_set)==0:
+        if len(users_set) == 0:
             error_message = 'no user found with such auth code request. please try again.'
             logging.warning(error_message)
             return Response(
@@ -309,7 +309,7 @@ class AtlassianOAuthCallback(APIView):
                 status=status.HTTP_400_BAD_REQUEST)
         else:
             pass
-        user=users_set[0].owner
+        user = users_set[0].owner
         logging.debug('user: {}, username {}'.format(
             user, user.username))
         token_item=OAuth2Token(
@@ -326,7 +326,6 @@ class AtlassianOAuthCallback(APIView):
         new_tms_ids = self.add_update_atlassian_tms(user, token_item)
         tms_ids_list_string = construct_new_tms_ids_query_params(new_tms_ids)
         return redirect('/tmss' + tms_ids_list_string)
-
 
     def add_update_atlassian_tms(self, owner, token_item):
         """Get all available systems for the token and pass to Django models.
@@ -367,12 +366,14 @@ class AtlassianOAuthCallback(APIView):
         logging.debug('add_update_atlassian_tms is done')
         return new_tms_ids
 
+
 def construct_new_tms_ids_query_params(new_tms_ids):
     tms_ids_list_string = ''
     if len(new_tms_ids) > 0:
         tms_ids_list_string = '?' + '&'.join([
             'new_tms_ids={}'.format(tms_id) for tms_id in new_tms_ids])
     return tms_ids_list_string
+
 
 def get_tms_set_by_id(request):
     """Return tms_set on success or request Response."""
@@ -397,6 +398,7 @@ def get_projects_by_tms(user, tms_id):
             owner=user,
             project_tms_id=tms_id)
     ]
+
 
 def check_celery_worker_available():
     logging.debug('checking celery workers availability')
@@ -528,5 +530,8 @@ class CeleryTaskStatusView(APIView):
         logging.debug('task status: {}'.format(
             celery.AsyncResult(task_id).status))
         return Response(
-            data={task_id: celery.AsyncResult(task_id).status},
+            data={
+                task_id: celery.AsyncResult(task_id).status,
+                '{}_result'.format(task_id):  celery.AsyncResult(task_id).result
+            },
             status=status.HTTP_200_OK)
