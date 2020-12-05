@@ -130,7 +130,6 @@ Errors: "{}"'.format(jira, errors_place))
             raise NameError('JIRA error: {}'.format(e))
         return jira
 
-
     def get_jira_issues(self, search_string, get_all=True):
         # Return list of jira issues using the search_string.
         logging.debug('jira search_string = "{}"'.format(search_string))
@@ -154,45 +153,27 @@ Errors: "{}"'.format(jira, errors_place))
         print('{}: got {} issues'.format(search_string, len(jira_issues)))
         return jira_issues
 
-    def get_team_members(self,project,get_all=True,time_frame=365):
-        '''This function will gather all the team members in a given time range.
-        Default is one 1 year'''
-        #Error Checking
+    def get_team_members(self, project, get_all=True, time_frame=365):
+        """This function will gather all the team members in a given time range.
+        Default is one 1 year"""
+        # Error Checking
         if time_frame < 0:
             time_frame = 365
 
-        returned_result_length = 50
-        jira_issues = []
         search_string = 'project={project} AND \
             (created > -{timeFrame}d and created < now()) \
             AND assignee IS NOT EMPTY \
-            ORDER BY assignee'.format(project=project,timeFrame=time_frame)
+            ORDER BY assignee'.format(project=project, timeFrame=time_frame)
 
-        while get_all and returned_result_length == self.max_results_jira_api:
-            all_issues_in_last_year = self.jira.search_issues(
-                search_string,
-                maxResults=self.max_results_jira_api,
-                startAt=len(jira_issues),
-                json_result=True)
-
-
-            if returned_result_length > self.max_results_jira_api:
-                raise NameError(
-                    'JIRA API problem: returned more results {} \
-                    than max = {}'.format(
-                        returned_result_length, self.max_results_jira_api))
-            returned_result_length = len(all_issues_in_last_year['issues'])
-            jira_issues += all_issues_in_last_year['issues']
+        jira_issues = self.get_jira_issues(search_string)
 
         # Gather Team members and create a dictionary using accountId as
         # key. accountId is unique, so we avoid same displayName issues.
         team_members = {}
         for item in jira_issues:
             account_id = item['fields']['assignee']['accountId']
-            if account_id in team_members:
-                continue
-
-            display_name = item['fields']['assignee']['displayName']
-            team_members[account_id] = display_name
+            if account_id not in team_members:
+                display_name = item['fields']['assignee']['displayName']
+                team_members[account_id] = display_name
 
         return team_members

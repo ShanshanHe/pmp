@@ -43,7 +43,7 @@ TMS_TYPES = (
     )
 
 
-class ProtoTMS():
+class ProtoTMS:
     """
         TMS = Task Management System
         prototype for any TMS class to standardize critical methods and proprties
@@ -95,7 +95,7 @@ class TMS_JIRA(ProtoTMS):
             self, server_end_point, username_login, task_system_schema)
 
         self.jira = None
-        logging.debug('TMS_JIRA initalized')
+        logging.debug('TMS_JIRA initialized')
 
     def connect_to_TMS(self, update_tms=True):
         """Create self.jira object, Return None if connected or error string otherwise.
@@ -122,7 +122,7 @@ JIRA_wrapper: {}'.format(e))
             self.tms_config.connectivity_status = {
                 'status': 'error',
                 'description': 'connectivity issue: {}'.format(e)}
-            result = "cannot connnect to TMS JIRA due to {}".format(e)
+            result = "cannot connect to TMS JIRA due to {}".format(e)
             if update_tms:
                 logging.info(
                     'sending email about connectivity issue to: "{}".'.format(
@@ -154,11 +154,15 @@ cannot send connectivity issue email')
 # skipping saving connectivity status'.format(self.tms_config.owner_id))
         return result
 
+    @staticmethod
     def construct_extra_filter(
-            self,
+            assignee: str = None,
             project_names: List[str] = None,
             recent_time_period: str = None):
         extra_filter = ' AND type != "Epic" '
+        if assignee is not None:
+            extra_filter += 'assignee = {assignee}'.format(assignee=assignee)
+
         project_filter_string = ''
         if project_names is not None and len(project_names) > 0:
             project_filter_string = ' AND project in ({})'.format(
@@ -186,15 +190,13 @@ cannot send connectivity issue email')
             recent_time_period: str = None):
         extra_filter = self.construct_extra_filter(
             project_names=project_names,
+            assignee=assignee,
             recent_time_period=recent_time_period)
         if self.jira is None:
             raise NameError('not connected to JIRA')
 
-        if assignee is None:
-            assignee = 'currentUser()'
-
         done_issues = self.jira.get_jira_issues(
-            'assignee={assignee} AND status in ({done_status_values}) \
+            'status in ({done_status_values}) \
 {extra_filter} ORDER BY Rank ASC'.format(
                 assignee=assignee,
                 done_status_values=', '.join(
@@ -210,22 +212,20 @@ cannot send connectivity issue email')
         if self.jira is None:
             raise NameError('not connected to JIRA')
 
-        if assignee is None:
-            assignee = 'currentUser()'
         extra_filter = self.construct_extra_filter(project_names=project_names)
 
-        return assignee, extra_filter
+        return extra_filter
 
     def get_future_sprints_tasks_ranked(self, assignee=None, project_names=None):
         """Get all open tasks sorted by rank from future sprints.
 
         Return list of tasks.
         """
-        (assignee, extra_filter) = self.prepare_for_get_tasks(
+        extra_filter = self.prepare_for_get_tasks(
             assignee=assignee, project_names=project_names)
 
         future_sprints_tasks = self.jira.get_jira_issues(
-            'assignee={assignee} AND status != "Done" \
+            'status != "Done" \
 AND sprint in futureSprints() {extra_filter} ORDER BY Rank ASC'.format(
                 assignee=assignee, extra_filter=extra_filter))
         return future_sprints_tasks
@@ -241,11 +241,11 @@ AND sprint in futureSprints() {extra_filter} ORDER BY Rank ASC'.format(
             backlog
         """
         result = []
-        (assignee, extra_filter) = self.prepare_for_get_tasks(
+        extra_filter = self.prepare_for_get_tasks(
             assignee=assignee, project_names=project_names)
 
         in_progress_issues_current_sprint = self.jira.get_jira_issues(
-            'assignee={assignee} AND status="In Progress" \
+            'status="In Progress" \
 AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
                 assignee=assignee, extra_filter=extra_filter))
         result += in_progress_issues_current_sprint
@@ -256,7 +256,7 @@ AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
             logging.debug(in_progress_issues_current_sprint[0].fields.summary)
 
         open_issues_current_sprint = self.jira.get_jira_issues(
-            'assignee={assignee} AND status not in ("In Progress", "Done") \
+            'status not in ("In Progress", "Done") \
 AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
                 assignee=assignee,
                 extra_filter=extra_filter))
@@ -264,9 +264,9 @@ AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
         result += open_issues_current_sprint
 
         open_issues_not_current_sprint = self.jira.get_jira_issues(
-            'assignee={assignee} AND status not in ("Done") \
+            'status not in ("Done") \
 AND sprint not in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
-                assignee=assignee, extra_filter=extra_filter))
+                extra_filter=extra_filter))
         result += open_issues_not_current_sprint
 #
 #         in_progress_issues = self.jira.get_jira_issues(
@@ -350,7 +350,7 @@ projects: {}'.format(tms_config, projects))
 
         logging.debug('allowed TMS types: "{}"'.format(TMS_TYPES))
         if self.TMS_type == TMS_TYPES[0][0]:
-            logging.debug('initalizing TMS JIRA class')
+            logging.debug('initializing TMS JIRA class')
             cloudid = None
             if tms_config.params is not None:
                 cloudid = tms_config.params.get('id')
@@ -374,6 +374,7 @@ server_end_point: {}, username_login: {}'.format(
             self.server_end_point, self.username_login))
 
     def init_ETApredict(self, projects):
+        """Initializes ETApredict object: getting tasks, inferring TMS data schema."""
         logging.info('init_ETApredict started')
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
         try:

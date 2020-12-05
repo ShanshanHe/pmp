@@ -13,6 +13,7 @@ class BasicReport:
             deadlines_on_track: int,
             deadlines_total: int,
             params: Dict,
+            params_str: str,
             tms_name: str,
             project_names: List[str],
             aux=None):
@@ -22,6 +23,7 @@ class BasicReport:
         self.projects = projects
         self.aux = aux
         self.params = params
+        self.params_str = params_str
         self.tms_name = tms_name
         self.project_names = ''
         if project_names:

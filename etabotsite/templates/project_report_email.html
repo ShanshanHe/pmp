@@ -136,7 +136,7 @@ It appears there were no open tasks selected for the report. Please modify filte
 
 {% endif %}
 <br>
-Filters/parameters: {{ report.params|default:"include only active and future sprints"}}.<br><br>
+Filters/parameters: {{ report.params_str|default:"default parameters"}}.<br><br>
 <br>
 <br>
 Noticed a discrepancy or have a gift of feedback for us? Please email us at <a href="mailto:hello@etabot.ai">hello@etabot.ai</a>
@@ -147,6 +147,8 @@ The ETAbot Team<br>
 ____________________<br>
 <font color="grey">
   PS Here are excruciating details if you are interested:<br>
+  Raw Filters/parameters: {{ report.params|default:"default parameters"}}.
+  <br>
 {% for project in report.projects %}
   ___________________
   {{project.project_name}}

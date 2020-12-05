@@ -522,16 +522,22 @@ class CeleryTaskStatusView(APIView):
         Get celery task status for a particular celery task id.
         """
         # https://stackoverflow.com/questions/9034091/how-to-check-task-status-in-celery
+        logging.debug('CeleryTaskStatusView GET started')
         task_id = id
+        logging.debug('CeleryTaskStatusView GET started with id={}'.format(id))
         if not task_id:
+            response_dict = {'error': 'Celery task id not provided!'}
+            logging.debug('CeleryTaskStatusView GET returning {}'.format(response_dict))
             return Response(
-                {'error': 'Celery task id not provided!'},
+                response_dict,
                 status=status.HTTP_400_BAD_REQUEST)
         logging.debug('task status: {}'.format(
             celery.AsyncResult(task_id).status))
+        response_dict = {
+            task_id: celery.AsyncResult(task_id).status,
+            '{}_result'.format(task_id): str(celery.AsyncResult(task_id).result)
+        }
+        logging.debug('CeleryTaskStatusView GET returning {}'.format(response_dict))
         return Response(
-            data={
-                task_id: celery.AsyncResult(task_id).status,
-                '{}_result'.format(task_id):  celery.AsyncResult(task_id).result
-            },
+            data=response_dict,
             status=status.HTTP_200_OK)

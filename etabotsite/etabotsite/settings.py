@@ -114,7 +114,7 @@ logging_config = {
     },
     'handlers': {
         'django_console': {
-            'level':'WARNING',
+            'level': 'WARNING',
             'class': 'logging.StreamHandler',
             'formatter': 'django_format'
         },

@@ -15,13 +15,15 @@ celery.config_from_object('django.conf:settings')
 
 @shared_task
 def estimate_all():
-    """Estimate ETA for all tasks."""
+    """Estimate ETA for all tasks for all users."""
     tms_set = TMS.objects.all()
     logging.info(
         'starting generating ETAs for the \
 following TMS entries ({}): {}'.format(
             len(tms_set), tms_set))
-    global_params = {}
+    global_params = {
+        'push_updates_to_tms': True
+    }
     for tms in tms_set:
         projects = Project.objects.all().filter(
             project_tms_id=tms.id)
