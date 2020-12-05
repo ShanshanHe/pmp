@@ -312,7 +312,7 @@ class AtlassianOAuthCallback(APIView):
         user = users_set[0].owner
         logging.debug('user: {}, username {}'.format(
             user, user.username))
-        token_item=OAuth2Token(
+        token_item = OAuth2Token(
             owner=user,
             name='atlassian',
             token_type=token['token_type'],
@@ -357,10 +357,10 @@ class AtlassianOAuthCallback(APIView):
             else:
                 for existing_TMS in TMSs:
                     logging.debug('updating {}'.format(existing_TMS))
-                    existing_TMS.params=resource
-                    existing_TMS.endpoint=resource['url']
-                    existing_TMS.name=resource.get('name')
-                    existing_TMS.oauth2_token=token_item
+                    existing_TMS.params = resource
+                    existing_TMS.endpoint = resource['url']
+                    existing_TMS.name = resource.get('name')
+                    existing_TMS.oauth2_token = token_item
                     existing_TMS.save()
                     logging.debug('updated {}'.format(existing_TMS))
         logging.debug('add_update_atlassian_tms is done')

@@ -161,7 +161,7 @@ cannot send connectivity issue email')
             recent_time_period: str = None):
         extra_filter = ' AND type != "Epic" '
         if assignee is not None:
-            extra_filter += 'assignee = {assignee}'.format(assignee=assignee)
+            extra_filter += 'AND assignee = {assignee}'.format(assignee=assignee)
 
         project_filter_string = ''
         if project_names is not None and len(project_names) > 0:

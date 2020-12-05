@@ -155,7 +155,13 @@ Errors: "{}"'.format(jira, errors_place))
 
     def get_team_members(self, project, get_all=True, time_frame=365):
         """This function will gather all the team members in a given time range.
-        Default is one 1 year"""
+        Default is one 1 year.
+        TODO: one issue at a time search request to mitigate max results limitation:
+            search assignee != None limit = 1 -> assignees.append(new_assignee)
+            repeat until no results: search assignee != None limit = 1 and assignee not in {assignees}
+
+        TODO: extract 'emailAddress'
+        """
         # Error Checking
         if time_frame < 0:
             time_frame = 365
@@ -170,9 +176,11 @@ Errors: "{}"'.format(jira, errors_place))
         # Gather Team members and create a dictionary using accountId as
         # key. accountId is unique, so we avoid same displayName issues.
         team_members = {}
-        for item in jira_issues:
+        for jira_issue in jira_issues:
+            item = jira_issue.raw
             account_id = item['fields']['assignee']['accountId']
             if account_id not in team_members:
+                logging.debug(item['fields']['assignee'])
                 display_name = item['fields']['assignee']['displayName']
                 team_members[account_id] = display_name
 

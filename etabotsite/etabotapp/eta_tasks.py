@@ -4,10 +4,12 @@ import etabotapp.TMSlib.data_conversion as dc
 import etabotapp.TMSlib.TMS as TMSlib
 import logging
 import etabotapp.email_reports as email_reports
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from typing import List
+from etabotapp.models import TMS, Project
 
-def estimate_ETA_for_TMS(tms, projects_set, **kwargs):
+
+def estimate_ETA_for_TMS(
+        tms: TMS, projects_set: List[Project], **kwargs):
     """Estimates ETA for a given TMS and projects_set.
 
     Arguments:

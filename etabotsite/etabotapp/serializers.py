@@ -155,7 +155,7 @@ class TMSSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError('Unable to log in due to "Unauthorized (401)"\
  error - please check username/email and password')
             elif 'cannot connnect to TMS JIRA' in error:
-                logging.debug('cannot connnect to TMS JIRA error.')
+                logging.debug('cannot connect to TMS JIRA error.')
                 captcha_sig = \
                     "'X-Authentication-Denied-Reason': 'CAPTCHA_CHALLENGE"
                 if captcha_sig in error:
@@ -182,6 +182,7 @@ administrator to disable CAPTCHA.'
                 raise serializers.ValidationError('Unrecognized error has occurred - please check\
 inputs and try again. If the issue persists, please report the issue to \
 hello@etabot.ai')
+
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Serializer to map the model instance into json format."""
