@@ -23,6 +23,7 @@ class ReportGenerator:
               'deadlines_on_track': 3,
               'deadlines_total': 4,
               'params': {},
+              'params_str': 'taram param params',
               'tms_name': 'JIRA-example',
               'project_names': ['Cheburashka', 'Buckwheat'],
               'projects': [
