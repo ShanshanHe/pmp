@@ -224,10 +224,11 @@ cannot send connectivity issue email')
         extra_filter = self.prepare_for_get_tasks(
             assignee=assignee, project_names=project_names)
 
-        future_sprints_tasks = self.jira.get_jira_issues(
-            'status != "Done" \
-AND sprint in futureSprints() {extra_filter} ORDER BY Rank ASC'.format(
-                assignee=assignee, extra_filter=extra_filter))
+        jql_query = 'status != "Done" \
+AND sprint in futureSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
+                assignee=assignee, extra_filter=extra_filter)
+        future_sprints_tasks = self.jira.get_jira_issues(jql_query)
+        logging.debug('get_future_sprints_tasks_ranked JQL query: "{}"'.format(jql_query))
         return future_sprints_tasks
 
     def get_all_open_tasks_ranked(self, assignee=None, project_names=None) -> List:
@@ -265,44 +266,10 @@ AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
 
         open_issues_not_current_sprint = self.jira.get_jira_issues(
             'status not in ("Done") \
-AND sprint not in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
+AND sprint not in openSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
                 extra_filter=extra_filter))
         result += open_issues_not_current_sprint
-#
-#         in_progress_issues = self.jira.get_jira_issues(
-#             'assignee={assignee} AND status="In Progress" \
-# AND sprint not in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
-#                 assignee=assignee, extra_filter=extra_filter))
-#         result += in_progress_issues
-#
-#         open_issues = self.jira.get_jira_issues(
-#             'assignee={assignee} AND status not in ("In Progress", "Done") \
-# AND sprint not in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
-#                 assignee=assignee,
-#                 extra_filter=extra_filter))
-#         result += open_issues
-#
-#         backlog_issues = self.jira.get_jira_issues(
-#             'assignee={assignee} AND sprint = null \
-# {extra_filter} ORDER BY Rank ASC'.format(
-#                 assignee=assignee,
-#                 extra_filter=extra_filter))
-#         result += backlog_issues
-        # else:
-        #     open_issues_current_sprint = []
-        #     open_issues = []
 
-#         logging.debug("""acquired open tasks counts:
-# in_progress_issues_current_sprint: {},
-# open_issues_current_sprint: {},
-# in_progress_issues: {},
-# open_issues: {}
-# backlog_issues: {}""".format(
-#                     len(in_progress_issues_current_sprint),
-#                     len(open_issues_current_sprint),
-#                     len(in_progress_issues),
-#                     len(open_issues),
-#                     len(backlog_issues)))
         logging.debug("""acquired open tasks counts:
 in_progress_issues_current_sprint: {},
 open_issues_current_sprint: {},
@@ -395,15 +362,16 @@ projects: "{}", hold tight!'.format(self, project_names))
             project_names, **kwargs)
 
     def generate_projects_status_report(self, **kwargs):
-        """Generate JSON with a report.
+        """Generate list of report objects.
 
         To be reported periodically (e.g. daily) or on demand
         via email, dashboard, Slack, etc.
 
         """
         if self.ETApredict_obj.df_tasks_with_ETAs is None:
+            logging.warning('self.ETApredict_obj.df_tasks_with_ETAs is None. starting self.estimate_tasks')
             self.estimate_tasks(**kwargs)
         rg = ETAreport.ReportGenerator()
-        report_json = rg.generate_status_report(
+        reports = rg.generate_status_report(
             self.ETApredict_obj, **kwargs)
-        return report_json
+        return reports

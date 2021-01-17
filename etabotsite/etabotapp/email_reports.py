@@ -10,6 +10,7 @@ import base64
 import logging
 import smtplib
 import time
+from typing import List
 
 from django.conf import settings
 # from django.contrib.auth.models import User
@@ -38,10 +39,10 @@ class EmailReportProcess(object):
         email_toolbox.EmailWorker.send_email(msg)
 
     @staticmethod
-    def generate_html_report(user, formatted_report: BasicReport):
+    def generate_html_report(user, formatted_reports: List[BasicReport]):
         msg_body = render_to_string('project_report_email.html', {
             'username': user.username,
-            'report': formatted_report})
+            'reports': formatted_reports})
         return msg_body
 
     @staticmethod

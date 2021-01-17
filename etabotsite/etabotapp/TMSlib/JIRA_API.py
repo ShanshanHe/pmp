@@ -67,8 +67,6 @@ class JIRA_wrapper():
         logging.debug('authenticating with JIRA ({}, {})...'.format(
             username, options.get('server', 'unkown server')))
 
-        jira = None
-
         try:
             jira_place = []
             errors_place = {}
@@ -77,7 +75,7 @@ class JIRA_wrapper():
                 logging.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
-                    if auth_method=='password':
+                    if auth_method == 'password':
                         logging.debug('using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
@@ -92,7 +90,7 @@ class JIRA_wrapper():
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'
                         logging.debug('test jira query with search string: {}'.format(search_string))
-                        res =jira.search_issues(search_string)
+                        res = jira.search_issues(search_string)
                         logging.debug('search result: {}'.format(res))
                         logging.info('found {} issues'.format(len(res)))
                     logging.debug('Authenticated with JIRA. {}'.format(jira))
@@ -150,7 +148,7 @@ Errors: "{}"'.format(jira, errors_place))
             returned_result_length = len(jira_issues_batch)
             jira_issues += jira_issues_batch
 
-        print('{}: got {} issues'.format(search_string, len(jira_issues)))
+        logging.info('{}: got {} issues'.format(search_string, len(jira_issues)))
         return jira_issues
 
     def get_team_members(self, project, get_all=True, time_frame=365):

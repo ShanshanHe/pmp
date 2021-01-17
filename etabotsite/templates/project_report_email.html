@@ -35,6 +35,8 @@
   </style>
 </head>
 {% autoescape off %}
+{% for report in reports %}
+
 Here is your report for your projects {{ report.project_names }} in {{ report.tms_name }}<br>
 {% if report.projects|length == 0 %}
 It appears there were no open tasks selected for the report. Please modify filters and/or go to <a href="https://app.etabot.ai/tmss">accounts page</a> to ensure your projects are connected to ETAbot.
@@ -137,17 +139,26 @@ It appears there were no open tasks selected for the report. Please modify filte
 {% endif %}
 <br>
 Filters/parameters: {{ report.params_str|default:"default parameters"}}.<br><br>
+____________________<br>
+
+
+{% endfor %}
+
 <br>
+Raw Filters/parameters: {{ report.params|default:"default parameters"}}.
 <br>
 Noticed a discrepancy or have a gift of feedback for us? Please email us at <a href="mailto:hello@etabot.ai">hello@etabot.ai</a>
 <br>
 <br>
 Thanks,<br>
 The ETAbot Team<br>
-____________________<br>
+
+
 <font color="grey">
   PS Here are excruciating details if you are interested:<br>
-  Raw Filters/parameters: {{ report.params|default:"default parameters"}}.
+
+{% for report in reports %}
+
   <br>
 {% for project in report.projects %}
   ___________________
@@ -160,5 +171,7 @@ ____________________<br>
   ___________________<br>
   All projects: <br>
   {{ report.aux|default:"no aux info"}}
-</font>
+
+{% endfor %}
+  </font>
 {% endautoescape %}
