@@ -17,6 +17,7 @@ from etabotapp.email_alert import SendEmailAlert
 
 test_tms_data = getattr(settings, "TEST_TMS_DATA", {})
 
+
 class TestEmailAlert(TestCase):
     """
     This testing class will test all the functions associated with handling

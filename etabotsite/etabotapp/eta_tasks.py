@@ -8,23 +8,7 @@ from typing import List
 from etabotapp.models import TMS, Project
 
 
-def estimate_ETA_for_TMS(
-        tms: TMS, projects_set: List[Project], **kwargs):
-    """Estimates ETA for a given TMS and projects_set.
-
-    Arguments:
-        tms - Django model of TMS.
-
-    Todo:
-    add an option not to refresh velocities
-    https://etabot.atlassian.net/browse/ET-521
-    """
-
-    logging.debug(
-        'estimate_ETA_for_TMS started for TMS {}, projects: {}'.format(
-            tms, projects_set))
-    tms_wrapper = TMSlib.TMSWrapper(tms)
-    tms_wrapper.init_ETApredict(projects_set)
+def save_project_velocities(tms_wrapper, projects_set) -> List[str]:
     projects_dict = tms_wrapper.ETApredict_obj.task_system_schema['projects']
     project_names = []
 
@@ -45,39 +29,55 @@ def estimate_ETA_for_TMS(
                 project.project_settings))
 
         project_names.append(project.name)
+    return project_names
+
+
+def estimate_ETA_for_TMS(
+        tms: TMS, projects_set: List[Project], **kwargs) -> None:
+    """Estimates ETA for a given TMS and projects_set. This will generate and send reports, update velocities,
+    push ETAs to destinations.
+
+    Arguments:
+        tms - Django model of TMS.
+
+    Todo:
+    add an option not to refresh velocities
+    https://etabot.atlassian.net/browse/ET-521
+    """
+
+    logging.debug(
+        'estimate_ETA_for_TMS started for TMS {}, projects: {}'.format(
+            tms, projects_set))
+    tms_wrapper = TMSlib.TMSWrapper(tms)
+    tms_wrapper.init_ETApredict(projects_set, **kwargs)
+
+    project_names = save_project_velocities(tms_wrapper, projects_set)
 
     tms_wrapper.estimate_tasks(
         project_names=project_names,
         **kwargs)
+
     raw_status_reports = tms_wrapper.generate_projects_status_report(
         project_names=project_names, **kwargs)
-    if raw_status_reports is not None:
-        html_report = email_reports.EmailReportProcess.generate_html_report(
-            tms.owner, raw_status_reports)
 
-        email_msg = email_reports.EmailReportProcess.format_email_msg(
-            tms.owner, html_report=html_report)
-        email_reports.EmailReportProcess.send_email(email_msg)
+    html_report = email_reports.EmailReportProcess.generate_html_report(
+        tms.owner, raw_status_reports)
 
-        for project in projects_set:
-            project_settings = project.project_settings
-            project_settings['report'] = html_report
+    email_msg = email_reports.EmailReportProcess.format_email_msg(
+        tms.owner, html_report=html_report)
+    email_reports.EmailReportProcess.send_email(email_msg)
 
-            project_in_report = raw_status_reports[0].projects_dict.get(
-                project.name)  # note: [0] is team report --> # todo: add others
-            if project_in_report:
-                project_settings['deadlines'] = project_in_report.get('deadlines')
-                project_settings['sprints'] = project_in_report.get('sprints')
-                logging.debug("saving project settings deadlines: {}".format(project_settings['deadlines']))
-                logging.debug("saving project settings sprints: {}".format(project_settings['sprints']))
-            else:
-                logging.error('no project_in_report for {}'.format(project))
-            logging.debug("saving project settings: {}".format(project_settings))
-            project.project_settings = project_settings
+    for project in projects_set:
+        project_settings = project.project_settings
+        project_settings['report'] = html_report
 
-            project.save()
-    else:
-        logging.warning('raw_status_report is None.')
+        # todo: save basic report and report hierarchy in to project model
+
+        logging.debug("saving project settings: {}".format(project_settings))
+        project.project_settings = project_settings
+
+        project.save()
+
     logging.debug('estimate_ETA_for_TMS finished')
 
 

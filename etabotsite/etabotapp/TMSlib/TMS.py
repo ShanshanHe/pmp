@@ -16,7 +16,7 @@ logging.debug('loading TMSlib.TMS: loaded JIRA_API')
 print('loading TMSlib.TMS: loaded JIRA_API')
 import sys
 import datetime
-from typing import List
+from typing import List, Dict
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import etabotapp.email_toolbox as email_toolbox
@@ -340,7 +340,7 @@ projects: {}'.format(tms_config, projects))
 server_end_point: {}, username_login: {}'.format(
             self.server_end_point, self.username_login))
 
-    def init_ETApredict(self, projects):
+    def init_ETApredict(self, projects, **kwargs):
         """Initializes ETApredict object: getting tasks, inferring TMS data schema."""
         logging.info('init_ETApredict started')
         self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
@@ -349,7 +349,9 @@ server_end_point: {}, username_login: {}'.format(
                 self.ETApredict_obj.eta_engine.user_velocity_per_project))
         except Exception as e:
             logging.warning('user_velocity_per_project error: {}'.format(e))
-        self.ETApredict_obj.init_with_Django_models(self.tms_config, projects)
+
+        self.ETApredict_obj.init_with_Django_models(self.tms_config, projects, **kwargs)
+
         logging.info('TMSwrapper: init_ETApredict finished. \
 Connectivity status: {}'.format(self.tms_config.connectivity_status))
         logging.debug('self.ETApredict_obj.df_tasks_with_ETAs={}'.format(
@@ -361,7 +363,7 @@ projects: "{}", hold tight!'.format(self, project_names))
         self.ETApredict_obj.generate_task_list_view_with_ETA(
             project_names, **kwargs)
 
-    def generate_projects_status_report(self, **kwargs):
+    def generate_projects_status_report(self, **kwargs) -> Dict[str, 'HierarchicalReportNode']:
         """Generate list of report objects.
 
         To be reported periodically (e.g. daily) or on demand
@@ -372,6 +374,6 @@ projects: "{}", hold tight!'.format(self, project_names))
             logging.warning('self.ETApredict_obj.df_tasks_with_ETAs is None. starting self.estimate_tasks')
             self.estimate_tasks(**kwargs)
         rg = ETAreport.ReportGenerator()
-        reports = rg.generate_status_report(
+        reports = rg.generate_status_reports(
             self.ETApredict_obj, **kwargs)
         return reports
