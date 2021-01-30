@@ -15,18 +15,21 @@ class Measurement():
     def higher_estimate(self, confidence_level=0.95):
         return self.value * 1.2
 
-class ETAengine():
+
+class ETAengine:
     def __init__(self):
         self.projects = {}
+        self.user_velocity_per_project = {}
 
 
-class ETApredict():
+class ETApredict:
     def __init__(
             self,
             TMS_interface=None):
         self.TMS_interface = TMS_interface
         self.eta_engine = ETAengine()
         self.df_tasks_with_ETAs = None
+        self.task_system_schema = {'projects': {}}
         logging.debug('ETApredict placeholder initialized')
 
     def init_with_Django_models(
