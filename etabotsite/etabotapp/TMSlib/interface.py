@@ -1,7 +1,34 @@
+import logging
+from enum import Enum
 from typing import List, Dict, Union
-import duealert
 import queue
 from django.template.loader import render_to_string
+
+
+template_names_map = {
+    'due_alert.on_track': 'on_track',
+    'due_alert.at_risk': 'at_risk',
+    'due_alert.off_track': 'off_track',
+    'due_alert.unknown_eta': 'unknown',
+    'due_alert.overdue': 'overdue',
+    None: 'unknown alert status'
+}
+
+
+class DueAlert(Enum):
+    on_track = 0
+    at_risk = 1
+    off_track = 2
+    unknown_eta = 3
+    overdue = 4
+
+
+def get_template_name(x):
+    res = template_names_map.get(str(x))
+    if res is None:
+        logging.error('unknown due alert status {}'.format(x))
+        res = str(x)
+    return res
 
 
 class TargetDatesStats:
@@ -11,7 +38,7 @@ class TargetDatesStats:
         self.tasks = {}  # {'<template_name_alert_status>': List[task_Dict]}
         # task_Dict {'task': str, 'due_date': due_date, etc} todo make the task an object instead of the Dict
         self.counts = {'total': 0}  # {<duealert.template_names_map.values>: len(List[Dict])} above"""
-        for val in duealert.template_names_map.values():
+        for val in template_names_map.values():
             self.counts[val] = 0
             self.tasks[val] = []
 
@@ -26,7 +53,7 @@ class BasicReport:
             self,
             *,
             project: str,  # project name
-            project_status: duealert.DueAlert,
+            project_status: DueAlert,
             entity_uuid: str,
             entity_display_name: str,
             due_dates_stats: TargetDatesStats,
@@ -66,7 +93,7 @@ class HierarchicalReportNode:
     Example #2:
 
                 Beer production Division
-        Team Pale Ale       Team Lagger         Team Porter
+        Team Pale Ale       Team Lager         Team Porter
     Alex  Steve  Yarik       Chad  Koy             Jacob
 
     """
@@ -93,3 +120,4 @@ class HierarchicalReportNode:
 
     def all_reports(self) -> List[BasicReport]:
         return [node.report for node in self.all_nodes()]
+
