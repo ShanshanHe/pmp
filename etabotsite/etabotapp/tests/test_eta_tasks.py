@@ -48,7 +48,8 @@ class TestEmailNotificationsTestCases(TestCase):
                                open_status=self.project_open_status,
                                grace_period=self.project_grace_period,
                                work_hours=self.project_work_hours,
-                               vacation_days=self.project_vacation_days)
+                               vacation_days=self.project_vacation_days,
+                               project_settings={})
         self.project.save()
 
     def test_send_daily_project_report(self):
@@ -62,4 +63,6 @@ class TestEmailNotificationsTestCases(TestCase):
         self.assertEqual(1, 1)
 
     def test_estimate_ETA_for_TMS(self):
+        assert isinstance(self.project, Project)
+        assert isinstance(self.project.project_settings, dict)
         et.estimate_ETA_for_TMS(self.tms, [self.project])

@@ -78,8 +78,6 @@ class OAuth2TokenSerializer(serializers.ModelSerializer):
 #     #     user.is_active = False
 #     #     return user
 
-
-
 class TMSSerializer(serializers.ModelSerializer):
     """Serializer to map the model instance into json format."""
     owner = serializers.ReadOnlyField(source='owner.username')
@@ -143,8 +141,6 @@ class TMSSerializer(serializers.ModelSerializer):
         self.validate_Atlassian_API_key(instance)
         logging.debug('validate_tms_credential finished')
         return val_input
-
-
 
     def validate_Atlassian_API_key(self, instance):
         TMS_w1 = TMSlib.TMSWrapper(instance)

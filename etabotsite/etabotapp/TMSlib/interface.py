@@ -5,11 +5,12 @@ from django.template.loader import render_to_string
 
 
 class TargetDatesStats:
-    """Due dates/sprint stats."""
+    """Due dates/sprint stats that shows up in the reports."""
     def __init__(self):
         self.summary_table = '{obj}'  # string with HTML table with tasks' status statistics
-        self.tasks = {}  # {'<template_name_alert_status>': List[Dict]}
-        self.counts = {'total': 0}  # len(List[Dict]) above"""
+        self.tasks = {}  # {'<template_name_alert_status>': List[task_Dict]}
+        # task_Dict {'task': str, 'due_date': due_date, etc} todo make the task an object instead of the Dict
+        self.counts = {'total': 0}  # {<duealert.template_names_map.values>: len(List[Dict])} above"""
         for val in duealert.template_names_map.values():
             self.counts[val] = 0
             self.tasks[val] = []
@@ -17,24 +18,26 @@ class TargetDatesStats:
 
 class BasicReport:
     """
-    Basic report data object for an entity (e.g. person or team) in a project
+    Basic report data object for an entity (e.g. person or team) in a project.
+
+    Purpose - deliver a self-contained report that can be shared without additional context.
     """
     def __init__(
             self,
             *,
-            project: str,
-            project_on_track: Union[None, bool],
+            project: str,  # project name
+            project_status: duealert.DueAlert,
             entity_uuid: str,
             entity_display_name: str,
             due_dates_stats: TargetDatesStats,
             sprint_stats: TargetDatesStats,
-            velocity_report,
-            params: Dict,
-            params_str: str,
+            velocity_report,  # todo: create VelocityReport class
+            params: Dict,  # parameters that were used to generate the report
+            params_str: str,  # human readable params
             tms_name: str,
             aux=None):
         self.project = project
-        self.project_on_track = project_on_track
+        self.project_on_track = project_status
         self.entity_uuid = entity_uuid
         self.entity_display_name = entity_display_name
         self.due_dates_stats = due_dates_stats
@@ -53,6 +56,20 @@ class BasicReport:
 
 
 class HierarchicalReportNode:
+    """Tree data structure for hierarchical report.
+
+    Example #1:
+
+        Team A
+    Bob   Alice    Eve
+
+    Example #2:
+
+                Beer production Division
+        Team Pale Ale       Team Lagger         Team Porter
+    Alex  Steve  Yarik       Chad  Koy             Jacob
+
+    """
     def __init__(self, report: BasicReport, entity_uuid: str):
         self.parent = None
         self.report = report
