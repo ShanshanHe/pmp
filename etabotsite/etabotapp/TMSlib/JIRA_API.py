@@ -67,8 +67,6 @@ class JIRA_wrapper():
         logging.debug('authenticating with JIRA ({}, {})...'.format(
             username, options.get('server', 'unkown server')))
 
-        jira = None
-
         try:
             jira_place = []
             errors_place = {}
@@ -77,7 +75,7 @@ class JIRA_wrapper():
                 logging.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
-                    if auth_method=='password':
+                    if auth_method == 'password':
                         logging.debug('using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
@@ -92,7 +90,7 @@ class JIRA_wrapper():
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'
                         logging.debug('test jira query with search string: {}'.format(search_string))
-                        res =jira.search_issues(search_string)
+                        res = jira.search_issues(search_string)
                         logging.debug('search result: {}'.format(res))
                         logging.info('found {} issues'.format(len(res)))
                     logging.debug('Authenticated with JIRA. {}'.format(jira))
@@ -130,7 +128,6 @@ Errors: "{}"'.format(jira, errors_place))
             raise NameError('JIRA error: {}'.format(e))
         return jira
 
-
     def get_jira_issues(self, search_string, get_all=True):
         # Return list of jira issues using the search_string.
         logging.debug('jira search_string = "{}"'.format(search_string))
@@ -151,48 +148,38 @@ Errors: "{}"'.format(jira, errors_place))
             returned_result_length = len(jira_issues_batch)
             jira_issues += jira_issues_batch
 
-        print('{}: got {} issues'.format(search_string, len(jira_issues)))
+        logging.info('{}: got {} issues'.format(search_string, len(jira_issues)))
         return jira_issues
 
-    def get_team_members(self,project,get_all=True,time_frame=365):
-        '''This function will gather all the team members in a given time range.
-        Default is one 1 year'''
-        #Error Checking
+    def get_team_members(self, project, get_all=True, time_frame=365):
+        """This function will gather all the team members in a given time range.
+        Default is one 1 year.
+        TODO: one issue at a time search request to mitigate max results limitation:
+            search assignee != None limit = 1 -> assignees.append(new_assignee)
+            repeat until no results: search assignee != None limit = 1 and assignee not in {assignees}
+
+        TODO: extract 'emailAddress'
+        """
+        # Error Checking
         if time_frame < 0:
             time_frame = 365
 
-        returned_result_length = 50
-        jira_issues = []
         search_string = 'project={project} AND \
             (created > -{timeFrame}d and created < now()) \
             AND assignee IS NOT EMPTY \
-            ORDER BY assignee'.format(project=project,timeFrame=time_frame)
+            ORDER BY assignee'.format(project=project, timeFrame=time_frame)
 
-        while get_all and returned_result_length == self.max_results_jira_api:
-            all_issues_in_last_year = self.jira.search_issues(
-                search_string,
-                maxResults=self.max_results_jira_api,
-                startAt=len(jira_issues),
-                json_result=True)
-
-
-            if returned_result_length > self.max_results_jira_api:
-                raise NameError(
-                    'JIRA API problem: returned more results {} \
-                    than max = {}'.format(
-                        returned_result_length, self.max_results_jira_api))
-            returned_result_length = len(all_issues_in_last_year['issues'])
-            jira_issues += all_issues_in_last_year['issues']
+        jira_issues = self.get_jira_issues(search_string)
 
         # Gather Team members and create a dictionary using accountId as
         # key. accountId is unique, so we avoid same displayName issues.
         team_members = {}
-        for item in jira_issues:
+        for jira_issue in jira_issues:
+            item = jira_issue.raw
             account_id = item['fields']['assignee']['accountId']
-            if account_id in team_members:
-                continue
-
-            display_name = item['fields']['assignee']['displayName']
-            team_members[account_id] = display_name
+            if account_id not in team_members:
+                logging.debug(item['fields']['assignee'])
+                display_name = item['fields']['assignee']['displayName']
+                team_members[account_id] = display_name
 
         return team_members

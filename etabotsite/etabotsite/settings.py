@@ -114,7 +114,7 @@ logging_config = {
     },
     'handlers': {
         'django_console': {
-            'level':'WARNING',
+            'level': 'WARNING',
             'class': 'logging.StreamHandler',
             'formatter': 'django_format'
         },
@@ -239,7 +239,6 @@ INSTALLED_APPS = [
     'etabotapp',
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_framework_expiring_authtoken',
     'corsheaders',
     'encrypted_model_fields',
 ]
@@ -487,9 +486,6 @@ elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
 logger.info('BROKER_URL: {}'.format(BROKER_URL))
 logger.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
 logger.debug('setting.py is done')
-EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=1)
-
-
-
+# EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=1)
 
 logger.error("This is a test of error notification.")

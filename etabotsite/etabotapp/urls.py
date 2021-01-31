@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token
-from rest_framework_expiring_authtoken import views
+# from rest_framework_expiring_authtoken import views
 from .views import (
     UserViewSet, ProjectViewSet, TMSViewSet, EstimateTMSView,
     CeleryTaskStatusView)
@@ -29,7 +29,7 @@ urlpatterns += [
     url(r'^api/', include(router.urls)),
     url(r'^api/auth/',
         include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api/get-token/', views.obtain_expiring_auth_token),
+    url(r'^api/get-token/', obtain_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
     url(r'^api/job-status/(?P<id>.+)/$',
         CeleryTaskStatusView.as_view(), name="job_status"),

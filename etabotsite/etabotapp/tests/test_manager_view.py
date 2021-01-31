@@ -18,7 +18,8 @@ class TestJIRAwrapper(TestCase):
         self.token = True
 
     def test_get_all_team_members(self):
-        """Test the get all team members functionality of JIRA API"""
+        """Test the get all team members functionality of JIRA API.
+        """
         logging.debug("testing JIRA_wrapper")
         if self.token is not None:
             self.jira_wrapper = JIRA_API.JIRA_wrapper(
@@ -31,6 +32,6 @@ class TestJIRAwrapper(TestCase):
                 project="ETAbot-demo",
                 time_frame=-1)
             logging.info(team_members)
-            self.assertTrue(isinstance(team_members,dict))
+            self.assertTrue(isinstance(team_members, dict))
         else:
             logging.warning('no access token to test JIRA OAuth')
