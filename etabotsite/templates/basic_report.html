@@ -42,16 +42,22 @@
       {% endfor %}
       </ul>
     {% endif %}
+
+
   <br><hr>
   {{ basic_report.sprint_stats.summary_table }}
-  {% if basic_report.sprint_stats.tasks.at_risk|length > 0 or basic_report.sprint_stats.tasks.off_track|length > 0 or basic_report.sprint_stats.tasks.overdue|length > 0%}
-  The following tasks may not fit into sprint:
-    <ul>
+  {% if basic_report.sprint_stats.tasks.overdue|length > 0 %}
+    The sprint is overdue and these tasks are not done yet:
     {% for p in basic_report.sprint_stats.tasks.overdue %}
       <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
     {% endfor %}
+  {% endif %}
 
-    {% for p in basic_report.sprint_stats.off_track %}
+  {% if basic_report.sprint_stats.tasks.at_risk|length > 0 or basic_report.sprint_stats.tasks.off_track|length > 0 %}
+    <ul>
+    The following tasks may not fit into sprint:
+
+    {% for p in basic_report.sprint_stats.tasks.off_track %}
       <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
     {% endfor %}
 
