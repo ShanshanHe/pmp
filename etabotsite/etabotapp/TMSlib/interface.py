@@ -11,7 +11,8 @@ due_alert_names_map = {
     'DueAlert.off_track': 'off_track',
     'DueAlert.unknown': 'unknown',
     'DueAlert.overdue': 'overdue',
-    None: 'unknown'
+    None: 'unknown',
+    'None': 'unknown'
 }
 
 
@@ -120,4 +121,3 @@ class HierarchicalReportNode:
 
     def all_reports(self) -> List[BasicReport]:
         return [node.report for node in self.all_nodes()]
-

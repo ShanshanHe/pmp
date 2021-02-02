@@ -1,19 +1,17 @@
 """
     JIRA API access module
-    supports storing encrypted JIRA password locally and decrypting
-    using key in the macOS key chain
 
-    Author: Alex Radnaev (alexander.radnaev@gmail.com)
+    Original Author: Alex Radnaev (alexander.radnaev@gmail.com)
 
-    Status: Prortotype
+    Status: alpha
 
     Python Version: 3.6
 """
 import threading
 import logging
 import etabotapp.TMSlib.Atlassian_API as Atlassian_API
-from Crypto.Cipher import AES
 from jira import JIRA
+from typing import Dict
 
 JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
 JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.
@@ -21,7 +19,7 @@ JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
 logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
 
 
-class JIRA_wrapper():
+class JIRA_wrapper:
     """Handles communication with JIRA API."""
 
     def __init__(
@@ -151,15 +149,19 @@ Errors: "{}"'.format(jira, errors_place))
         logging.info('{}: got {} issues'.format(search_string, len(jira_issues)))
         return jira_issues
 
-    def get_team_members(self, project, get_all=True, time_frame=365):
+    def get_team_members(self, project: str, time_frame=365) -> Dict[str, str]:
         """This function will gather all the team members in a given time range.
         Default is one 1 year.
+
+        :param project: project name
+        :param time_frame: search for issues within past time_frame days
         TODO: one issue at a time search request to mitigate max results limitation:
             search assignee != None limit = 1 -> assignees.append(new_assignee)
             repeat until no results: search assignee != None limit = 1 and assignee not in {assignees}
 
         TODO: extract 'emailAddress'
         """
+        logging.debug('Getting team members started.')
         # Error Checking
         if time_frame < 0:
             time_frame = 365
@@ -181,5 +183,5 @@ Errors: "{}"'.format(jira, errors_place))
                 logging.debug(item['fields']['assignee'])
                 display_name = item['fields']['assignee']['displayName']
                 team_members[account_id] = display_name
-
+        logging.debug('Found {} team members: {}.'.format(len(team_members), team_members.keys()))
         return team_members
