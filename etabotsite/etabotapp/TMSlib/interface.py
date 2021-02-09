@@ -3,6 +3,7 @@ from enum import Enum
 from typing import List, Dict, Union
 import queue
 from django.template.loader import render_to_string
+import pandas as pd
 
 
 due_alert_names_map = {
@@ -121,3 +122,16 @@ class HierarchicalReportNode:
 
     def all_reports(self) -> List[BasicReport]:
         return [node.report for node in self.all_nodes()]
+
+
+class VelocityReport:
+    def __init__(self, summary: str, df_sprint_stats: pd.DataFrame, aux: str = ''):
+        self.summary = summary
+        self.df_sprint_stats = df_sprint_stats
+        self.html = self.to_html()
+        self.aux = aux
+
+    def to_html(self, **params) -> str:
+        if self.df_sprint_stats is not None:
+            return self.df_sprint_stats.rename(columns={'id': 'done issues in sprint'}).to_html(**params)
+        return 'No Velocity report html.'

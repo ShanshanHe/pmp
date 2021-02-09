@@ -57,10 +57,12 @@ The ETAbot Team<br>
 
 
 <font color="grey">
-  PS Here are excruciating details if you are interested:<br>
+  PS Here are excruciating details if you are interested.
+  Legend: scope is in storypoints units, time task estimate is in hours units.
+  CL - <a href="https://en.wikipedia.org/wiki/Confidence_interval">Confidence Level</a><br>
 
 {% for report in reports %}
-
+  {{ report.velocity_report.html }}
   {{ report.aux|default:"no aux info"}}
   <br>
   <br>

@@ -1,6 +1,6 @@
 {% autoescape off %}
 <h1>{{ basic_report.entity_display_name }} <> {{ basic_report.project|default:"Project name not found" }}.</h1>
-  {{basic_report.velocity_report|default:"Hmmm... Could not fetch velocity report"}}
+  {{basic_report.velocity_report.summary|default:"Hmmm... Could not fetch velocity report"}}
   {{ basic_report.due_dates_stats.summary_table }}
 
     <br>
