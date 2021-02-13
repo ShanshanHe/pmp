@@ -3,15 +3,17 @@ from enum import Enum
 from typing import List, Dict, Union
 import queue
 from django.template.loader import render_to_string
+import pandas as pd
 
 
-template_names_map = {
-    'due_alert.on_track': 'on_track',
-    'due_alert.at_risk': 'at_risk',
-    'due_alert.off_track': 'off_track',
-    'due_alert.unknown_eta': 'unknown',
-    'due_alert.overdue': 'overdue',
-    None: 'unknown alert status'
+due_alert_names_map = {
+    'DueAlert.on_track': 'on_track',
+    'DueAlert.at_risk': 'at_risk',
+    'DueAlert.off_track': 'off_track',
+    'DueAlert.unknown': 'unknown',
+    'DueAlert.overdue': 'overdue',
+    None: 'unknown',
+    'None': 'unknown'
 }
 
 
@@ -19,12 +21,12 @@ class DueAlert(Enum):
     on_track = 0
     at_risk = 1
     off_track = 2
-    unknown_eta = 3
+    unknown = 3
     overdue = 4
 
 
-def get_template_name(x):
-    res = template_names_map.get(str(x))
+def due_alert_display_name(x):
+    res = due_alert_names_map.get(str(x))
     if res is None:
         logging.error('unknown due alert status {}'.format(x))
         res = str(x)
@@ -38,7 +40,7 @@ class TargetDatesStats:
         self.tasks = {}  # {'<template_name_alert_status>': List[task_Dict]}
         # task_Dict {'task': str, 'due_date': due_date, etc} todo make the task an object instead of the Dict
         self.counts = {'total': 0}  # {<duealert.template_names_map.values>: len(List[Dict])} above"""
-        for val in template_names_map.values():
+        for val in due_alert_names_map.values():
             self.counts[val] = 0
             self.tasks[val] = []
 
@@ -121,3 +123,15 @@ class HierarchicalReportNode:
     def all_reports(self) -> List[BasicReport]:
         return [node.report for node in self.all_nodes()]
 
+
+class VelocityReport:
+    def __init__(self, summary: str, df_sprint_stats: pd.DataFrame, aux: str = ''):
+        self.summary = summary
+        self.df_sprint_stats = df_sprint_stats
+        self.html = self.to_html()
+        self.aux = aux
+
+    def to_html(self, **params) -> str:
+        if self.df_sprint_stats is not None:
+            return self.df_sprint_stats.rename(columns={'id': 'done issues in sprint'}).to_html(**params)
+        return 'No Velocity report html.'
