@@ -129,6 +129,8 @@ Errors: "{}"'.format(jira, errors_place))
     def get_jira_issues(self, search_string, get_all=True):
         # Return list of jira issues using the search_string.
         logging.debug('jira search_string = "{}"'.format(search_string))
+        if 'assignee' not in search_string:
+            logging.warning('Searching for all assignees.')
         returned_result_length = 50
         jira_issues = []
         while get_all and returned_result_length == self.max_results_jira_api:
