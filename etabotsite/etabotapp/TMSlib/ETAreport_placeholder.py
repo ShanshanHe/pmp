@@ -26,7 +26,7 @@ class ReportGenerator:
             raise NameError('ETApredict_obj must be provided.')
         report = {
             'project': 'Awesome Project',
-            'project_status': DueAlert.unknown_eta,
+            'project_status': DueAlert.unknown,
             'entity_uuid': '2358a398bcd',
             'entity_display_name': 'Cheburaskha',
             'due_dates_stats': TargetDatesStats(),
