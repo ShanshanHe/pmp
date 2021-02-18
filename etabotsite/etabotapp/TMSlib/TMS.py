@@ -159,7 +159,7 @@ cannot send connectivity issue email')
             assignee: str = None,
             project_names: List[str] = None,
             recent_time_period: str = None):
-        extra_filter = ' AND type != "Epic" '
+        extra_filter = ' AND (type = "Task" OR type = "Story") '
         if assignee is not None:
             extra_filter += 'AND assignee = {assignee}'.format(assignee=assignee)
 
@@ -198,7 +198,6 @@ cannot send connectivity issue email')
         done_issues = self.jira.get_jira_issues(
             'status in ({done_status_values}) \
 {extra_filter} ORDER BY Rank ASC'.format(
-                assignee=assignee,
                 done_status_values=', '.join(
                     ['"{}"'.format(x) for x in self.task_system_schema.get(
                         'done_status_values', ['Done'])]),
@@ -212,7 +211,7 @@ cannot send connectivity issue email')
         if self.jira is None:
             raise NameError('not connected to JIRA')
 
-        extra_filter = self.construct_extra_filter(project_names=project_names)
+        extra_filter = self.construct_extra_filter(project_names=project_names, assignee=assignee)
 
         return extra_filter
 
@@ -226,7 +225,7 @@ cannot send connectivity issue email')
 
         jql_query = 'status != "Done" \
 AND sprint in futureSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
-                assignee=assignee, extra_filter=extra_filter)
+            extra_filter=extra_filter)
         future_sprints_tasks = self.jira.get_jira_issues(jql_query)
         logging.debug('get_future_sprints_tasks_ranked JQL query: "{}"'.format(jql_query))
         return future_sprints_tasks
@@ -248,7 +247,7 @@ AND sprint in futureSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
         in_progress_issues_current_sprint = self.jira.get_jira_issues(
             'status="In Progress" \
 AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
-                assignee=assignee, extra_filter=extra_filter))
+                extra_filter=extra_filter))
         result += in_progress_issues_current_sprint
 
         if len(in_progress_issues_current_sprint) > 0:
@@ -259,7 +258,6 @@ AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
         open_issues_current_sprint = self.jira.get_jira_issues(
             'status not in ("In Progress", "Done") \
 AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
-                assignee=assignee,
                 extra_filter=extra_filter))
 
         result += open_issues_current_sprint
