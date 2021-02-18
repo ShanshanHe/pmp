@@ -230,7 +230,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 #         logging.debug('saving existing TMS - no need to parse projects')
 
 
-def parse_projects_for_TMS(instance, **kwargs):
+def parse_projects_for_TMS(instance, **kwargs) -> str:
     """Parse projects for the given TMS.
 
     Creates new Django model projects objects with parsed data.
@@ -291,7 +291,9 @@ def parse_projects_for_TMS(instance, **kwargs):
     response_message = ''
     if len(new_projects) > 0:
         response_message += "New projects found and parsed: {}.".format(
-            ', '.join(new_projects))        
+            ', '.join(new_projects))
+    else:
+        response_message += 'No new projects detected - please ensure there are done tasks assigned to you.'
     if len(updated_projects) > 0:
         response_message += " Updated existing projects: {}.".format(
             ', '.join(updated_projects))

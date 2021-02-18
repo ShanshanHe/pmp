@@ -11,6 +11,8 @@ from django.conf import settings
 from copy import copy
 
 test_tms_data = getattr(settings, "TEST_TMS_DATA", None)
+if test_tms_data['username'] == '':
+    logging.warning('test_tms_data username is an empty string. Some tests will not run.')
 
 
 def create_test_user():

@@ -42,6 +42,7 @@ app.conf.beat_schedule = settings.CUSTOM_SETTINGS.get(
 #     {'hour': 10})   # Midnight Pacific time is 8am UTC
 
 #Schedule our daily reports for 1am. An hour after the predicitions are.
+# commented out currently since sending out reports is done part of etabotapp.django_tasks.estimate_all
 # app.conf.beat_schedule = {
 #     'send_daily_reports': {
 #         'task':'etabotapp.django_tasks.send_daily_project_report',

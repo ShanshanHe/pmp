@@ -6,20 +6,16 @@ This script contains all the class information needed to send daily
 email reports to users.
 
 """
-import base64
 import logging
-import smtplib
-import time
+
+from typing import List, Dict
 
 from django.conf import settings
-# from django.contrib.auth.models import User
 from django.template.loader import render_to_string
-# from django.utils.encoding import force_bytes
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-# from enum import Enum
 import etabotapp.email_toolbox as email_toolbox
-from etabotapp.TMSlib.interface import BasicReport
+from etabotapp.TMSlib.interface import HierarchicalReportNode
 
 SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1")
 SYS_EMAIL = getattr(settings, "SYS_EMAIL", None)
@@ -38,10 +34,14 @@ class EmailReportProcess(object):
         email_toolbox.EmailWorker.send_email(msg)
 
     @staticmethod
-    def generate_html_report(user, formatted_report: BasicReport):
-        msg_body = render_to_string('project_report_email.html', {
+    def generate_html_report(user, reports: Dict[str, HierarchicalReportNode]):
+        formatted_reports = []
+        for project, project_report in reports.items():
+            for basic_report in project_report.all_reports():
+                formatted_reports.append(basic_report)
+        msg_body = render_to_string('report_email.html', {
             'username': user.username,
-            'report': formatted_report})
+            'reports': formatted_reports})
         return msg_body
 
     @staticmethod

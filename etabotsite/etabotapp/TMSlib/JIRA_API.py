@@ -1,27 +1,25 @@
 """
     JIRA API access module
-    supports storing encrypted JIRA password locally and decrypting
-    using key in the macOS key chain
 
-    Author: Alex Radnaev (alexander.radnaev@gmail.com)
+    Original Author: Alex Radnaev (alexander.radnaev@gmail.com)
 
-    Status: Prortotype
+    Status: alpha
 
     Python Version: 3.6
 """
-import logging
-logging.debug('logging JIRA_API imports')
-from Crypto.Cipher import AES
-from jira import JIRA
 import threading
+import logging
 import etabotapp.TMSlib.Atlassian_API as Atlassian_API
+from jira import JIRA
+from typing import Dict
+
 JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
-JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.            
+JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
 logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
 
 
-class JIRA_wrapper():
+class JIRA_wrapper:
     """Handles communication with JIRA API."""
 
     def __init__(
@@ -57,7 +55,7 @@ class JIRA_wrapper():
         elif self.TMSconfig is not None and self.TMSconfig.oauth2_token is not None:
             auth_method = 'oauth2'
             jira_timout_seconds = JIRA_TIMEOUT_FOR_OAUTH2_SECONDS
-        else:    
+        else:
             raise NameError('JIRA API key or TMSconfig with token must be provided')
 
         options = {
@@ -67,8 +65,6 @@ class JIRA_wrapper():
         logging.debug('authenticating with JIRA ({}, {})...'.format(
             username, options.get('server', 'unkown server')))
 
-        jira = None
-
         try:
             jira_place = []
             errors_place = {}
@@ -77,7 +73,7 @@ class JIRA_wrapper():
                 logging.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
-                    if auth_method=='password':
+                    if auth_method == 'password':
                         logging.debug('using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
@@ -87,12 +83,12 @@ class JIRA_wrapper():
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',
-                            'Content-Type': 'application/json'}     
-                        logging.debug('connecting with options: {}'.format(options))                      
+                            'Content-Type': 'application/json'}
+                        logging.debug('connecting with options: {}'.format(options))
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'
                         logging.debug('test jira query with search string: {}'.format(search_string))
-                        res =jira.search_issues(search_string) 
+                        res = jira.search_issues(search_string)
                         logging.debug('search result: {}'.format(res))
                         logging.info('found {} issues'.format(len(res)))
                     logging.debug('Authenticated with JIRA. {}'.format(jira))
@@ -130,10 +126,11 @@ Errors: "{}"'.format(jira, errors_place))
             raise NameError('JIRA error: {}'.format(e))
         return jira
 
-
     def get_jira_issues(self, search_string, get_all=True):
         # Return list of jira issues using the search_string.
         logging.debug('jira search_string = "{}"'.format(search_string))
+        if 'assignee' not in search_string:
+            logging.warning('Searching for all assignees.')
         returned_result_length = 50
         jira_issues = []
         while get_all and returned_result_length == self.max_results_jira_api:
@@ -151,5 +148,42 @@ Errors: "{}"'.format(jira, errors_place))
             returned_result_length = len(jira_issues_batch)
             jira_issues += jira_issues_batch
 
-        print('{}: got {} issues'.format(search_string, len(jira_issues)))
+        logging.info('{}: got {} issues'.format(search_string, len(jira_issues)))
         return jira_issues
+
+    def get_team_members(self, project: str, time_frame=365) -> Dict[str, str]:
+        """This function will gather all the team members in a given time range.
+        Default is one 1 year.
+
+        :param project: project name
+        :param time_frame: search for issues within past time_frame days
+        TODO: one issue at a time search request to mitigate max results limitation:
+            search assignee != None limit = 1 -> assignees.append(new_assignee)
+            repeat until no results: search assignee != None limit = 1 and assignee not in {assignees}
+
+        TODO: extract 'emailAddress'
+        """
+        logging.debug('Getting team members started.')
+        # Error Checking
+        if time_frame < 0:
+            time_frame = 365
+
+        search_string = 'project={project} AND \
+            (created > -{timeFrame}d and created < now()) \
+            AND assignee IS NOT EMPTY \
+            ORDER BY assignee'.format(project=project, timeFrame=time_frame)
+
+        jira_issues = self.get_jira_issues(search_string)
+
+        # Gather Team members and create a dictionary using accountId as
+        # key. accountId is unique, so we avoid same displayName issues.
+        team_members = {}
+        for jira_issue in jira_issues:
+            item = jira_issue.raw
+            account_id = item['fields']['assignee']['accountId']
+            if account_id not in team_members:
+                logging.debug(item['fields']['assignee'])
+                display_name = item['fields']['assignee']['displayName']
+                team_members[account_id] = display_name
+        logging.debug('Found {} team members: {}.'.format(len(team_members), team_members.keys()))
+        return team_members

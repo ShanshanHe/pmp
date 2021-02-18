@@ -14,6 +14,7 @@ services:
       - JIRA_ENDPOINT
       - JIRA_USERNAME
       - JIRA_TOKEN
+      - LOG_FILENAME_WITH_PATH
       - MODE
     build:
       context: .
@@ -21,8 +22,6 @@ services:
     volumes:
       - pmp-django-static:/usr/src/app/static
       - pmp-django-logging:/usr/src/app/logging
-    ports:
-      - 8000:8000
 
 volumes:
   pmp-django-static:
