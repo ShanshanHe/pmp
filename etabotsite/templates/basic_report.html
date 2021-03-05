@@ -1,6 +1,13 @@
 {% autoescape off %}
 <h1>{{ basic_report.entity_display_name }} <> {{ basic_report.project|default:"Project name not found" }}.</h1>
-  {{basic_report.velocity_report.summary|default:"Hmmm... Could not fetch velocity report"}}
+
+  Active members: <br>
+  <ul>
+  {% for active_member in basic_report.aux.active_team_members %}
+    <li>{{ active_member }}</li>
+  {% endfor %}
+  </ul>
+  {{ basic_report.velocity_report.summary|default:"Hmmm... Could not fetch velocity report"}}
   {{ basic_report.due_dates_stats.summary_table }}
 
     <br>
@@ -65,6 +72,15 @@
       <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
     {% endfor %}
     </ul>
+  {% endif %}
+
+  {% if basic_report.aux.inactive_team_members|length > 0 %}
+  Inactive members: <br>
+  <ul>
+  {% for inactive_member in basic_report.aux.inactive_team_members %}
+    <li>{{ inactive_member }}</li>
+  {% endfor %}
+  </ul>
   {% endif %}
 <hr>
 {% endautoescape %}
