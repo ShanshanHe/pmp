@@ -23,7 +23,7 @@ If you already know how to create a python virtual environment, you can skip thi
     create virtual environement following https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 E.g.:
 ```
-conda create -n etabot python=3.6
+conda create -n etabot python=3.9
 ```
 Activate
 ```
@@ -150,7 +150,9 @@ Ensure LOCAL_MODE is true in custom_settings.json to disable CORS for local deve
 Ensure correct python version in your environment
 
 ### RuntimeError: populate() isn't reentrant
-make sure dependencies are properly installed
+make sure dependencies are properly installed. to troubleshoot which dependencies, try replacing
+raise RuntimeError("populate() isn't reentrant") with self.app_configs = {}
+(ref: https://stackoverflow.com/questions/27093746/django-stops-working-with-runtimeerror-populate-isnt-reentrant)
 ####
 https://stackoverflow.com/questions/56275454/i-cant-install-psycopg2-with-python3-on-mac-ive-installed-python3-and-pip3
 
