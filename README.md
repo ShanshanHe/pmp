@@ -361,6 +361,10 @@ For compilers to find openssl you may need to set:
 For pkg-config to find openssl you may need to set:
 ```export PKG_CONFIG_PATH="/usr/local/opt/openssl/lib/pkgconfig"```
 
+## AttributeError: cffi library '_openssl' has no function
+```pip uninstall cryptography```
+```conda install cryptography```
+https://github.com/pyca/cryptography/issues/4187
 
 ### Issue "ERROR: Cannot uninstall 'certifi'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall."
 can be resolved with
