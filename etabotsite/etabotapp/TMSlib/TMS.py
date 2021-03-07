@@ -246,7 +246,7 @@ AND sprint in futureSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
 
         in_progress_issues_current_sprint = self.jira.get_jira_issues(
             'status="In Progress" \
-AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
+AND sprint in openSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
                 extra_filter=extra_filter))
         result += in_progress_issues_current_sprint
 
@@ -257,7 +257,7 @@ AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
 
         open_issues_current_sprint = self.jira.get_jira_issues(
             'status not in ("In Progress", "Done") \
-AND sprint in openSprints() {extra_filter} ORDER BY Rank ASC'.format(
+AND sprint in openSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
                 extra_filter=extra_filter))
 
         result += open_issues_current_sprint

@@ -23,7 +23,7 @@ If you already know how to create a python virtual environment, you can skip thi
     create virtual environement following https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html
 E.g.:
 ```
-conda create -n etabot python=3.6
+conda create -n etabot python=3.9
 ```
 Activate
 ```
@@ -75,7 +75,9 @@ For local development you can setup a postgres database in a few minutes using d
 
 
 ```docker run --name postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -v ~/dir/:/var/lib/postgresql/data -d postgres```
-
+this will create root account with:
+username: postgres
+password: password
 
 ```docker ps```
 
@@ -135,6 +137,8 @@ If needed, edit new migration files manually.
 Add migration files to commit.
 
 ## Troubleshooting
+
+
 ### production app.etabot.ai can't be reached
 Ensure that your /etc/hosts is not pointing to localhost
 
@@ -145,6 +149,12 @@ Ensure LOCAL_MODE is true in custom_settings.json to disable CORS for local deve
 ### TypeError: the JSON object must be str, not 'bytes'
 Ensure correct python version in your environment
 
+### RuntimeError: populate() isn't reentrant
+make sure dependencies are properly installed. to troubleshoot which dependencies, try replacing
+raise RuntimeError("populate() isn't reentrant") with self.app_configs = {}
+(ref: https://stackoverflow.com/questions/27093746/django-stops-working-with-runtimeerror-populate-isnt-reentrant)
+####
+https://stackoverflow.com/questions/56275454/i-cant-install-psycopg2-with-python3-on-mac-ive-installed-python3-and-pip3
 
 ## Testing
 
@@ -336,6 +346,12 @@ celery -A etabotsite beat -l INFO
 
 ### Issue "ImportError: The curl client requires the pycurl library."
 can be resolved on Mac with:
+
+```
+conda install pycurl
+```
+
+if that didn't work, try this:
 ```
 pip uninstall pycurl
 pip install --install-option="--with-openssl" --install-option="--openssl-dir=/usr/local/opt/openssl" pycurl

@@ -45,6 +45,21 @@ class TargetDatesStats:
             self.tasks[val] = []
 
 
+class VelocityReport:
+    def __init__(self, summary: str, df_sprint_stats: pd.DataFrame, aux: str = ''):
+        self.summary = summary
+        self.df_sprint_stats = df_sprint_stats  # rows - sprints, columns: scope, velocity, etc
+        self.df_velocity_vs_time = pd.DataFrame()  # rows - sprints, columns - entities/measureables
+        self.df_velocity_stats = pd.DataFrame()  # rows - stats (mean, std, sum), columns - entities/measureable stats
+        self.html = self.to_html()
+        self.aux = aux
+
+    def to_html(self, **params) -> str:
+        if self.df_sprint_stats is not None:
+            return self.df_sprint_stats.rename(columns={'id': 'done_issues in sprint'}).to_html(**params)
+        return 'No Velocity report html.'
+
+
 class BasicReport:
     """
     Basic report data object for an entity (e.g. person or team) in a project.
@@ -60,7 +75,7 @@ class BasicReport:
             entity_display_name: str,
             due_dates_stats: TargetDatesStats,
             sprint_stats: TargetDatesStats,
-            velocity_report,  # todo: create VelocityReport class
+            velocity_report: VelocityReport,
             params: Dict,  # parameters that were used to generate the report
             params_str: str,  # human readable params
             tms_name: str,
@@ -72,7 +87,10 @@ class BasicReport:
         self.due_dates_stats = due_dates_stats
         self.sprint_stats = sprint_stats
         self.velocity_report = velocity_report
-        self.aux = aux
+        if aux is None:
+            self.aux = {}
+        else:
+            self.aux = aux
         self.params = params
         self.params_str = params_str
         self.tms_name = tms_name
@@ -122,16 +140,3 @@ class HierarchicalReportNode:
 
     def all_reports(self) -> List[BasicReport]:
         return [node.report for node in self.all_nodes()]
-
-
-class VelocityReport:
-    def __init__(self, summary: str, df_sprint_stats: pd.DataFrame, aux: str = ''):
-        self.summary = summary
-        self.df_sprint_stats = df_sprint_stats
-        self.html = self.to_html()
-        self.aux = aux
-
-    def to_html(self, **params) -> str:
-        if self.df_sprint_stats is not None:
-            return self.df_sprint_stats.rename(columns={'id': 'done issues in sprint'}).to_html(**params)
-        return 'No Velocity report html.'

@@ -62,8 +62,9 @@ The ETAbot Team<br>
   CL - <a href="https://en.wikipedia.org/wiki/Confidence_interval">Confidence Level</a><br>
 
 {% for report in reports %}
+  <h2>{{ report.entity_display_name }}</h2>
   {{ report.velocity_report.html }}
-  {{ report.aux|default:"no aux info"}}
+  {{ report.aux.tasks_table|default:"no aux info"}}
   <br>
   <br>
 {% endfor %}
