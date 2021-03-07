@@ -26,7 +26,7 @@ from encrypted_model_fields.fields import EncryptedCharField
 import time
 
 from django.conf import settings
-from authlib.django.client import OAuth
+from authlib.integrations.django_client import OAuth
 
 
 class OAuth1Token(models.Model):

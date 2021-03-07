@@ -18,9 +18,9 @@ import logging
 
 
 router = DefaultRouter()
-router.register(r'users', UserViewSet, base_name='users')
-router.register(r'projects', ProjectViewSet, base_name='projects')
-router.register(r'tms', TMSViewSet, base_name='tms')
+router.register(r'users', UserViewSet, basename='users')
+router.register(r'projects', ProjectViewSet, basename='projects')
+router.register(r'tms', TMSViewSet, basename='tms')
 
 urlpatterns = staticfiles_urlpatterns()
 logging.debug('static urlpatterns: "{}"'.format(urlpatterns))
