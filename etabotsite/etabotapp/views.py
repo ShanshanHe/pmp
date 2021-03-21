@@ -262,11 +262,11 @@ class AtlassianOAuth(APIView):
 
 
 class AtlassianOAuthCallback(APIView):
-    """API for Atlassian to callback after concent screen."""
+    """API for Atlassian to callback after consent screen."""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        """Receieve authorization code from JIRA OAuth."""
+        """Receive authorization code from JIRA OAuth."""
         """Provided as a query parameter called code. This code can be
         exchanged for an access token.
 
