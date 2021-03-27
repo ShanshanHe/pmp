@@ -12,7 +12,7 @@
     <li><a href="#entity-report-{{active_member}}-{{basic_report.project}}">{{ active_member }}</a></li>
   {% endfor %}
   </ul>
-    {{basic_report.velocity_report.images.velocity_and_predictability }}
+
   {{ basic_report.velocity_report.summary|default:"Hmmm... Could not fetch velocity report"}}
   {{ basic_report.due_dates_stats.summary_table }}
 
