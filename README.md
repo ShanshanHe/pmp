@@ -424,6 +424,8 @@ DOCKER_OPTS="--dns 8.8.8.8 --dns 10.252.252.252"
 - make sure you can import settings - if there is an error, there will be a silent fail in pytest django settings
 - ensure pytest-django is installed (in addition to pytest)
 
+### Django is not serving static files when DEBUG=True
+this is by design. static files should be served by nginx in production, in production DEBUG is False for security
 
 #### Maintenance
 

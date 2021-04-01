@@ -207,7 +207,7 @@ FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if LOCAL_MODE else False
-#DEBUG = False
+# DEBUG = True
 
 # Update this in production environment to host ip for security reason
 ALLOWED_HOSTS = [
@@ -262,7 +262,6 @@ else:
         'django.middleware.security.SecurityMiddleware',
         'django.contrib.sessions.middleware.SessionMiddleware',
         'django.middleware.common.CommonMiddleware',
-        'corsheaders.middleware.CorsMiddleware',
         'django.middleware.csrf.CsrfViewMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
