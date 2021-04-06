@@ -16,13 +16,12 @@ from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 import logging
 
-
 router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='users')
 router.register(r'projects', ProjectViewSet, basename='projects')
 router.register(r'tms', TMSViewSet, basename='tms')
 
-urlpatterns = staticfiles_urlpatterns()
+urlpatterns = staticfiles_urlpatterns() # this should be empty list when not in DEBUG mode by design
 logging.debug('static urlpatterns: "{}"'.format(urlpatterns))
 
 urlpatterns += [
