@@ -81,11 +81,14 @@ password: password
 
 ```docker ps```
 
-Execute database commands in your favorite tool (e.g. in a SQLWorkbench https://www.sql-workbench.eu/downloads.html)
+Execute database commands in your favorite tool (e.g. in a SQLWorkbench https://www.sql-workbench.eu/downloads.html, psql)
 ```SET AUTOCOMMIT = ON;```
 ```CREATE USER etabot WITH PASSWORD 'somepassword';```
 ```CREATE DATABASE etabot_db WITH OWNER etabot;```
 ```ALTER USER etabot CREATEDB;```
+
+if using psql and getting Fatal: role “username” does not exist, do this:
+```sudo -u postgres -i```
 
 change custom_settings.json with the new db interface (see section *Settings jsons*)
 
@@ -406,8 +409,8 @@ pip install --ignore-installed certifi
 start python and make sure you can import pycurl
 if not, try
 ```
-
-conda install pycurl```
+conda install pycurl
+```
 
 ### Networking errors
 add the following lines in case you run into Networking errors:
@@ -421,6 +424,8 @@ DOCKER_OPTS="--dns 8.8.8.8 --dns 10.252.252.252"
 - make sure you can import settings - if there is an error, there will be a silent fail in pytest django settings
 - ensure pytest-django is installed (in addition to pytest)
 
+### Django is not serving static files when DEBUG=True
+this is by design. static files should be served by nginx in production, in production DEBUG is False for security
 
 #### Maintenance
 
@@ -486,7 +491,10 @@ Note: Using the same mount path is not necessary.
 The previous command will create the container but it will exit immediately but we dont need it running to manage the volume.
 We now copy our certificate files to the volume through this container. The following commands copy these certs and rename these files to the `pmp_pmp-nginx-cert` volume via the `temp_volume` container.
 
-Security Note: for your production please generate your own pair of keys
+Security Note: for your production please generate your own pair of keys, for example:
+```
+openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
+```
 
 ```
 $ docker cp nginx/certs/cert.pem temp-volume:/etc/ssl/certs/cert.pem

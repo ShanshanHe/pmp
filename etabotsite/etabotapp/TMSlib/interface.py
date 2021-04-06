@@ -52,6 +52,7 @@ class VelocityReport:
         self.df_velocity_vs_time = pd.DataFrame()  # rows - sprints, columns - entities/measureables
         self.df_velocity_stats = pd.DataFrame()  # rows - stats (mean, std, sum), columns - entities/measureable stats
         self.html = self.to_html()
+        self.images = {}  # '{image_name: img_tag}'
         self.aux = aux
 
     def to_html(self, **params) -> str:

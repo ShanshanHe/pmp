@@ -202,6 +202,7 @@ class ParseTMSprojects(APIView):
                 celery_task = celery.send_task(
                     'etabotapp.django_tasks.parse_projects_for_tms_id',
                     (tms.id, parse_tms_kwargs))
+                logging.info('celerty task sent, celery id ={}'.format(celery_task))
                 celery_task_ids.append(celery_task.task_id)
                 res_messages.append('stared celery task id {} for tms id {}'.format(
                     celery_task.task_id, tms.id))
@@ -262,11 +263,11 @@ class AtlassianOAuth(APIView):
 
 
 class AtlassianOAuthCallback(APIView):
-    """API for Atlassian to callback after concent screen."""
+    """API for Atlassian to callback after consent screen."""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
-        """Receieve authorization code from JIRA OAuth."""
+        """Receive authorization code from JIRA OAuth."""
         """Provided as a query parameter called code. This code can be
         exchanged for an access token.
 
