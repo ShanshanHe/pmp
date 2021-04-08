@@ -17,6 +17,8 @@ from etabotapp import eta_tasks as et
 from etabotapp import django_tasks as dt
 from django.conf import settings
 import logging
+from .models import CeleryTask
+
 
 test_tms_data = getattr(settings, "TEST_TMS_DATA", {})
 
@@ -57,7 +59,9 @@ class TestCeleryTasks(TestCase):
 
     def test_estimate_all(self):
 
-        created_celery_task = dt.estimate_all._original()
+        # created_celery_task = dt.estimate_all._original()
+
+        created_celery_task = dt.estimate_all()
         task_id = created_celery_task.task_id
         task_name = created_celery_task.task_name
         start_time = created_celery_task.start_time
@@ -66,8 +70,17 @@ class TestCeleryTasks(TestCase):
         owner = task_id = created_celery_task.owner
         meta_data = created_celery_task.meta_data
 
+        # Ensure unique task_id
+        objects_in_db = CeleryTask.objects.filter(task_id=task_id)
+        num_in_db = objects_in_db.count()
+        self.assertEqual(num_in_db, 1)
 
-
+        self.assertEqual(objects_in_db[0].task_name, task_name)
+        self.assertEqual(objects_in_db[0].start_time, start_time)
+        self.assertEqual(objects_in_db[0].end_time, end_time)
+        self.assertEqual(objects_in_db[0].status, status)
+        self.assertEqual(objects_in_db[0].owner, owner)
+        self.assertEqual(objects_in_db[0].meta_data, meta_data)
 
 
 
