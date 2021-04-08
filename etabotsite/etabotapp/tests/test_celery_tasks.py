@@ -57,8 +57,9 @@ class TestCeleryTasks(TestCase):
                                project_settings={})
         self.project.save()
 
-    def test_estimate_all(self):
-
+    def test_celery_task_record_for_estimate_all(self):
+        """Ensure that celery tasks records are created and added as objects within the models database
+        when estimate_all() method is run."""
         # created_celery_task = dt.estimate_all._original()
 
         created_celery_task = dt.estimate_all()
