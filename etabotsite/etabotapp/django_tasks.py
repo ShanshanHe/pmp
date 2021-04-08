@@ -21,10 +21,10 @@ def celery_task_update(func):
     def inner(*args, **kwargs):
 
         # After completion of the celery task, update its end time and status via this decorator
-        celery_task = func(*args, **kwargs)
-        celery_task.end_time = datetime.datetime.now()
-        celery_task.status = 'DN'
-        return celery_task
+        celery_task_record = func(*args, **kwargs)
+        celery_task_record.end_time = datetime.datetime.now()
+        celery_task_record.status = 'DN'
+        return celery_task_record
 
     return inner
 
@@ -34,7 +34,7 @@ def send_task_helper(name, args=None, kwargs=None, owner=None, task_id=None):
     # Create UUID for the task_id. This task_id will be later passed to celery to keep the same UUID throughout the task
     unique_task_id = task_id or uuid()
 
-    celery_task = CeleryTask.objects.create(
+    celery_task_record = CeleryTask.objects.create(
         task_id=unique_task_id,
         task_name=name,
         start_time=datetime.datetime.now(),
@@ -46,7 +46,7 @@ def send_task_helper(name, args=None, kwargs=None, owner=None, task_id=None):
 
     # Added extra parameter definition for task_id
     result = celery.send_task(name, args=args, kwargs=kwargs, task_id=unique_task_id)
-    return result, celery_task
+    return result, celery_task_record
 
 
 @shared_task
