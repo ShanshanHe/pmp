@@ -2,18 +2,55 @@
 
 from celery import shared_task
 import celery as clry
-from .models import Project, TMS
+from .models import Project, TMS, CeleryTask
 from .models import parse_projects_for_TMS
 from django.contrib.auth.models import User
 import logging
 import etabotapp.eta_tasks as eta_tasks
 import datetime
+from kombu.utils.uuid import uuid
 
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
 
 
+def celery_task_update(func):
+    """Decorator for:
+    Updating a job in the database (as CeleryTask) """
+
+    def inner(*args, **kwargs):
+
+        # After completion of the celery task, update its end time and status via this decorator
+        celery_task = func(*args, **kwargs)
+        celery_task.end_time = datetime.datetime.now()
+        celery_task.status = 'DN'
+        return celery_task
+
+    return inner
+
+
+def send_task_helper(name, args=None, kwargs=None, owner=None, task_id=None):
+
+    # Create UUID for the task_id. This task_id will be later passed to celery to keep the same UUID throughout the task
+    unique_task_id = task_id or uuid()
+
+    celery_task = CeleryTask.objects.create(
+        task_id=unique_task_id,
+        task_name=name,
+        start_time=datetime.datetime.now(),
+        end_time=None,
+        status='PN',
+        owner=owner,
+        meta_data=None
+    )
+
+    # Added extra parameter definition for task_id
+    result = celery.send_task(name, args=args, kwargs=kwargs, task_id=unique_task_id)
+    return result, celery_task
+
+
 @shared_task
+@celery_task_update
 def estimate_all():
     """Estimate ETA for all tasks for all users."""
     tms_set = TMS.objects.all()
@@ -24,16 +61,23 @@ following TMS entries ({}): {}'.format(
     global_params = {
         'push_updates_to_tms': True
     }
+    results = []
     for tms in tms_set:
         projects = Project.objects.all().filter(
             project_tms_id=tms.id)
         projects_ids = [p.id for p in projects]
-        result = celery.send_task(
-            'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
-            (tms.id, projects_ids, global_params))
+
+        result, celery_task = celery.send_task_helper('etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
+                                                      args=(tms.id, projects_ids, global_params), owner=tms.owner)
+
+        # result = celery.send_task('etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
+        # (tms.id, projects_ids, global_params))
+
         logging.info('submitted celery job {} for tms {}, projects {}'.format(
             result.task_id, tms, projects))
-    return True
+        results.append(result)
+
+    return celery_task
 
 
 def get_tms_by_id(tms_id) -> TMS:
@@ -65,6 +109,7 @@ def estimate_ETA_for_TMS_project_set_ids(
     if 'simulate_failure' in params:
         raise NameError('Simulating failure')
     eta_tasks.estimate_ETA_for_TMS(tms, projects_set, **params)
+
 
 
 @shared_task
