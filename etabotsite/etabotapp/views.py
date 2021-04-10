@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from .celery_tracking import send_celery_task_with_tracking
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import OAuth1Token, OAuth2Token, OAuth2CodeRequest
 from .models import atlassian_redirect_uri
@@ -199,10 +200,10 @@ class ParseTMSprojects(APIView):
             res_messages = []
             for tms in tms_set:
                 parse_tms_kwargs = {}
-                celery_task = celery.send_task(
+                celery_task = send_celery_task_with_tracking(
                     'etabotapp.django_tasks.parse_projects_for_tms_id',
-                    (tms.id, parse_tms_kwargs))
-                logging.info('celerty task sent, celery id ={}'.format(celery_task))
+                    (tms.id, parse_tms_kwargs), owner=tms.owner)
+                logging.info('celery task sent, celery id ={}'.format(celery_task))
                 celery_task_ids.append(celery_task.task_id)
                 res_messages.append('stared celery task id {} for tms id {}'.format(
                     celery_task.task_id, tms.id))
@@ -425,6 +426,7 @@ def estimate_tms(user, tms, global_params, project_id=None):
 
     # todo: stores task_id in database for this user
     return result.task_id
+
 
 
 class EstimateTMSView(APIView):

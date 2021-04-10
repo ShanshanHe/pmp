@@ -8,43 +8,11 @@ from django.contrib.auth.models import User
 import logging
 import etabotapp.eta_tasks as eta_tasks
 import datetime
-from kombu.utils.uuid import uuid
+
 
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
 
-#
-# def celery_task_update(func):
-#     """Decorator for:
-#     Updating a job in the database (as CeleryTask) """
-#
-#     def inner(*args, **kwargs):
-#
-#         # After completion of the celery task, update its end time and status via this decorator
-#         celery_task_record = func(*args, **kwargs)
-#         # ^^ capturing result not record so should be returining result instead
-#         # can fish out the kwargs for task_id and then update the record end time
-#         celery_task_record.end_time = datetime.datetime.now()
-#         celery_task_record.status = 'DN'
-#         # try to see if we can pass a custom task_id rather than a uuid
-#         return celery_task_record
-#
-#     return inner
-
-
-def celery_task_record_creator(name, owner):
-    unique_task_id = uuid()
-    celery_task_record = CeleryTask.objects.create(
-        task_id=unique_task_id,
-        task_name=name,
-        start_time=datetime.datetime.now(),
-        end_time=None,
-        status='PN',
-        owner=owner,
-        meta_data=None
-    )
-
-    return celery_task_record
 
 
 @shared_task
@@ -109,18 +77,14 @@ def get_tms_by_id(tms_id) -> TMS:
 def estimate_ETA_for_TMS_project_set_ids(
         tms_id,
         projects_set_ids,
-        params):
+        params,
+        task_id=None):
     """Generate ETAs for a given TMS and set of projects."""
     # Instead of using celery send want to use celery send helper
     # Start timer
     tms = get_tms_by_id(tms_id)
     if tms is None:
         raise NameError('cannot find TMS with id {}'.format(tms_id))
-
-    celery_task_record = celery_task_record_creator(
-        name='etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
-        owner=tms.owner
-    )
 
     projects_set = Project.objects.all().filter(pk__in=projects_set_ids)
     logging.info('found projects_set: {}'.format(projects_set))
@@ -129,10 +93,8 @@ def estimate_ETA_for_TMS_project_set_ids(
 
     eta_tasks.estimate_ETA_for_TMS(tms, projects_set, **params)
 
-    # End timer
-    celery_task_record.end_time = datetime.datetime.now()
 
-
+@celery_task_update
 @shared_task
 def parse_projects_for_tms_id(
         tms_id,
@@ -142,10 +104,7 @@ def parse_projects_for_tms_id(
     if tms is None:
         raise NameError('cannot find TMS with id {}'.format(tms_id))
 
-    celery_task_record = celery_task_record_creator(
-        name='etabotapp.django_tasks.parse_projects_for_tms_id',
-        owner=tms.owner
-    )
+
 
     result = parse_projects_for_TMS(tms, **params)
     tms.connectivity_status['description'] = '{} Import projects result: {}. \n {}'.format(
@@ -154,8 +113,6 @@ def parse_projects_for_tms_id(
         tms.connectivity_status.get('description', ''))
     tms.save()
 
-    # End timer
-    celery_task_record.end_time = datetime.datetime.now()
 
 
 @shared_task
