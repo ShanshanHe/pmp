@@ -2,6 +2,7 @@ from .models import Project, TMS, CeleryTask
 from kombu.utils.uuid import uuid
 import datetime
 from .views import celery
+import logging
 
 
 def celery_task_record_creator(name, owner):
@@ -32,17 +33,13 @@ def celery_task_update(func):
 
     def inner(*args, **kwargs):
 
-        # After completion of the celery task, update its end time and status via this decorator
         result = func(*args, **kwargs)
-        # ^^ capturing result not record so should be returining result instead
-        # can fish out the kwargs for task_id and then update the record end time
-        celery_task_record.end_time = datetime.datetime.now()
-        celery_task_record.status = 'DN'
-        # try to see if we can pass a custom task_id rather than a uuid
-    # End timer
-        if task_id is not None:
-            celery_task_record = CeleryTask.objects.all().filter(pk=task_id)
+
+        # End timer
+        if kwargs["task_id"] is not None:
+            celery_task_record = CeleryTask.objects.all().filter(pk=kwargs["task_id"])
             celery_task_record.end_time = datetime.datetime.now()
+            celery_task_record.status = 'DN'
         else:
             logging.warning('no celery task id passed for tracking of estimate_ETA_for_TMS_project_set_ids.')
         return result

@@ -2,6 +2,8 @@
 
 from celery import shared_task
 import celery as clry
+
+from .celery_tracking import celery_task_update
 from .models import Project, TMS, CeleryTask
 from .models import parse_projects_for_TMS
 from django.contrib.auth.models import User
@@ -14,9 +16,9 @@ celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
 
 
-
+@celery_task_update
 @shared_task
-def estimate_all(**kwargs): # Put kwargs into a decorator
+def estimate_all(task_id=None, **kwargs): # Put kwargs into a decorator
     """Estimate ETA for all tasks for all users."""
 
     tms_set = TMS.objects.all()
@@ -29,16 +31,11 @@ def estimate_all(**kwargs): # Put kwargs into a decorator
         projects = Project.objects.all().filter(project_tms_id=tms.id)
         projects_ids = [p.id for p in projects]
 
-        celery_task_record = celery_task_record_creator(
-            name='etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
-            owner=tms.owner
-        )
-
         result = celery.send_task(
-            celery_task_record.task_name,
+            'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
             args=(tms.id, projects_ids, global_params),
-            owner=celery_task_record.owner,
-            task_id=celery_task_record.task_id
+            owner=tms.owner,
+            task_id=task_id
         )
 
         # OLD CODE
@@ -51,9 +48,6 @@ def estimate_all(**kwargs): # Put kwargs into a decorator
 
         logging.info('submitted celery job {} for tms {}, projects {}'.format(result.task_id, tms, projects))
         results.append(result)
-
-        # Update the celery_task_record_object with the end time
-        celery_task_record.end_time = datetime.datetime.now()
 
     return True
 
@@ -72,7 +66,7 @@ def get_tms_by_id(tms_id) -> TMS:
         tms = tms_list[0]
     return tms
 
-
+@celery_task_update
 @shared_task
 def estimate_ETA_for_TMS_project_set_ids(
         tms_id,
@@ -98,14 +92,12 @@ def estimate_ETA_for_TMS_project_set_ids(
 @shared_task
 def parse_projects_for_tms_id(
         tms_id,
-        params):
+        params,
+        task_id=None):
     """Parse projects for the given TMS id."""
     tms = get_tms_by_id(tms_id)
     if tms is None:
         raise NameError('cannot find TMS with id {}'.format(tms_id))
-
-
-
     result = parse_projects_for_TMS(tms, **params)
     tms.connectivity_status['description'] = '{} Import projects result: {}. \n {}'.format(
         datetime.datetime.utcnow().isoformat(),
@@ -114,9 +106,9 @@ def parse_projects_for_tms_id(
     tms.save()
 
 
-
+@celery_task_update
 @shared_task
-def send_daily_project_report(**kwargs):
+def send_daily_project_report(task_id=None,**kwargs):
     """Generate Daily Email Reports for all Users"""
     logging.info("Sending Emails to all users for Daily Reports!")
     userlist = User.objects.all()
@@ -126,12 +118,4 @@ def send_daily_project_report(**kwargs):
         for tms in tms_list:
             project_set = Project.objects.all().filter(project_tms_id=tms.id)
             if project_set:
-
-                celery_task_record = celery_task_record_creator(
-                    name='etabotapp.django_tasks.send_daily_project_report',
-                    owner=tms.owner
-                )
-
                 eta_tasks.generate_email_report(tms, project_set, user, **kwargs)
-
-                celery_task_record.end_time = datetime.datetime.now()
