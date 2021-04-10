@@ -418,6 +418,7 @@ def estimate_tms(user, tms, global_params, project_id=None):
         )
     logging.debug('projects: "{}"'.format(projects))
     check_celery_worker_available()
+    # Want to use send task helper here instead
     result = celery.send_task(
         'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
         (tms.id, projects, global_params))

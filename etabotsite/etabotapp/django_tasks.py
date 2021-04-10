@@ -13,27 +13,27 @@ from kombu.utils.uuid import uuid
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
 
+#
+# def celery_task_update(func):
+#     """Decorator for:
+#     Updating a job in the database (as CeleryTask) """
+#
+#     def inner(*args, **kwargs):
+#
+#         # After completion of the celery task, update its end time and status via this decorator
+#         celery_task_record = func(*args, **kwargs)
+#         # ^^ capturing result not record so should be returining result instead
+#         # can fish out the kwargs for task_id and then update the record end time
+#         celery_task_record.end_time = datetime.datetime.now()
+#         celery_task_record.status = 'DN'
+#         # try to see if we can pass a custom task_id rather than a uuid
+#         return celery_task_record
+#
+#     return inner
 
-def celery_task_update(func):
-    """Decorator for:
-    Updating a job in the database (as CeleryTask) """
 
-    def inner(*args, **kwargs):
-
-        # After completion of the celery task, update its end time and status via this decorator
-        celery_task_record = func(*args, **kwargs)
-        celery_task_record.end_time = datetime.datetime.now()
-        celery_task_record.status = 'DN'
-        return celery_task_record
-
-    return inner
-
-
-def send_task_helper(name, args=None, kwargs=None, owner=None, task_id=None):
-
-    # Create UUID for the task_id. This task_id will be later passed to celery to keep the same UUID throughout the task
-    unique_task_id = task_id or uuid()
-
+def celery_task_record_creator(name, owner):
+    unique_task_id = uuid()
     celery_task_record = CeleryTask.objects.create(
         task_id=unique_task_id,
         task_name=name,
@@ -44,40 +44,50 @@ def send_task_helper(name, args=None, kwargs=None, owner=None, task_id=None):
         meta_data=None
     )
 
-    # Added extra parameter definition for task_id
-    result = celery.send_task(name, args=args, kwargs=kwargs, task_id=unique_task_id)
-    return result, celery_task_record
+    return celery_task_record
 
 
 @shared_task
-@celery_task_update
-def estimate_all():
+def estimate_all(**kwargs): # Put kwargs into a decorator
     """Estimate ETA for all tasks for all users."""
+
     tms_set = TMS.objects.all()
-    logging.info(
-        'starting generating ETAs for the \
-following TMS entries ({}): {}'.format(
-            len(tms_set), tms_set))
+    logging.info( 'starting generating ETAs for the following TMS entries ({}): {}'.format(len(tms_set), tms_set))
     global_params = {
         'push_updates_to_tms': True
     }
     results = []
     for tms in tms_set:
-        projects = Project.objects.all().filter(
-            project_tms_id=tms.id)
+        projects = Project.objects.all().filter(project_tms_id=tms.id)
         projects_ids = [p.id for p in projects]
 
-        result, celery_task = celery.send_task_helper('etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
-                                                      args=(tms.id, projects_ids, global_params), owner=tms.owner)
+        celery_task_record = celery_task_record_creator(
+            name='etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
+            owner=tms.owner
+        )
 
+        result = celery.send_task(
+            celery_task_record.task_name,
+            args=(tms.id, projects_ids, global_params),
+            owner=celery_task_record.owner,
+            task_id=celery_task_record.task_id
+        )
+
+        # OLD CODE
         # result = celery.send_task('etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
         # (tms.id, projects_ids, global_params))
 
-        logging.info('submitted celery job {} for tms {}, projects {}'.format(
-            result.task_id, tms, projects))
+        # OLD CODE
+        # result, celery_task = celery.send_task_helper('etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
+        #                                               args=(tms.id, projects_ids, global_params), owner=tms.owner)
+
+        logging.info('submitted celery job {} for tms {}, projects {}'.format(result.task_id, tms, projects))
         results.append(result)
 
-    return celery_task
+        # Update the celery_task_record_object with the end time
+        celery_task_record.end_time = datetime.datetime.now()
+
+    return True
 
 
 def get_tms_by_id(tms_id) -> TMS:
@@ -101,15 +111,26 @@ def estimate_ETA_for_TMS_project_set_ids(
         projects_set_ids,
         params):
     """Generate ETAs for a given TMS and set of projects."""
+    # Instead of using celery send want to use celery send helper
+    # Start timer
     tms = get_tms_by_id(tms_id)
     if tms is None:
         raise NameError('cannot find TMS with id {}'.format(tms_id))
+
+    celery_task_record = celery_task_record_creator(
+        name='etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
+        owner=tms.owner
+    )
+
     projects_set = Project.objects.all().filter(pk__in=projects_set_ids)
     logging.info('found projects_set: {}'.format(projects_set))
     if 'simulate_failure' in params:
         raise NameError('Simulating failure')
+
     eta_tasks.estimate_ETA_for_TMS(tms, projects_set, **params)
 
+    # End timer
+    celery_task_record.end_time = datetime.datetime.now()
 
 
 @shared_task
@@ -121,12 +142,20 @@ def parse_projects_for_tms_id(
     if tms is None:
         raise NameError('cannot find TMS with id {}'.format(tms_id))
 
+    celery_task_record = celery_task_record_creator(
+        name='etabotapp.django_tasks.parse_projects_for_tms_id',
+        owner=tms.owner
+    )
+
     result = parse_projects_for_TMS(tms, **params)
     tms.connectivity_status['description'] = '{} Import projects result: {}. \n {}'.format(
         datetime.datetime.utcnow().isoformat(),
         result,
         tms.connectivity_status.get('description', ''))
     tms.save()
+
+    # End timer
+    celery_task_record.end_time = datetime.datetime.now()
 
 
 @shared_task
@@ -140,4 +169,12 @@ def send_daily_project_report(**kwargs):
         for tms in tms_list:
             project_set = Project.objects.all().filter(project_tms_id=tms.id)
             if project_set:
+
+                celery_task_record = celery_task_record_creator(
+                    name='etabotapp.django_tasks.send_daily_project_report',
+                    owner=tms.owner
+                )
+
                 eta_tasks.generate_email_report(tms, project_set, user, **kwargs)
+
+                celery_task_record.end_time = datetime.datetime.now()
