@@ -20,4 +20,5 @@ etabotsite/custom_settings.json
 *.diff
 *.bk
 .env
+pmp.log
 
