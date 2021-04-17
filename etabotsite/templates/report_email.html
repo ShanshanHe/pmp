@@ -71,6 +71,9 @@ The ETAbot Team<br>
     <h2>{{ report.entity_display_name }}</h2>
     {{ report.velocity_report.html }}
     {{ report.aux.tasks_table|default:"no aux info"}}
+    api: {{ report.aux.git_branch_api|default:"no git branch info"}}-{{ report.aux.git_commit_api|default:"no git commit info"}}
+    algo: {{ report.aux.git_branch|default:"no git branch info"}}-{{ report.aux.git_commit|default:"no git commit info"}}
+
     <br>
     <br>
   {% endfor %}
