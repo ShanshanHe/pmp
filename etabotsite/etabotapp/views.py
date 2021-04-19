@@ -507,13 +507,39 @@ class VoteView(APIView):
         msg_body = str(post_data)
         msg = email_toolbox.EmailWorker.format_email_msg(
             'no-reply@etabot.ai',
-            'hello@etabot.ai; alex@etabot.ai',
+            'hello@etabot.ai; zach@etabot.ai',#alex@etabot.ai',
             subject,
             msg_body)
         email_toolbox.EmailWorker.send_email(msg)
         logging.debug('vote view get finished')
         return Response(
             status=status.HTTP_200_OK)
+
+
+class UserCommunicationView(APIView):
+    """Communication with user via email."""
+    def post(self, request):
+        logging.debug('User Communication View POST Started')
+
+        post_data = {}
+        if request.body :
+            logging.debug('request.body: {}'.format(request.body))
+            post_data = json.loads(request.body)
+
+        print(request.body)
+        
+        user = request.user
+        subject = post_data.get('subject')
+        body = 'Message:<br><br> {} <br><br> From: {}'.format(post_data.get('body'), user)
+        sender = post_data.get('from') if post_data.get('from') else 'no-reply@etabot.ai'
+        reciever = post_data.get('to') if post_data.get('to') else 'hello@etabot.ai'
+
+        msg = email_toolbox.EmailWorker.format_email_msg(sender, reciever, subject, body)
+        email_toolbox.EmailWorker.send_email(msg)
+        
+        logging.debug('User Communication POST Finished')
+        
+        return Response(status = status.HTTP_200_OK)
 
 
 class CeleryTaskStatusView(APIView):
