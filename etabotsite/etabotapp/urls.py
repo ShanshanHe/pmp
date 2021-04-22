@@ -5,7 +5,6 @@ from rest_framework.authtoken.views import obtain_auth_token
 from .views import (
     UserViewSet, ProjectViewSet, TMSViewSet, EstimateTMSView,
     CeleryTaskStatusView)
-from .views import VoteView
 from .views import UserCommunicationView
 from .views import ParseTMSprojects
 from .views import index

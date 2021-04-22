@@ -489,33 +489,6 @@ Number of tasks sent: {}'.format(tms_set, len(tms_id_to_celery_task_id))
             data=tms_id_to_celery_task_id,
             status=status.HTTP_200_OK)
 
-
-class VoteView(APIView):
-    """Collecting votes."""
-
-    def post(self, request):
-        logging.debug('vote view get started')
-        post_data = {}
-        if request.body:
-            logging.debug('request.body: {}'.format(request.body))
-            post_data = json.loads(request.body)
-
-        choice = post_data.get('choice')
-        subject = 'user "{}" votes: "{}"'.format(
-                request.user,
-                choice)
-        msg_body = str(post_data)
-        msg = email_toolbox.EmailWorker.format_email_msg(
-            'no-reply@etabot.ai',
-            'hello@etabot.ai; alex@etabot.ai',
-            subject,
-            msg_body)
-        email_toolbox.EmailWorker.send_email(msg)
-        logging.debug('vote view get finished')
-        return Response(
-            status=status.HTTP_200_OK)
-
-
 class UserCommunicationView(APIView):
     """Communication with user via email."""
     def post(self, request):
