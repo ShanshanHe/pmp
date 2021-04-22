@@ -46,9 +46,17 @@ TMS_TYPES = (
 class ProtoTMS:
     """
         TMS = Task Management System
-        prototype for any TMS class to standardize critical methods and proprties
+        prototype for any TMS class to standardize critical methods and properties
     """
-    def __init__(self, server_end_point, username_login, task_system_schema):
+    def __init__(self, server_end_point, username_login, task_system_schema: Dict):
+        """
+
+        :param server_end_point: TMS API. TMS url is stored in task_system_schema
+        :param username_login:
+        :param task_system_schema: Dict['tms_url':<user facing tms url>, ...]
+
+        # todo: refactor task_system_schema into a class
+        """
         self.server_end_point = server_end_point
         self.username_login = username_login
         self.task_system_schema = task_system_schema
@@ -83,7 +91,16 @@ class TMS_JIRA(ProtoTMS):
             self,
             server_end_point,
             username_login,
-            task_system_schema):
+            task_system_schema,
+            tms_url):
+        """
+
+        :param server_end_point: api end point
+            (same as jira_url for password auth, api.atlassian.net/... for OAuth)
+        :param username_login:
+        :param task_system_schema:
+        :param tms_url: user facing url
+        """
 
         if task_system_schema is None:
             task_system_schema = {
@@ -95,6 +112,8 @@ class TMS_JIRA(ProtoTMS):
             self, server_end_point, username_login, task_system_schema)
 
         self.jira = None
+        self.tms_config = None  # Django TMS object
+        self.tms_url = tms_url
         logging.debug('TMS_JIRA initialized')
 
     def connect_to_TMS(self, update_tms=True):
@@ -323,11 +342,13 @@ projects: {}'.format(tms_config, projects))
                 server = JIRA_API.JIRA_CLOUD_API + cloudid
             else:
                 server = tms_config.endpoint
+
             TMS_JIRA.__init__(
                 self,
                 server,
                 tms_config.username,
-                task_system_schema)
+                task_system_schema,
+                tms_url=tms_config.endpoint)
             # self.TMS = TMS_JIRA()
         else:
             raise NameError(
