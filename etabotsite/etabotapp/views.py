@@ -507,7 +507,7 @@ class VoteView(APIView):
         msg_body = str(post_data)
         msg = email_toolbox.EmailWorker.format_email_msg(
             'no-reply@etabot.ai',
-            'hello@etabot.ai; zach@etabot.ai',#alex@etabot.ai',
+            'hello@etabot.ai; alex@etabot.ai',
             subject,
             msg_body)
         email_toolbox.EmailWorker.send_email(msg)
