@@ -345,6 +345,16 @@ celery -A etabotsite beat -l INFO
 ```
 
 
+#### Logging
+
+When using Docker: logs are saved to persistent volume pmp_pmp-django-logging
+```
+sudo cat $(docker volume inspect pmp_pmp-django-logging | grep Mountpoint | cut -d\" -f 4)/django_log.txt
+```
+https://stackoverflow.com/questions/34803466/how-to-list-the-content-of-a-named-volume-in-docker-1-9
+
+When using non-Docker version: logs are saved to location specified in "log_filename_with_path" in custom_settings.json
+
 #### Installation issues
 
 ### Issue "ImportError: The curl client requires the pycurl library."
