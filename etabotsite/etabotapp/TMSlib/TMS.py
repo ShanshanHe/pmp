@@ -88,11 +88,10 @@ class TMS_JIRA(ProtoTMS):
     default_open_status_values = ['Open', 'To Do', 'Selected for Development']
 
     def __init__(
-            self,
+            self, *,
             server_end_point,
-            username_login,
             task_system_schema,
-            tms_url):
+            tms_config):
         """
 
         :param server_end_point: api end point
@@ -108,12 +107,13 @@ class TMS_JIRA(ProtoTMS):
                 'open_status_values': self.default_open_status_values
             }
 
+        username_login = tms_config.username
         ProtoTMS.__init__(
             self, server_end_point, username_login, task_system_schema)
 
         self.jira = None
-        self.tms_config = None  # Django TMS object
-        self.tms_url = tms_url
+        self.tms_config = tms_config  # Django TMS object
+        self.tms_url = tms_config.endpoint
         logging.debug('TMS_JIRA initialized')
 
     def connect_to_TMS(self, update_tms=True):
@@ -345,10 +345,9 @@ projects: {}'.format(tms_config, projects))
 
             TMS_JIRA.__init__(
                 self,
-                server,
-                tms_config.username,
-                task_system_schema,
-                tms_url=tms_config.endpoint)
+                server_end_point=server,
+                tms_config=tms_config,
+                task_system_schema=task_system_schema)
             # self.TMS = TMS_JIRA()
         else:
             raise NameError(
