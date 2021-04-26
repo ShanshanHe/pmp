@@ -178,7 +178,7 @@ cannot send connectivity issue email')
             assignee: str = None,
             project_names: List[str] = None,
             recent_time_period: str = None):
-        extra_filter = ' AND (type = "Task" OR type = "Story") '
+        extra_filter = ' AND (type = "Task" OR type = "Story" OR type = "Bug") '
         if assignee is not None:
             extra_filter += 'AND assignee = {assignee}'.format(assignee=assignee)
 

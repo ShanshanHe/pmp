@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.0 (2021-04-25)
+- Team View
+- UI updates (tutorial screen, misc)
+
 ## v0.9.0 (2020-10-17)
 
 #### New Features:
