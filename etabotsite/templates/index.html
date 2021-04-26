@@ -46,9 +46,28 @@ window['_fs_namespace'] = 'FS';
 
   gtag('config', 'UA-130006699-1');
 </script>
-
-<link rel="stylesheet" href="{% static 'ng2_app/styles.4239603eb191f2f7bd67.css' %}"></head>
+    <script>
+        (function(apiKey) {
+            (function(p, e, n, d, o) {
+                var v, w, x, y, z;
+                o = p[d] = p[d] || {};
+                o._q = [];
+                v = ['initialize', 'identify', 'updateOptions', 'pageLoad'];
+                for (w = 0, x = v.length; w < x; ++w)(function(m) {
+                    o[m] = o[m] || function() {
+                        o._q[m === v[0] ? 'unshift' : 'push']([m].concat([].slice.call(arguments, 0)));
+                    };
+                })(v[w]);
+                y = e.createElement(n);
+                y.async = !0;
+                y.src = 'https://cdn.pendo.io/agent/static/' + apiKey + '/pendo.js';
+                z = e.getElementsByTagName(n)[0];
+                z.parentNode.insertBefore(y, z);
+            })(window, document, 'script', 'pendo');
+        })('6be035c3-17cc-4a3e-58ba-ba89a7775b31'); // The Pendo API must stay here with the rest of the Pendo snippet
+    </script>
+<link rel="stylesheet" href="{% static 'ng2_app/styles.29f9dbbf4e6e6177ef0c.css' %}"></head>
 <body>
   <app-root></app-root>
-<script type="text/javascript" src="{% static 'ng2_app/runtime.a66f828dca56eeb90e02.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/polyfills.b7b7642b82b357ed611c.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/main.2b3c754d50341aebc844.js' %}"></script></body>
+<script type="text/javascript" src="{% static 'ng2_app/runtime.a5dd35324ddfd942bef1.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/polyfills.45554438a059f3b9f290.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/main.288033a2fad2f3d275bd.js' %}"></script></body>
 </html>

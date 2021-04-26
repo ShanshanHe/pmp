@@ -106,7 +106,7 @@ class JIRA_wrapper:
 status'.format(jira_timout_seconds))
             auth_thread.join(jira_timout_seconds)
             logging.debug('thread join done. checking for thread')
-            if auth_thread.isAlive():
+            if auth_thread.is_alive():
                 logging.debug('thread is still alive - time out occurred')
                 raise Exception('Could not login in a given time - please \
 check the team name with credentials and try again')

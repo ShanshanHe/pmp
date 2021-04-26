@@ -1,10 +1,10 @@
 # Dockerfile
 
 # FROM directive instructing base image to build upon
-FROM python:3.6 
+FROM python:3.9
 
 # File Author / Maintainer
-MAINTAINER Maintaner Shanshan He
+MAINTAINER Maintaner Alex Radnaev
 
 ENV PROJECT_ROOT /usr/src/app
 ADD . /usr/src/app

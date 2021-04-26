@@ -7,6 +7,7 @@ email reports to users.
 
 """
 import logging
+import socket
 
 from typing import List, Dict
 
@@ -41,7 +42,8 @@ class EmailReportProcess(object):
                 formatted_reports.append(basic_report)
         msg_body = render_to_string('report_email.html', {
             'username': user.username,
-            'reports': formatted_reports})
+            'reports': formatted_reports,
+            'host': socket.gethostname()})
         return msg_body
 
     @staticmethod

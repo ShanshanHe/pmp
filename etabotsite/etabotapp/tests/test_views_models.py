@@ -21,6 +21,7 @@ def create_test_user():
     'test@example.com',
     'testpassword')
 
+
 class UserTest(APITestCase):
     def setUp(self):
         # We want to go ahead and originally create a user.

@@ -26,9 +26,10 @@ from helpers import ensure_keys_exist, get_key_value
 # from authlib.django.client import OAuth
 
 import mimetypes
+import socket
 
 DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
-
+HOST_NAME = socket.gethostname()
 
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
@@ -207,7 +208,7 @@ FIELD_ENCRYPTION_KEY = str.encode(django_keys['DJANGO_FIELD_ENCRYPT_KEY'])
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if LOCAL_MODE else False
-#DEBUG = False
+# DEBUG = True
 
 # Update this in production environment to host ip for security reason
 ALLOWED_HOSTS = [
@@ -243,15 +244,6 @@ INSTALLED_APPS = [
     'encrypted_model_fields',
 ]
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
 
 if LOCAL_MODE:
     MIDDLEWARE = [
@@ -483,9 +475,11 @@ elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
     )
 
     logger.debug('celery settings setup complete')
-logger.info('BROKER_URL: {}'.format(BROKER_URL))
+    logger.info('BROKER_URL: {}'.format(BROKER_URL))
 logger.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
 logger.debug('setting.py is done')
 # EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=1)
 
-logger.error("This is a test of error notification.")
+logger.error("This is a test of error notification. LOCAL_MODE={}, HOST_URL={}, HOST_NAME={}".format(
+    LOCAL_MODE, HOST_URL, HOST_NAME
+))

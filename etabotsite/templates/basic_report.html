@@ -1,14 +1,27 @@
 {% autoescape off %}
-<h1>{{ basic_report.entity_display_name }} <> {{ basic_report.project|default:"Project name not found" }}.</h1>
-  {{basic_report.velocity_report.summary|default:"Hmmm... Could not fetch velocity report"}}
+<h1 id="entity-report-{{basic_report.entity_display_name}}-{{basic_report.project}}">{{ basic_report.entity_display_name }} <> project {{ basic_report.project|default:"Project name not found" }}.</h1>
+  {% if basic_report.aux.active_team_members|length > 0 %}
+    Active members: <br>
+
+  {% else %}
+    Note: individual velocities do not necessarily represent individual's productivity or value. That is because measured velocity depends on bandwidth allocation, overhead, and other factors. Story points represent scope/effort, but not value.
+  However individual velocities are useful for predicting when an individual may finish a task because it accounts for the bandwidth allocation, overhead, and other factors.
+  {% endif %}
+  <ul>
+  {% for active_member in basic_report.aux.active_team_members %}
+    <li><a href="#entity-report-{{active_member}}-{{basic_report.project}}">{{ active_member }}</a></li>
+  {% endfor %}
+  </ul>
+
+  {{ basic_report.velocity_report.summary|default:"Hmmm... Could not fetch velocity report"}}
   {{ basic_report.due_dates_stats.summary_table }}
 
     <br>
     {% if basic_report.due_dates_stats.tasks.overdue|length > 0 %}
       <span style="background-color:#e9a2ad">The following tasks are overdue </span>- consider renegotiating due date to the suggested ETA.
       <ul>
-        {% for over in basic_report.due_dates_stats.tasks.overdue %}
-          <li >{{ over.task|default:"Task name not found." }}. {% if 'ETA' not in over.task %} {{ over.ETA|default:"?" }}. {% endif %} Due: {{ over.due_date|default:"?" }}. </li>
+        {% for p in basic_report.due_dates_stats.tasks.overdue %}
+          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
         {% endfor %}
       </ul>
 
@@ -17,8 +30,8 @@
     {% if basic_report.due_dates_stats.tasks.off_track|length > 0 %}
       <span style="background-color:#f3c19d">The following tasks are off track (even optimistically)</span> - consider reprioritizing, descoping, renegotiating due date.
       <ul>
-        {% for off in basic_report.due_dates_stats.tasks.off_track %}
-          <li>{{ off.task|default:"Task name not found." }}. {% if 'ETA' not in off.task %} {{ off.ETA|default:"?" }}. {% endif %} Due: {{ off.due_date|default:"?" }}. </li>
+        {% for p in basic_report.due_dates_stats.tasks.off_track %}
+          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
         {% endfor %}
       </ul>
 
@@ -28,7 +41,7 @@
       <span style="background-color:#fbe192">The following tasks are at risk </span> (optimistically on track, pessimistically off track) - consider reprioritizing, descoping, renegotiating due date or take calculated risk.
       <ul>
         {% for p in basic_report.due_dates_stats.tasks.at_risk %}
-          <li>{{ p.task|default:"Task name not found." }}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} Due: {{ p.due_date|default:"?" }}. </li>
+          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
         {% endfor %}
       </ul>
 
@@ -38,7 +51,7 @@
       <span style="background-color:#8dd7cf">The following tasks are on track </span> (either there is no due date, or ETA (even pessimistic one) is before due date.
       <ul>
       {% for p in basic_report.due_dates_stats.tasks.on_track %}
-        <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
+          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
       {% endfor %}
       </ul>
     {% endif %}
@@ -49,7 +62,7 @@
   {% if basic_report.sprint_stats.tasks.overdue|length > 0 %}
     The sprint is overdue and these tasks are not done yet:
     {% for p in basic_report.sprint_stats.tasks.overdue %}
-      <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
+          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
     {% endfor %}
   {% endif %}
 
@@ -58,13 +71,22 @@
     The following tasks may not fit into sprint:
 
     {% for p in basic_report.sprint_stats.tasks.off_track %}
-      <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
+          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
     {% endfor %}
 
     {% for p in basic_report.sprint_stats.tasks.at_risk %}
-      <li>{{ p.task|default:"Task name not found."}}. {% if 'ETA' not in p.task %} {{ p.ETA|default:"?" }}. {% endif %} </li>
+          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
     {% endfor %}
     </ul>
+  {% endif %}
+
+  {% if basic_report.aux.inactive_team_members|length > 0 %}
+  Inactive members: <br>
+  <ul>
+  {% for inactive_member in basic_report.aux.inactive_team_members %}
+    <li>{{ inactive_member }}</li>
+  {% endfor %}
+  </ul>
   {% endif %}
 <hr>
 {% endautoescape %}
