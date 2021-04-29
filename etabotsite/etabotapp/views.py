@@ -500,6 +500,21 @@ class UserCommunicationView(APIView):
             post_data = json.loads(request.body)
 
         print(request.body)
+
+        print('request.user: {}, username {}'.format(
+            request.user, request.user.username))
+        
+        # if request.user.username:
+        #     return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        if post_data.get('subject') in None or post_data.get('body') is None :
+            return Response(status = status.HTTP_400_BAD_REQUEST)
+
+        if not post_data.get('subject'):
+            print("NO SUBJECT")
+
+        if not post_data.get('body'):
+            print("NO BODY")
         
         user = request.user
         subject = post_data.get('subject')
