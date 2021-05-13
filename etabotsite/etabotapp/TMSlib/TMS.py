@@ -46,9 +46,17 @@ TMS_TYPES = (
 class ProtoTMS:
     """
         TMS = Task Management System
-        prototype for any TMS class to standardize critical methods and proprties
+        prototype for any TMS class to standardize critical methods and properties
     """
-    def __init__(self, server_end_point, username_login, task_system_schema):
+    def __init__(self, server_end_point, username_login, task_system_schema: Dict):
+        """
+
+        :param server_end_point: TMS API. TMS url is stored in task_system_schema
+        :param username_login:
+        :param task_system_schema: Dict['tms_url':<user facing tms url>, ...]
+
+        # todo: refactor task_system_schema into a class
+        """
         self.server_end_point = server_end_point
         self.username_login = username_login
         self.task_system_schema = task_system_schema
@@ -80,10 +88,18 @@ class TMS_JIRA(ProtoTMS):
     default_open_status_values = ['Open', 'To Do', 'Selected for Development']
 
     def __init__(
-            self,
+            self, *,
             server_end_point,
-            username_login,
-            task_system_schema):
+            task_system_schema,
+            tms_config):
+        """
+
+        :param server_end_point: api end point
+            (same as jira_url for password auth, api.atlassian.net/... for OAuth)
+        :param username_login:
+        :param task_system_schema:
+        :param tms_url: user facing url
+        """
 
         if task_system_schema is None:
             task_system_schema = {
@@ -91,10 +107,13 @@ class TMS_JIRA(ProtoTMS):
                 'open_status_values': self.default_open_status_values
             }
 
+        username_login = tms_config.username
         ProtoTMS.__init__(
             self, server_end_point, username_login, task_system_schema)
 
         self.jira = None
+        self.tms_config = tms_config  # Django TMS object
+        self.tms_url = tms_config.endpoint
         logging.debug('TMS_JIRA initialized')
 
     def connect_to_TMS(self, update_tms=True):
@@ -159,7 +178,7 @@ cannot send connectivity issue email')
             assignee: str = None,
             project_names: List[str] = None,
             recent_time_period: str = None):
-        extra_filter = ' AND (type = "Task" OR type = "Story") '
+        extra_filter = ' AND (type = "Task" OR type = "Story" OR type = "Bug") '
         if assignee is not None:
             extra_filter += 'AND assignee = {assignee}'.format(assignee=assignee)
 
@@ -323,11 +342,12 @@ projects: {}'.format(tms_config, projects))
                 server = JIRA_API.JIRA_CLOUD_API + cloudid
             else:
                 server = tms_config.endpoint
+
             TMS_JIRA.__init__(
                 self,
-                server,
-                tms_config.username,
-                task_system_schema)
+                server_end_point=server,
+                tms_config=tms_config,
+                task_system_schema=task_system_schema)
             # self.TMS = TMS_JIRA()
         else:
             raise NameError(
