@@ -257,24 +257,25 @@ class UserCommunicationViewTestCase(APITestCase):
 
     def setUp(self):
         """Define and authenticate test client."""
-        user = create_test_user()
 
+        # Create authorized user
+        user = create_test_user()
         self.client = APIClient()
         self.client.force_authenticate(user=user)
-
+        # Create unauthorized user
         self.badClient = APIClient()
 
     def test_api_can_send_email(self):
         """Test the api can send an email."""
-        response = self.client.post('/api/user_communication', {'subject': 'Email subject', 'body': 'Email body'}, format='json')
+        response = self.client.post('/api/user_communication/', {'subject': 'Email subject', 'body': 'Email body'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
     
     def test_api_can_catch_bad_json(self):
         """Test the api can handle bad input."""
-        response = self.client.post('/api/user_communication', {'subject': 'There is no body'}, format='json')
+        response = self.client.post('/api/user_communication/', {'subject': 'There is no body'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_api_can_catch_unauthenticated_user(self):
-        """Test the api can handle unauthenticated users"""
-        response = self.badClient.post('/api/user_communication', {'subject': 'Email subject', 'body': 'Email body'}, format='json')
+        """Test the api can handle unauthorized users"""
+        response = self.badClient.post('/api/user_communication/', {'subject': 'Email subject', 'body': 'Email body'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

@@ -490,44 +490,36 @@ Number of tasks sent: {}'.format(tms_set, len(tms_id_to_celery_task_id))
             status=status.HTTP_200_OK)
 
 class UserCommunicationView(APIView):
-    """Communication with user via email."""
+    """
+    Communication with user via email.
+     - 400: Missing subject and/or body
+    """
     def post(self, request):
         logging.debug('User Communication View POST Started')
 
         post_data = {}
-        if request.body :
-            logging.debug('request.body: {}'.format(request.body))
+        if request.body:
+            logging.debug('Request.body: {}'.format(request.body))
             post_data = json.loads(request.body)
+        else:
+            logging.debug('No request body')
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        print(request.body)
+        if post_data.get('subject') is None or post_data.get('body') is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        print('request.user: {}, username {}'.format(
-            request.user, request.user.username))
-        
-        # if request.user.username:
-        #     return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        if post_data.get('subject') in None or post_data.get('body') is None :
-            return Response(status = status.HTTP_400_BAD_REQUEST)
-
-        if not post_data.get('subject'):
-            print("NO SUBJECT")
-
-        if not post_data.get('body'):
-            print("NO BODY")
-        
         user = request.user
         subject = post_data.get('subject')
         body = 'Message:<br><br> {} <br><br> From: {}'.format(post_data.get('body'), user)
         sender = post_data.get('from') if post_data.get('from') else 'no-reply@etabot.ai'
-        reciever = post_data.get('to') if post_data.get('to') else 'hello@etabot.ai'
+        receiver = post_data.get('to') if post_data.get('to') else 'hello@etabot.ai'
 
-        msg = email_toolbox.EmailWorker.format_email_msg(sender, reciever, subject, body)
+        msg = email_toolbox.EmailWorker.format_email_msg(sender, receiver, subject, body)
         email_toolbox.EmailWorker.send_email(msg)
-        
+
         logging.debug('User Communication POST Finished')
-        
-        return Response(status = status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_200_OK)
 
 
 class CeleryTaskStatusView(APIView):
