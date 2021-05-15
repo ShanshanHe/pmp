@@ -26,6 +26,8 @@ class UserTest(APITestCase):
     def setUp(self):
         # We want to go ahead and originally create a user.
         self.test_user = create_test_user()
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.test_user)
 
     def test_create_user(self):
         """
