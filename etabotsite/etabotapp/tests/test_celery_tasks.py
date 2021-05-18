@@ -15,10 +15,11 @@ from django.contrib.auth.models import User
 from etabotapp.models import Project, TMS
 from etabotapp import eta_tasks as et
 from etabotapp import django_tasks as dt
+from etabotapp import celery_tracking as ct
 from django.conf import settings
 import logging
-from .models import CeleryTask
-
+from etabotapp.models import CeleryTask
+from unittest.mock import MagicMock
 
 test_tms_data = getattr(settings, "TEST_TMS_DATA", {})
 
@@ -61,15 +62,23 @@ class TestCeleryTasks(TestCase):
         """Ensure that celery tasks records are created and added as objects within the models database
         when estimate_all() method is run."""
         # created_celery_task = dt.estimate_all._original()
+        parse_tms_kwargs = {}
+        # tms = MagicMock(spec=TMS)
+        celery_task_result = ct.send_celery_task_with_tracking(
+                    'etabotapp.django_tasks.parse_projects_for_tms_id',
+                    (self.tms.id, parse_tms_kwargs), owner=self.tms.owner)
+        created_celery_task_record = CeleryTask.objects.get(task_id=celery_task_result.id)
 
-        created_celery_task = dt.estimate_all()
-        task_id = created_celery_task.task_id
-        task_name = created_celery_task.task_name
-        start_time = created_celery_task.start_time
-        end_time = created_celery_task.end_time
-        status = created_celery_task.status
-        owner = task_id = created_celery_task.owner
-        meta_data = created_celery_task.meta_data
+        # As of 5/17/21 this assertion is passing....
+        self.assertEqual(created_celery_task_record.task_id, celery_task_result.id)
+
+        task_id = created_celery_task_record.task_id
+        task_name = created_celery_task_record.task_name
+        start_time = created_celery_task_record.start_time
+        end_time = created_celery_task_record.end_time
+        status = created_celery_task_record.status
+        owner = created_celery_task_record.owner
+        meta_data = created_celery_task_record.meta_data
 
         # Ensure unique task_id
         objects_in_db = CeleryTask.objects.filter(task_id=task_id)

@@ -211,13 +211,14 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
+
 class CeleryTask(models.Model):
     """This class represents the Celery Task (previously known as job) model."""
     task_id = models.CharField(max_length=100, primary_key=True)
     task_name = models.CharField(max_length=100)
 
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True)
 
     # May need to add some more choices and/or specify 'other' option
     status = models.CharField(

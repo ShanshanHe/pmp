@@ -2,14 +2,13 @@
 
 from celery import shared_task
 import celery as clry
-
-from .celery_tracking import celery_task_update
 from .models import Project, TMS, CeleryTask
 from .models import parse_projects_for_TMS
 from django.contrib.auth.models import User
 import logging
 import etabotapp.eta_tasks as eta_tasks
 import datetime
+from .celery_tracking import *
 
 
 celery = clry.Celery()
@@ -65,6 +64,7 @@ def get_tms_by_id(tms_id) -> TMS:
     else:
         tms = tms_list[0]
     return tms
+
 
 @celery_task_update
 @shared_task

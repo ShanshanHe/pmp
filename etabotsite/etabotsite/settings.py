@@ -26,9 +26,10 @@ from helpers import ensure_keys_exist, get_key_value
 # from authlib.django.client import OAuth
 
 import mimetypes
+import socket
 
 DJANGO_ROOT = os.path.dirname(os.path.realpath(__file__))
-
+HOST_NAME = socket.gethostname()
 
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
@@ -474,9 +475,11 @@ elif custom_settings['MESSAGE_BROKER'].lower() == 'rabbitmq':
     )
 
     logger.debug('celery settings setup complete')
-logger.info('BROKER_URL: {}'.format(BROKER_URL))
+    logger.info('BROKER_URL: {}'.format(BROKER_URL))
 logger.info('CELERY_DEFAULT_QUEUE: {}'.format(CELERY_DEFAULT_QUEUE))
 logger.debug('setting.py is done')
 # EXPIRING_TOKEN_LIFESPAN = datetime.timedelta(days=1)
 
-logger.error("This is a test of error notification.")
+logger.error("This is a test of error notification. LOCAL_MODE={}, HOST_URL={}, HOST_NAME={}".format(
+    LOCAL_MODE, HOST_URL, HOST_NAME
+))

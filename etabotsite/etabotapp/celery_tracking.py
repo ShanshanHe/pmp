@@ -1,7 +1,7 @@
 from .models import Project, TMS, CeleryTask
 from kombu.utils.uuid import uuid
 import datetime
-from .views import celery
+from .views import *
 import logging
 
 
@@ -23,8 +23,8 @@ def celery_task_record_creator(name, owner):
 def send_celery_task_with_tracking(name, *args, owner=None, **kwargs):
     celery_task_record = celery_task_record_creator(name=name, owner=owner)
     kwargs['task_id'] = celery_task_record.task_id
-
-    celery.send_task(name, args=args, kwargs=kwargs, task_id=celery_task_record.task_id)
+    result = celery.send_task(name, args=args, kwargs=kwargs, task_id=celery_task_record.task_id)
+    return result
 
 
 def celery_task_update(func):
