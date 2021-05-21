@@ -492,31 +492,37 @@ Number of tasks sent: {}'.format(tms_set, len(tms_id_to_celery_task_id))
             data=tms_id_to_celery_task_id,
             status=status.HTTP_200_OK)
 
-
-class VoteView(APIView):
-    """Collecting votes."""
-
+class UserCommunicationView(APIView):
+    """
+    Communication with user via email.
+     - 400: Missing subject and/or body
+    """
     def post(self, request):
-        logging.debug('vote view get started')
+        logging.debug('User Communication View POST Started')
+
         post_data = {}
         if request.body:
-            logging.debug('request.body: {}'.format(request.body))
+            logging.debug('Request.body: {}'.format(request.body))
             post_data = json.loads(request.body)
+        else:
+            logging.debug('No request body')
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        choice = post_data.get('choice')
-        subject = 'user "{}" votes: "{}"'.format(
-                request.user,
-                choice)
-        msg_body = str(post_data)
-        msg = email_toolbox.EmailWorker.format_email_msg(
-            'no-reply@etabot.ai',
-            'hello@etabot.ai; alex@etabot.ai',
-            subject,
-            msg_body)
+        if post_data.get('subject') is None or post_data.get('body') is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        subject = post_data.get('subject')
+        body = 'Message:<br><br> {} <br><br> From: {}'.format(post_data.get('body'), user)
+        sender = post_data.get('from') if post_data.get('from') else 'no-reply@etabot.ai'
+        receiver = post_data.get('to') if post_data.get('to') else 'hello@etabot.ai'
+
+        msg = email_toolbox.EmailWorker.format_email_msg(sender, receiver, subject, body)
         email_toolbox.EmailWorker.send_email(msg)
-        logging.debug('vote view get finished')
-        return Response(
-            status=status.HTTP_200_OK)
+
+        logging.debug('User Communication POST Finished')
+
+        return Response(status=status.HTTP_200_OK)
 
 
 class CeleryTaskStatusView(APIView):

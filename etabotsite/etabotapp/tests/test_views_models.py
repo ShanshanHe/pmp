@@ -26,6 +26,8 @@ class UserTest(APITestCase):
     def setUp(self):
         # We want to go ahead and originally create a user.
         self.test_user = create_test_user()
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.test_user)
 
     def test_create_user(self):
         """
@@ -249,3 +251,33 @@ class ProjectViewTestCase(APITestCase):
         url = '{}{}{}'.format('/api/projects/', project.id, '/')
         response = self.client.delete(url, format='json', follow=True)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    
+
+# TODO: Implement test to check that email worker was called with correct arguments.
+class UserCommunicationViewTestCase(APITestCase):
+    "Test suite for user communication view."
+
+    def setUp(self):
+        """Define and authenticate test client."""
+
+        # Create authorized user
+        user = create_test_user()
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+        # Create unauthorized user
+        self.badClient = APIClient()
+
+    def test_api_can_send_email(self):
+        """Test the api can send an email."""
+        response = self.client.post('/api/user_communication/', {'subject': 'Email subject', 'body': 'Email body'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_api_can_catch_bad_json(self):
+        """Test the api can handle bad input."""
+        response = self.client.post('/api/user_communication/', {'subject': 'There is no body'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_api_can_catch_unauthenticated_user(self):
+        """Test the api can handle unauthorized users"""
+        response = self.badClient.post('/api/user_communication/', {'subject': 'Email subject', 'body': 'Email body'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
