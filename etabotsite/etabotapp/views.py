@@ -497,6 +497,7 @@ class UserCommunicationView(APIView):
     def post(self, request):
         logging.debug('User Communication View POST Started')
 
+        # Check for good data
         post_data = {}
         if request.body:
             logging.debug('Request.body: {}'.format(request.body))
@@ -508,6 +509,7 @@ class UserCommunicationView(APIView):
         if post_data.get('subject') is None or post_data.get('body') is None:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        # Format and send communication to ETAbot
         user = request.user
         subject = post_data.get('subject')
         body = 'Message:<br><br> {} <br><br> From: {}'.format(post_data.get('body'), user)
@@ -516,6 +518,16 @@ class UserCommunicationView(APIView):
 
         msg = email_toolbox.EmailWorker.format_email_msg(sender, receiver, subject, body)
         email_toolbox.EmailWorker.send_email(msg)
+
+        # Format and send success email to user
+        if post_data.get('send_confirmation'):
+            logging.debug('Sending confirmation email')
+            print("\"{}\" if of type \"{}\"".format(user, type(str(user))))
+            subject = 'ETABot | Feedback Received!'
+            body = 'Thanks for the feedback! <br><br> Subject: {} <br> Comments: {} <br><br> Well review it shortly. <br><br> -The ETAbot Team'.format(post_data.get('subject'), post_data.get('body'))
+            sender = 'no-reply@etabot.ai'
+            msg = email_toolbox.EmailWorker.format_email_msg(sender, str(user), subject, body)
+            email_toolbox.EmailWorker.send_email(msg)
 
         logging.debug('User Communication POST Finished')
 
