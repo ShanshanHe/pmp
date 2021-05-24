@@ -21,4 +21,7 @@ etabotsite/custom_settings.json
 *.bk
 .env
 pmp.log
+# etabot_algo
+etabotsite/etabotapp/etabot_algo/
+*.pkl
 
