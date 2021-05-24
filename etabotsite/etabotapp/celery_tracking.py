@@ -36,7 +36,7 @@ def celery_task_update(func):
         result = func(*args, **kwargs)
 
         # End timer
-        if kwargs["task_id"] is not None:
+        if 'task_id' in kwargs:
             celery_task_record = CeleryTask.objects.all().filter(pk=kwargs["task_id"])
             celery_task_record.end_time = datetime.datetime.now()
             celery_task_record.status = 'DN'
