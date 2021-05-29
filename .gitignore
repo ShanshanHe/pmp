@@ -4,6 +4,7 @@ db.sqlite3
 etabotapp/static/ng2_app/.DS_Store
 *.csv
 *.txt
+!requirements.txt
 etabotsite/etabotapp/TMSlib/__pycache__/
 etabotsite/etabotapp/__pycache__/
 */__pycache__/
@@ -21,4 +22,7 @@ etabotsite/custom_settings.json
 *.bk
 .env
 pmp.log
+# etabot_algo
+etabotsite/etabot_algo/
+*.pkl
 
