@@ -30,6 +30,7 @@ import datetime
 import pytz
 import hashlib
 import etabotapp.TMSlib.Atlassian_API as Atlassian_API
+
 # import oauth_support
 
 logger = logging.getLogger('django')
@@ -44,6 +45,8 @@ else:
 
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
+
+
 # celery_app = clry.Celery('etabotapp')
 
 
@@ -489,25 +492,45 @@ Number of tasks sent: {}'.format(tms_set, len(tms_id_to_celery_task_id))
             data=tms_id_to_celery_task_id,
             status=status.HTTP_200_OK)
 
+
 class UserCommunicationView(APIView):
     """
     Communication with user via email.
      - 400: Missing subject and/or body
     """
+
     def post(self, request):
         logging.debug('User Communication View POST Started')
+        error = False
 
+        # Check for good data
         post_data = {}
         if request.body:
             logging.debug('Request.body: {}'.format(request.body))
             post_data = json.loads(request.body)
         else:
             logging.debug('No request body')
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            error = True
 
         if post_data.get('subject') is None or post_data.get('body') is None:
+            error = True
+
+        # Return error, and send email if necessary
+        if error:
+            if post_data.get('send_confirmation'):
+                logging.debug('Sending error email')
+                subject = 'ETABot | Feedback Error'
+                body = 'Thank you for taking the time to provide feedback.' \
+                       '<br><br> Unfortunately there was an issue ' \
+                       'sending your feedback, please try again. ' \
+                       'If the issue persists let us know at hello@etabot.ai ' \
+                       '<br><br> -The ETABot Team '
+                sender = 'no-reply@etabot.ai'
+                msg = email_toolbox.EmailWorker.format_email_msg(sender, str(request.user), subject, body)
+                email_toolbox.EmailWorker.send_email(msg)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+        # Format and send communication to ETAbot
         user = request.user
         subject = post_data.get('subject')
         body = 'Message:<br><br> {} <br><br> From: {}'.format(post_data.get('body'), user)
@@ -516,6 +539,18 @@ class UserCommunicationView(APIView):
 
         msg = email_toolbox.EmailWorker.format_email_msg(sender, receiver, subject, body)
         email_toolbox.EmailWorker.send_email(msg)
+
+        # Format and send success email to user
+        if post_data.get('send_confirmation'):
+            logging.debug('Sending confirmation email')
+            subject = 'ETABot | Feedback Received!'
+            body = 'Thanks for the feedback! <br><br> Subject: {} <br> Comments: {} ' \
+                   '<br><br> Well review it shortly. <br><br> -The ETABot Team'.format(
+                    post_data.get('subject'), post_data.get('body')
+                    )
+            sender = 'no-reply@etabot.ai'
+            msg = email_toolbox.EmailWorker.format_email_msg(sender, str(user), subject, body)
+            email_toolbox.EmailWorker.send_email(msg)
 
         logging.debug('User Communication POST Finished')
 
