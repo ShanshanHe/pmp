@@ -102,6 +102,21 @@ class BasicReport:
             'basic_report.html',
             {'basic_report': self})
 
+    @staticmethod
+    def empty_report(project: str):
+        return BasicReport(
+            project=project,
+            project_status=DueAlert.unknown,
+            entity_uuid='Unknown',
+            entity_display_name='Unknown',
+            due_dates_stats=TargetDatesStats(),
+            sprint_stats=TargetDatesStats(),
+            velocity_report=VelocityReport('No velocity data yet.', pd.DataFrame()),
+            params={},
+            params_str='',
+            tms_name='',
+            aux='<h2>No data available to generate report for this project.</h2>')
+
 
 class HierarchicalReportNode:
     """Tree data structure for hierarchical report.
