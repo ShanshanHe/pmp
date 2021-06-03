@@ -5,7 +5,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 from .views import (
     UserViewSet, ProjectViewSet, TMSViewSet, EstimateTMSView,
     CeleryTaskStatusView)
-from .views import VoteView
+from .views import UserCommunicationView
 from .views import ParseTMSprojects
 from .views import index
 from .views import activate
@@ -34,7 +34,7 @@ urlpatterns += [
         CeleryTaskStatusView.as_view(), name="job_status"),
     url(r'^api/parse_projects/', ParseTMSprojects.as_view(), name="estimate_tms"),
     url(r'^api/atlassian_oauth', AtlassianOAuth.as_view(), name='atlassian_oauth'),
-    url(r'^api/vote/', VoteView.as_view(), name="vote"),
+    url(r'^api/user_communication/', UserCommunicationView.as_view(), name="user_communication"),
     url(r'^api/verification/activate/', activate, name='activate'),
     url(r'^api/verification/send-email/', email_verification, name='email_verification'),
 

@@ -4,8 +4,6 @@
     Active members: <br>
 
   {% else %}
-    Note: individual velocities do not necessarily represent individual's productivity or value. That is because measured velocity depends on bandwidth allocation, overhead, and other factors. Story points represent scope/effort, but not value.
-  However individual velocities are useful for predicting when an individual may finish a task because it accounts for the bandwidth allocation, overhead, and other factors.
   {% endif %}
   <ul>
   {% for active_member in basic_report.aux.active_team_members %}
@@ -13,7 +11,14 @@
   {% endfor %}
   </ul>
 
-  {{ basic_report.velocity_report.summary|default:"Hmmm... Could not fetch velocity report"}}
+  {% if basic_report.velocity_report.summary %}
+    {{ basic_report.velocity_report.summary }}
+    Note: individual velocities do not necessarily represent individual's productivity or value. That is because measured velocity depends on bandwidth allocation, overhead, and other factors. Story points represent scope/effort, but not value.
+  However individual velocities are useful for predicting when an individual may finish a task because it accounts for the bandwidth allocation, overhead, and other factors.
+
+  {% else %}
+    "Hmmm... Could not fetch velocity report
+  {% endif %}
   {{ basic_report.due_dates_stats.summary_table }}
 
     <br>
