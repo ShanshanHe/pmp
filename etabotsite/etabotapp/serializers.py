@@ -140,7 +140,10 @@ class TMSSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('unsupported method {}'.format(
                 self.context['request'].method))
         self.validate_Atlassian_API_key(instance)
-        update_available_projects_for_TMS(instance)
+        project_names = update_available_projects_for_TMS(instance)
+        if val_input.get('params') is None:
+            val_input['params'] = {}
+        val_input['params']['projects_available'] = project_names
         logging.debug('validate_tms_credential finished')
         return val_input
 
@@ -152,7 +155,7 @@ class TMSSerializer(serializers.ModelSerializer):
             if 'Unauthorized (401)' in error:
                 raise serializers.ValidationError('Unable to log in due to "Unauthorized (401)"\
  error - please check username/email and password')
-            elif 'cannot connnect to TMS JIRA' in error:
+            elif 'cannot connect to TMS JIRA' in error:
                 logging.debug('cannot connect to TMS JIRA error.')
                 captcha_sig = \
                     "'X-Authentication-Denied-Reason': 'CAPTCHA_CHALLENGE"

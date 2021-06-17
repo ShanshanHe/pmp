@@ -197,10 +197,11 @@ def update_available_projects_for_TMS(tms):
         TMSconfig=tms)
     projects = jira_wrapper.jira.projects()
     project_names = [project.name for project in projects]
-    print('project_names: {}'.format(project_names))
-    print('TMS: {}'.format(tms))
+    logging.debug('project_names: {}'.format(project_names))
+    logging.debug('TMS: {}'.format(tms))
     if tms.params is None:
         tms.params = {}
-    print('tms.params: {}'.format(tms.params))
+    logging.debug('tms.params: {}'.format(tms.params))
     tms.params['projects_available'] = project_names
-    print('projects_available: {}'.format(tms.params['projects_available']))
+    logging.debug('projects_available: {}'.format(tms.params['projects_available']))
+    return project_names
