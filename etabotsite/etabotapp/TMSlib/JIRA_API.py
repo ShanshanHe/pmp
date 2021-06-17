@@ -187,3 +187,20 @@ Errors: "{}"'.format(jira, errors_place))
                 team_members[account_id] = display_name
         logging.debug('Found {} team members: {}.'.format(len(team_members), team_members.keys()))
         return team_members
+
+
+def update_available_projects_for_TMS(tms):
+    jira_wrapper = JIRA_wrapper(
+        tms.endpoint,
+        tms.username,
+        password=tms.password,
+        TMSconfig=tms)
+    projects = jira_wrapper.jira.projects()
+    project_names = [project.name for project in projects]
+    print('project_names: {}'.format(project_names))
+    print('TMS: {}'.format(tms))
+    if tms.params is None:
+        tms.params = {}
+    print('tms.params: {}'.format(tms.params))
+    tms.params['projects_available'] = project_names
+    print('projects_available: {}'.format(tms.params['projects_available']))

@@ -7,6 +7,7 @@ from .models import oauth
 from django.conf import settings
 import logging
 import etabotapp.TMSlib.TMS as TMSlib
+from etabotapp.TMSlib.JIRA_API import update_available_projects_for_TMS
 from copy import copy
 import etabotapp.response_regex as rr
 
@@ -99,7 +100,7 @@ class TMSSerializer(serializers.ModelSerializer):
             'connectivity_status')
 
     def validate(self, val_input):
-        """Validate credentials and endpont result in successful login."""
+        """Validate credentials and endpoint result in successful login."""
         logging.debug('validate_tms_credential started')
         logging.debug('self.initial_data: {}'.format(self.initial_data))
         # logging.debug('val_input: {}'.format(val_input))
@@ -124,7 +125,7 @@ class TMSSerializer(serializers.ModelSerializer):
                 'validated username/endpoint combination uniqueness current user')
             tms_params = copy(self.initial_data)
             if 'owner' in tms_params:
-                # tests using APIclient that posts different initial data
+                # tests using API client that posts different initial data
                 # when it comes to owner
                 tms_params['owner'] = owner
             instance = TMS(**tms_params)
@@ -139,6 +140,7 @@ class TMSSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('unsupported method {}'.format(
                 self.context['request'].method))
         self.validate_Atlassian_API_key(instance)
+        update_available_projects_for_TMS(instance)
         logging.debug('validate_tms_credential finished')
         return val_input
 
@@ -171,7 +173,7 @@ administrator to disable CAPTCHA.'
                     raise serializers.ValidationError(message)
                 else:
                     logging.debug('generic connectivity issue.')
-                    raise serializers.ValidationError('cannot connnect to TMS JIRA - please check\
+                    raise serializers.ValidationError('cannot connect to TMS JIRA - please check\
      inputs and try again. If the issue persists, please report the issue to \
     hello@etabot.ai')
             else:
