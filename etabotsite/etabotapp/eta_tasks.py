@@ -71,7 +71,7 @@ def estimate_ETA_for_TMS(
     for project in projects_set:
         project_settings = project.project_settings
         project_settings['report'] = html_report
-        project_settings['date'] = str(datetime.utcnow())
+        project_settings['report_date'] = str(datetime.utcnow())
 
         # todo: save basic report and report hierarchy in to project model
 
