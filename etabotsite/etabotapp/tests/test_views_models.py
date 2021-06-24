@@ -205,7 +205,7 @@ class ProjectViewTestCase(APITestCase):
         self.response = self.client.post('/api/projects/',
                                          self.project_data,
                                          format="json")
-        logging.debug('client poroject post response:')
+        logging.debug('client project post response:')
         logging.debug(self.response)
         logging.debug(self.response.__dict__)        
         # django.db.utils.IntegrityError: null value in column "project_tms_id" violates not-null constraint        
