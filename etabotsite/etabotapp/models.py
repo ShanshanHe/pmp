@@ -28,6 +28,8 @@ import time
 from django.conf import settings
 from authlib.integrations.django_client import OAuth
 
+PROJECTS_USER_SELECTED = 'projects_user_selected'
+
 
 class OAuth1Token(models.Model):
     owner = models.ForeignKey('auth.User', related_name='OAuth1Tokens',
@@ -246,7 +248,7 @@ def parse_projects_for_TMS(instance: TMS, **kwargs) -> str:
     for p in existing_projects:
         existing_projects_dict[p.name] = p
 
-    projects_names_user_selected = instance.params.get('projects_user_selected', [])
+    projects_names_user_selected = instance.params.get(PROJECTS_USER_SELECTED, [])
     new_projects_user_selected = {}
     for user_selected_project in projects_names_user_selected:
         if user_selected_project not in existing_projects_dict:

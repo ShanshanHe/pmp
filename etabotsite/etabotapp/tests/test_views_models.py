@@ -3,7 +3,7 @@ import logging
 from django.test import TestCase
 from django.db.models import signals
 from django.contrib.auth.models import User
-from etabotapp.models import Project, TMS
+from etabotapp.models import Project, TMS, parse_projects_for_TMS, PROJECTS_USER_SELECTED
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -139,6 +139,12 @@ class TMSViewTestCase(TestCase):
             format='json',
             follow=True)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_parse_projects_for_TMS(self):
+        tms = TMS.objects.get()
+        parse_projects_for_TMS(tms)
+        tms.params[PROJECTS_USER_SELECTED] = ['ETAbot-Demo']
+        parse_projects_for_TMS(tms)
 
 
 class ProjectModelTestCase(TestCase):
