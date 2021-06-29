@@ -149,6 +149,7 @@ class TMSViewTestCase(TestCase):
         assert projects[0].name == 'ETAbot-Demo'
         del tms.params[PROJECTS_USER_SELECTED]
         parse_projects_for_TMS(tms)
+        projects = Project.objects.all().filter(project_tms=tms.id)
         assert len(projects) == 2
 
 
