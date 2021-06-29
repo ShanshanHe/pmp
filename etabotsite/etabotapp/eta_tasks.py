@@ -6,6 +6,7 @@ import logging
 import etabotapp.email_reports as email_reports
 from typing import List
 from etabotapp.models import TMS, Project
+from datetime import datetime
 
 
 def save_project_velocities(tms_wrapper, projects_set) -> List[str]:
@@ -70,6 +71,7 @@ def estimate_ETA_for_TMS(
     for project in projects_set:
         project_settings = project.project_settings
         project_settings['report'] = html_report
+        project_settings['report_date'] = str(datetime.utcnow())
 
         # todo: save basic report and report hierarchy in to project model
 
