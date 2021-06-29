@@ -142,9 +142,13 @@ class TMSViewTestCase(TestCase):
 
     def test_parse_projects_for_TMS(self):
         tms = TMS.objects.get()
-        parse_projects_for_TMS(tms)
         tms.params[PROJECTS_USER_SELECTED] = ['ETAbot-Demo']
         parse_projects_for_TMS(tms)
+        projects = Project.objects.all().filter(project_tms=tms.id)
+        assert len(projects) == 1
+        assert projects[0].name == 'ETAbot-Demo'
+        parse_projects_for_TMS(tms)
+        assert len(projects) == 2
 
 
 class ProjectModelTestCase(TestCase):
