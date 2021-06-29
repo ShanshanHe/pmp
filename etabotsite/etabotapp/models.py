@@ -292,7 +292,7 @@ def parse_projects_for_TMS(instance: TMS, **kwargs) -> str:
                     p = new_projects_user_selected[project_name]
                     p.open_status = attrs.get('open_status', '')
                     p.grace_period = attrs.get('grace_period', 12.0)
-                    p.work_hours = attrs.get('work_hours', {}),
+                    p.work_hours = attrs.get('work_hours', {})
                     p.vacation_days = attrs.get('vacation_days', [])
                 else:
                     logging.warning('Found project "{}", but did not intent to find.'.format(project_name))
