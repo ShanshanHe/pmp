@@ -1,4 +1,4 @@
-"""Atlassian API helper funcrions."""
+"""Atlassian API helper functions."""
 
 import requests
 
@@ -26,3 +26,4 @@ class AtlassianAPI():
         res = requests.get(
             self.accessible_resources_api, headers=headers)
         return res.json()
+

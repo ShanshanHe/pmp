@@ -7,13 +7,14 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from etabotapp.TMSlib.JIRA_API import update_available_projects_for_TMS
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import OAuth1Token, OAuth2Token, OAuth2CodeRequest
 from .models import atlassian_redirect_uri
 from .models import TMS, Project
 from .models import oauth
 from .permissions import IsOwnerOrReadOnly, IsOwner
+from etabotapp.TMSlib.JIRA_API import JIRA_wrapper
 # import etabotapp.TMSlib.TMS as TMSlib
 # import etabotapp.TMSlib.data_conversion as dc
 from .user_activation import ActivationProcessor, ResponseCode
@@ -355,6 +356,7 @@ class AtlassianOAuthCallback(APIView):
                     name=resource.get('name'),
                     params=resource,
                     oauth2_token=token_item)
+                update_available_projects_for_TMS(new_TMS)
                 new_TMS.save()
                 new_tms_ids.append(new_TMS.id)
                 logging.debug('created new TMS {}'.format(new_TMS))
@@ -365,6 +367,7 @@ class AtlassianOAuthCallback(APIView):
                     existing_TMS.endpoint = resource['url']
                     existing_TMS.name = resource.get('name')
                     existing_TMS.oauth2_token = token_item
+                    update_available_projects_for_TMS(existing_TMS)
                     existing_TMS.save()
                     logging.debug('updated {}'.format(existing_TMS))
         logging.debug('add_update_atlassian_tms is done')

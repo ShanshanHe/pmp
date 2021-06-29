@@ -3,7 +3,7 @@ import logging
 from django.test import TestCase
 from django.db.models import signals
 from django.contrib.auth.models import User
-from etabotapp.models import Project, TMS
+from etabotapp.models import Project, TMS, parse_projects_for_TMS, PROJECTS_USER_SELECTED
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 from rest_framework import status
@@ -140,6 +140,18 @@ class TMSViewTestCase(TestCase):
             follow=True)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_parse_projects_for_TMS(self):
+        tms = TMS.objects.get()
+        tms.params[PROJECTS_USER_SELECTED] = ['ETAbot-Demo']
+        parse_projects_for_TMS(tms)
+        projects = Project.objects.all().filter(project_tms=tms.id)
+        assert len(projects) == 1
+        assert projects[0].name == 'ETAbot-Demo'
+        del tms.params[PROJECTS_USER_SELECTED]
+        parse_projects_for_TMS(tms)
+        projects = Project.objects.all().filter(project_tms=tms.id)
+        assert len(projects) == 2
+
 
 class ProjectModelTestCase(TestCase):
     """This class defines the test suite for the project model."""
@@ -205,7 +217,7 @@ class ProjectViewTestCase(APITestCase):
         self.response = self.client.post('/api/projects/',
                                          self.project_data,
                                          format="json")
-        logging.debug('client poroject post response:')
+        logging.debug('client project post response:')
         logging.debug(self.response)
         logging.debug(self.response.__dict__)        
         # django.db.utils.IntegrityError: null value in column "project_tms_id" violates not-null constraint        
