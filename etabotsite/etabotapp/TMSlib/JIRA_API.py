@@ -13,6 +13,8 @@ import etabotapp.TMSlib.Atlassian_API as Atlassian_API
 from jira import JIRA
 from typing import Dict
 
+from etabotapp.constants import PROJECTS_AVAILABLE
+
 JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
 JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
@@ -202,6 +204,6 @@ def update_available_projects_for_TMS(tms):
     if tms.params is None:
         tms.params = {}
     logging.debug('tms.params: {}'.format(tms.params))
-    tms.params['projects_available'] = project_names
-    logging.debug('projects_available: {}'.format(tms.params['projects_available']))
+    tms.params[PROJECTS_AVAILABLE] = project_names
+    logging.debug('projects_available: {}'.format(tms.params[PROJECTS_AVAILABLE]))
     return project_names

@@ -27,8 +27,8 @@ import time
 
 from django.conf import settings
 from authlib.integrations.django_client import OAuth
-
-PROJECTS_USER_SELECTED = 'projects_user_selected'
+from etabotapp.constants import PROJECTS_AVAILABLE
+from etabotapp.constants import PROJECTS_USER_SELECTED
 
 
 class OAuth1Token(models.Model):
@@ -248,7 +248,9 @@ def parse_projects_for_TMS(instance: TMS, **kwargs) -> str:
     for p in existing_projects:
         existing_projects_dict[p.name] = p
 
-    projects_names_user_selected = instance.params.get(PROJECTS_USER_SELECTED, [])
+    projects_names_user_selected = instance.params.get(
+        PROJECTS_USER_SELECTED,
+        instance.params.get(PROJECTS_AVAILABLE, []))
     new_projects_user_selected = {}
     for user_selected_project in projects_names_user_selected:
         if user_selected_project not in existing_projects_dict:
