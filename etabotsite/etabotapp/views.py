@@ -546,9 +546,9 @@ class UserCommunicationView(APIView):
         # Format and send success email to user
         if post_data.get('send_confirmation'):
             logging.debug('Sending confirmation email')
-            subject = 'ETABot | Feedback Received!'
+            subject = '[ETAbot] Feedback received!'
             body = 'Thanks for the feedback! <br><br> Subject: {} <br> Comments: {} ' \
-                   '<br><br> Well review it shortly. <br><br> -The ETABot Team'.format(
+                   '<br><br> We\'ll review it shortly. <br><br> -The ETABot Team'.format(
                     post_data.get('subject'), post_data.get('body')
                     )
             sender = 'no-reply@etabot.ai'
