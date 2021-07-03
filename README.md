@@ -520,6 +520,11 @@ $ docker-compose up --force-recreate
 for celery:
 $ docker-compose -f docker-compose_celery.yml build --no-cache
 $ docker-compose -f docker-compose_celery.yml up --force-recreate
+
+for RabbitMQ:
+$ docker-compose -f docker-compose_rabbitmq.yml build --no-cache
+$ docker-compose -f docker-compose_rabbitmq.yml up --force-recreate
+
 ```
 Ensure all containers are up and running by:
 ```
