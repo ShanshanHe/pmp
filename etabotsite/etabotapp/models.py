@@ -27,6 +27,8 @@ import time
 
 from django.conf import settings
 from authlib.integrations.django_client import OAuth
+from etabotapp.constants import PROJECTS_AVAILABLE
+from etabotapp.constants import PROJECTS_USER_SELECTED
 
 
 class OAuth1Token(models.Model):
@@ -230,7 +232,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 #         logging.debug('saving existing TMS - no need to parse projects')
 
 
-def parse_projects_for_TMS(instance, **kwargs) -> str:
+def parse_projects_for_TMS(instance: TMS, **kwargs) -> str:
     """Parse projects for the given TMS.
 
     Creates new Django model projects objects with parsed data.
@@ -240,51 +242,72 @@ def parse_projects_for_TMS(instance, **kwargs) -> str:
     """
     logging.info('parse_tms started')
     logging.debug('parse_projects_for_TMS kwargs: {}'.format(kwargs))
-    existing_projects = Project.objects.filter(project_tms=instance.id)
+    existing_projects = list(Project.objects.filter(project_tms=instance.id))
+    logging.info('existing_projects: {}'.format(existing_projects))
+    existing_projects_dict = {}
+    for p in existing_projects:
+        existing_projects_dict[p.name] = p
+
+    projects_names_user_selected = instance.params.get(
+        PROJECTS_USER_SELECTED,
+        instance.params.get(PROJECTS_AVAILABLE, []))
+    new_projects_user_selected = {}
+    for user_selected_project in projects_names_user_selected:
+        if user_selected_project not in existing_projects_dict:
+            new_django_project = Project(
+                owner=instance.owner,
+                project_tms=instance,
+                name=user_selected_project,
+                mode='unknown mode',
+                open_status='',
+                velocities={},
+                grace_period=12.0,
+                work_hours={},
+                vacation_days={},
+                project_settings={})
+            new_django_project.save()
+            new_projects_user_selected[user_selected_project] = new_django_project
+    full_projects_list = existing_projects + list(new_projects_user_selected.values())
     TMS_w1 = TMSlib.TMSWrapper(
         instance,
-        projects=existing_projects)
-    TMS_w1.init_ETApredict([])
+        projects=full_projects_list)
+
+    TMS_w1.init_ETApredict(full_projects_list)
 
     projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
     velocities = TMS_w1.ETApredict_obj.eta_engine.user_velocity_per_project
     logging.debug('parse_tms: velocities found: {}'.format(velocities))
 
-    existing_projects_dict = {}
     new_projects = []
     updated_projects = []
-    logging.info('existing_projects: {}'.format(existing_projects))
-    for p in existing_projects:
-        existing_projects_dict[p.name] = p
 
     logging.info('passing parsed projects info to Django models.')
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
+            p = None
             velocity_json = dc.get_velocity_json(
                 velocities, project_name)
 
             if project_name not in existing_projects_dict:
-                new_django_project = Project(
-                    owner=instance.owner,
-                    project_tms=instance,
-                    name=project_name,
-                    mode=attrs.get('mode', 'unknown mode'),
-                    open_status=attrs.get('open_status', ''),
-                    velocities=velocity_json,
-                    grace_period=attrs.get('grace_period', 12.0),
-                    work_hours=attrs.get('work_hours', {}),
-                    vacation_days=attrs.get('vacation_days', {}),
-                    project_settings=attrs.get('project_settings', {}))
-                new_django_project.save()
-                new_projects.append(project_name)
+                if project_name in new_projects_user_selected:
+                    new_projects.append(project_name)
+                    p = new_projects_user_selected[project_name]
+                    p.open_status = attrs.get('open_status', '')
+                    p.grace_period = attrs.get('grace_period', 12.0)
+                    p.work_hours = attrs.get('work_hours', {})
+                    p.vacation_days = attrs.get('vacation_days', [])
+                else:
+                    logging.warning('Found project "{}", but did not intent to find.'.format(project_name))
             else:
                 p = existing_projects_dict[project_name]
+                updated_projects.append(project_name)
+            if p is not None:
                 p.velocities = velocity_json
                 p.project_settings = attrs.get(
                     'project_settings', p.project_settings)
                 p.mode = attrs.get('mode', p.mode)
                 p.save()
-                updated_projects.append(project_name)
+
     else:
         logging.warning('projects_dict is None')
     logging.info('parse_tms has finished')
