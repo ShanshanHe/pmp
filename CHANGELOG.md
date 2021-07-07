@@ -1,4 +1,7 @@
 # Changelog
+## v1.3.0 (2021-07-06)
+- import subset of projects
+- misc fixes
 
 ## v1.1.0 (2021-04-25)
 - Team View
