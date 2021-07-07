@@ -1,6 +1,7 @@
 # Changelog
 ## v1.3.0 (2021-07-06)
-- import subset of projects
+- added import of only subset of projects
+- added report dates
 - misc fixes
 
 ## v1.1.0 (2021-04-25)
