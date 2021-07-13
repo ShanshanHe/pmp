@@ -45,7 +45,8 @@
   <br>
 
   {{ report.html }}
-
+  {{ report.velocity_report.html_plots }}
+<br>
   Raw Filters/parameters: {{ report.params|default:"default parameters"}}.
 
 {% endfor %}
@@ -59,9 +60,12 @@ Thanks,<br>
 The ETAbot Team<br>
 
 <font color="grey">
+  PS     Note: individual velocities do not necessarily represent individual's productivity or value. That is because measured velocity depends on bandwidth allocation, overhead, and other factors. Story points represent scope/effort, but not value.
+  However individual velocities are useful for predicting when an individual may finish a task because it accounts for the bandwidth allocation, overhead, and other factors.
+
 {% if reports.length != 0 %}
 
-    PS Here are excruciating details if you are interested.
+    PPS Here are excruciating details if you are interested.
     Legend: scope is in storypoints units, time task estimate is in hours units.
     CL - <a href="https://en.wikipedia.org/wiki/Confidence_interval">Confidence Level</a><br>
 

@@ -98,9 +98,10 @@ def generate_email_report(tms, projects_set, user, **kwargs):
     tms_wrapper = TMSlib.TMSWrapper(tms)
     tms_wrapper.init_ETApredict(projects_set)
     raw_status_reports = tms_wrapper.generate_projects_status_report(**kwargs)
+    email_html, full_report = email_reports.EmailReportProcess.generate_html_report(
+        user, raw_status_reports)
     email_msg = email_reports.EmailReportProcess.format_email_msg(
         user,
-        email_reports.EmailReportProcess.generate_html_report(
-            user, raw_status_reports))
+        email_html)
     email_reports.EmailReportProcess.send_email(email_msg)
     logging.debug('generate_email_report finished.')
