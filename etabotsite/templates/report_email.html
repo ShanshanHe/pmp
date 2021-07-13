@@ -1,5 +1,3 @@
-
-
 <head>
   <style type="text/css" media="screen">
   .summary_table {
@@ -46,8 +44,8 @@
 {% for report in reports %}
   <br>
 
-  {{ report.html }}
-
+  {{ report.short_html }}
+  {{ report.velocity_report }}
   Raw Filters/parameters: {{ report.params|default:"default parameters"}}.
 
 {% endfor %}
@@ -61,24 +59,7 @@ Thanks,<br>
 The ETAbot Team<br>
 
 <font color="grey">
-{% if reports.length != 0 %}
 
-    PS Here are excruciating details if you are interested.
-    Legend: scope is in storypoints units, time task estimate is in hours units.
-    CL - <a href="https://en.wikipedia.org/wiki/Confidence_interval">Confidence Level</a><br>
-
-  {% for report in reports %}
-    <h2>{{ report.entity_display_name }}</h2>
-    {{ report.velocity_report.html }}
-    {{ report.aux.tasks_table|default:"no aux info"}}
-    api: {{ report.aux.git_branch_api|default:"no git branch info"}}-{{ report.aux.git_commit_api|default:"no git commit info"}}
-    algo: {{ report.aux.git_branch|default:"no git branch info"}}-{{ report.aux.git_commit|default:"no git commit info"}}
-
-    <br>
-    <br>
-  {% endfor %}
-
-{% endif %}
 host: {{ host }}
 </font>
 {% endautoescape %}

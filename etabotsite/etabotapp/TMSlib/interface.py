@@ -96,10 +96,16 @@ class BasicReport:
         self.params_str = params_str
         self.tms_name = tms_name
         self.html = self.render_to_html()
+        self.short_html = self.render_to_html_short()
 
     def render_to_html(self):
         return render_to_string(
             'basic_report.html',
+            {'basic_report': self})
+
+    def render_to_html_short(self):
+        return render_to_string(
+            'short_report.html',
             {'basic_report': self})
 
     @staticmethod
