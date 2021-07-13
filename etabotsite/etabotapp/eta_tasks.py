@@ -61,16 +61,16 @@ def estimate_ETA_for_TMS(
     raw_status_reports = tms_wrapper.generate_projects_status_report(
         project_names=project_names, **kwargs)
 
-    html_report = email_reports.EmailReportProcess.generate_html_report(
+    email_report, full_report = email_reports.EmailReportProcess.generate_html_report(
         tms.owner, raw_status_reports)
 
     email_msg = email_reports.EmailReportProcess.format_email_msg(
-        tms.owner, html_report=html_report)
+        tms.owner, html_report=email_report)
     email_reports.EmailReportProcess.send_email(email_msg)
 
     for project in projects_set:
         project_settings = project.project_settings
-        project_settings['report'] = html_report
+        project_settings['report'] = full_report
         project_settings['report_date'] = str(datetime.utcnow())
 
         # todo: save basic report and report hierarchy in to project model
