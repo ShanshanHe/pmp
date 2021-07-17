@@ -4,6 +4,7 @@ from typing import List, Dict, Union
 import queue
 from django.template.loader import render_to_string
 import pandas as pd
+import json
 
 
 due_alert_names_map = {
@@ -43,6 +44,13 @@ class TargetDatesStats:
         for val in due_alert_names_map.values():
             self.counts[val] = 0
             self.tasks[val] = []
+
+    def to_dict(self):
+        return {
+            "summary_table": self.summary_table,
+            "tasks": self.tasks,
+            "counts": self.counts
+            }
 
 
 class VelocityReport:
@@ -156,3 +164,20 @@ class HierarchicalReportNode:
 
     def all_reports(self) -> List[BasicReport]:
         return [node.report for node in self.all_nodes()]
+
+    def to_dict(self) -> Dict:
+        return {
+            'project': self.report.project,
+            'project_on_track': self.report.project_on_track.value,
+            'entity_uuid': self.report.entity_uuid,
+            'entity_display_name': self.report.entity_display_name,
+            'due_dates_stats': self.report.due_dates_stats.to_dict(),
+            'sprint_stats': self.report.sprint_stats.to_dict(),
+            'velocity_report': self.report.velocity_report,
+            'aux': self.report.aux,
+            'params': self.report.params,
+            'params_str': self.report.params_str,
+            'tms_name': self.report.tms_name,
+            'html': self.report.html,
+            'children': [child.to_json() for child in self.children]
+        }

@@ -104,6 +104,9 @@ class TestStoreReportDateInProjectSettings(TestCase):
         # Check report exists and is a dictionary
         assert isinstance(self.project.project_settings, dict)
         # Check if the report_date is generated
-        self.assertTrue(self.project.project_settings['report_date'])
+        self.assertTrue('report_date' in self.project.project_settings)
         # Check if report_date is of type str
-        self.assertTrue(type('test string') == type(self.project.project_settings['report_date']))
+        self.assertTrue(isinstance(self.project.project_settings['report_date']), str)
+        self.assertTrue('hierarchical_report' in self.project.project_settings)
+        hierarchical_report = self.project.project_settings['hierarchical_report']
+        self.assertTrue(isinstance(hierarchical_report))

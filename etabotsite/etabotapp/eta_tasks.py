@@ -5,6 +5,8 @@ import etabotapp.TMSlib.TMS as TMSlib
 import logging
 import etabotapp.email_reports as email_reports
 from typing import List
+
+from etabotapp.TMSlib.interface import HierarchicalReportNode
 from etabotapp.models import TMS, Project
 from datetime import datetime
 
@@ -72,8 +74,14 @@ def estimate_ETA_for_TMS(
         project_settings = project.project_settings
         project_settings['report'] = html_report
         project_settings['report_date'] = str(datetime.utcnow())
-
-        # todo: save basic report and report hierarchy in to project model
+        if project.name in raw_status_reports:
+            hierarchical_report = raw_status_reports[project.name]
+            if isinstance(hierarchical_report, HierarchicalReportNode):
+                project_settings['hierarchical_report'] = hierarchical_report.to_json()
+            else:
+                logging.warning('hierarchical_report ({}) is not of HierarchicalReportNode type'.format(
+                    type(hierarchical_report)
+                ))
 
         logging.debug("saving project settings: {}".format(project_settings))
         project.project_settings = project_settings
