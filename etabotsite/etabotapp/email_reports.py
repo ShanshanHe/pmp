@@ -35,7 +35,7 @@ class EmailReportProcess(object):
         email_toolbox.EmailWorker.send_email(msg)
 
     @staticmethod
-    def generate_html_report(user, reports: Dict[str, HierarchicalReportNode]):
+    def generate_html_report(user, reports: Dict[str, HierarchicalReportNode]) -> (str, str):
         formatted_reports = []
         for project, project_report in reports.items():
             project_formatted_reports = []
@@ -55,11 +55,17 @@ class EmailReportProcess(object):
                 'no-reply@etabot.ai', 'hello@etabot.ai', 'no reports generated',
                 'user: "{}" \n projects: "{}"'.format(user.username, reports.keys())
             ))
-        msg_body = render_to_string('report_email.html', {
+        report_email = render_to_string('report_email.html', {
             'username': user.username,
             'reports': formatted_reports,
             'host': socket.gethostname()})
-        return msg_body
+
+        full_report = render_to_string('full_report.html', {
+            'username': user.username,
+            'reports': formatted_reports,
+            'host': socket.gethostname()})
+
+        return report_email, full_report
 
     @staticmethod
     def format_email_msg(user, html_report: str):
