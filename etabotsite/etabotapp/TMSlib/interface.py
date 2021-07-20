@@ -52,6 +52,9 @@ class TargetDatesStats:
             "counts": self.counts
             }
 
+    def to_json(self):
+        return json.dumps(self.to_dict())
+
 
 class VelocityReport:
     def __init__(self, summary: str, df_sprint_stats: pd.DataFrame, aux: str = ''):
@@ -67,6 +70,26 @@ class VelocityReport:
         if self.df_sprint_stats is not None:
             return self.df_sprint_stats.rename(columns={'id': 'done_issues in sprint'}).to_html(**params)
         return 'No Velocity report html.'
+
+    def to_dict(self) -> Dict:
+        return {
+            'summary': self.summary,
+            'df_sprint_stats': self.df_sprint_stats.to_dict(),
+            'df_velocity_vs_time': self.df_velocity_vs_time.to_dict(),
+            'df_velocity_stats': self.df_velocity_stats.to_dict(),
+            'html': self.html,
+            'images': self.images
+        }
+
+    def to_json(self) -> str:
+        return json.dumps({
+            'summary': self.summary,
+            'df_sprint_stats': self.df_sprint_stats.to_json(),
+            'df_velocity_vs_time': self.df_velocity_vs_time.to_json(),
+            'df_velocity_stats': self.df_velocity_stats.to_json(),
+            'html': self.html,
+            'images': self.images
+        })
 
 
 class BasicReport:
@@ -179,7 +202,24 @@ class HierarchicalReportNode:
             'entity_display_name': self.report.entity_display_name,
             'due_dates_stats': self.report.due_dates_stats.to_dict(),
             'sprint_stats': self.report.sprint_stats.to_dict(),
-            'velocity_report': self.report.velocity_report,
+            'velocity_report': self.report.velocity_report.to_dict(),
+            'aux': self.report.aux,
+            'params': self.report.params,
+            'params_str': self.report.params_str,
+            'tms_name': self.report.tms_name,
+            'html': self.report.html,
+            'children': [child.to_dict() for child in self.children]
+        }
+
+    def to_json(self) -> str:
+        d = {
+            'project': self.report.project,
+            'project_on_track': self.report.project_on_track.value,
+            'entity_uuid': self.report.entity_uuid,
+            'entity_display_name': self.report.entity_display_name,
+            'due_dates_stats': self.report.due_dates_stats.to_json(),
+            'sprint_stats': self.report.sprint_stats.to_json(),
+            'velocity_report': self.report.velocity_report.to_json(),
             'aux': self.report.aux,
             'params': self.report.params,
             'params_str': self.report.params_str,
@@ -187,3 +227,4 @@ class HierarchicalReportNode:
             'html': self.report.html,
             'children': [child.to_json() for child in self.children]
         }
+        return json.dumps(d)
