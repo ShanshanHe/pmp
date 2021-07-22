@@ -5,9 +5,12 @@ Authors: Chad Lewis, Alex Radnaev
 
 date created: 2020-03-10
 """
+import json
 
 from django.test import TestCase
 from django.contrib.auth.models import User
+
+from etabotapp.TMSlib.interface import HierarchicalReportNode
 from etabotapp.models import Project, TMS
 from etabotapp import eta_tasks as et
 from etabotapp import django_tasks as dt
@@ -98,12 +101,17 @@ class TestStoreReportDateInProjectSettings(TestCase):
         self.project.save()
 
     def test_is_report_in_project_settings(self):
-        """Test that reports are generated with a timestamp."""
+        """Test that reports are generated with a timestamp and hierarchical report."""
         # Create report
         et.estimate_ETA_for_TMS(self.tms, [self.project])
         # Check report exists and is a dictionary
         assert isinstance(self.project.project_settings, dict)
         # Check if the report_date is generated
-        self.assertTrue(self.project.project_settings['report_date'])
+        self.assertTrue('report_date' in self.project.project_settings)
         # Check if report_date is of type str
-        self.assertTrue(type('test string') == type(self.project.project_settings['report_date']))
+        self.assertTrue(isinstance(self.project.project_settings['report_date'], str))
+        self.assertTrue('hierarchical_report' in self.project.project_settings)
+        hierarchical_report = self.project.project_settings['hierarchical_report']
+        self.assertTrue(isinstance(hierarchical_report, dict))
+        hierarchical_report_json = json.dumps(hierarchical_report)
+        assert isinstance(hierarchical_report_json, str)
