@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 import pandas as pd
 import json
 
+from etabotapp.misc_utils.convertors import timestamp2unix
 
 due_alert_names_map = {
     'DueAlert.on_track': 'on_track',
@@ -74,7 +75,7 @@ class VelocityReport:
     def to_dict(self) -> Dict:
         return {
             'summary': self.summary,
-            'df_sprint_stats': self.df_sprint_stats.to_dict(),
+            'df_sprint_stats': self.df_sprint_stats.applymap(timestamp2unix).to_dict(),
             'df_velocity_vs_time': self.df_velocity_vs_time.to_dict(),
             'df_velocity_stats': self.df_velocity_stats.to_dict(),
             'html': self.html,
@@ -203,7 +204,7 @@ class HierarchicalReportNode:
             'due_dates_stats': self.report.due_dates_stats.to_dict(),
             'sprint_stats': self.report.sprint_stats.to_dict(),
             'velocity_report': self.report.velocity_report.to_dict(),
-            'aux': self.report.aux,
+            # 'aux': self.report.aux,
             'params': self.report.params,
             'params_str': self.report.params_str,
             'tms_name': self.report.tms_name,

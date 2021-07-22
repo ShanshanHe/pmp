@@ -111,7 +111,7 @@ class TestStoreReportDateInProjectSettings(TestCase):
         # Check if report_date is of type str
         self.assertTrue(isinstance(self.project.project_settings['report_date'], str))
         self.assertTrue('hierarchical_report' in self.project.project_settings)
-        hierarchical_report_json = self.project.project_settings['hierarchical_report']
-        self.assertTrue(isinstance(hierarchical_report_json, str))
-        hierarchical_report = json.loads(hierarchical_report_json)
-        assert isinstance(hierarchical_report, dict)
+        hierarchical_report = self.project.project_settings['hierarchical_report']
+        self.assertTrue(isinstance(hierarchical_report, dict))
+        hierarchical_report_json = json.dumps(hierarchical_report)
+        assert isinstance(hierarchical_report_json, str)
