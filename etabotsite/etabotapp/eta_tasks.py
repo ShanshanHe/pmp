@@ -79,8 +79,9 @@ def estimate_ETA_for_TMS(
             if isinstance(hierarchical_report, HierarchicalReportNode):
                 project_settings['hierarchical_report'] = hierarchical_report.to_dict()
                 # todo: https://etabot.atlassian.net/browse/ET-879
-                del project_settings['hierarchical_report']['velocity_report']['df_velocity_vs_time']
-                del project_settings['hierarchical_report']['velocity_report']['df_velocity_stats']
+                # del project_settings['hierarchical_report']['velocity_report']['df_sprint_stats']
+                # del project_settings['hierarchical_report']['velocity_report']['df_velocity_vs_time']
+                # del project_settings['hierarchical_report']['velocity_report']['df_velocity_stats']
 
             else:
                 logging.warning('hierarchical_report ({}) is not of HierarchicalReportNode type'.format(
@@ -88,6 +89,9 @@ def estimate_ETA_for_TMS(
                 ))
 
         logging.debug("saving project settings: {}".format(project_settings))
+        logging.debug("saving project settings hierarchical_report: {}".format(
+            project_settings['hierarchical_report']))
+        logging.debug("saving velocity report: {}".format(project_settings['hierarchical_report']['velocity_report']))
         project.project_settings = project_settings
 
         project.save()
