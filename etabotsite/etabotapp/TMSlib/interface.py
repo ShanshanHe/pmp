@@ -72,9 +72,9 @@ class VelocityReport:
     def to_dict(self) -> Dict:
         return {
             'summary': self.summary,
-            'df_sprint_stats': df_to_dict_for_json(self.df_sprint_stats),
-            'df_velocity_vs_time': df_to_dict_for_json(self.df_velocity_vs_time),
-            'df_velocity_stats': df_to_dict_for_json(self.df_velocity_stats),
+            # 'df_sprint_stats': df_to_dict_for_json(self.df_sprint_stats),
+            # 'df_velocity_vs_time': df_to_dict_for_json(self.df_velocity_vs_time),
+            # 'df_velocity_stats': df_to_dict_for_json(self.df_velocity_stats),
             'html': self.html,
             'images': self.images
         }
