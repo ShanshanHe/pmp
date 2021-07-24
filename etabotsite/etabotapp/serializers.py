@@ -79,6 +79,7 @@ class OAuth2TokenSerializer(serializers.ModelSerializer):
 #     #     user.is_active = False
 #     #     return user
 
+
 class TMSSerializer(serializers.ModelSerializer):
     """Serializer to map the model instance into json format."""
     owner = serializers.ReadOnlyField(source='owner.username')

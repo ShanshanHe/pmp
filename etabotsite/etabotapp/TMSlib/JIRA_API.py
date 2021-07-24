@@ -29,7 +29,7 @@ class JIRA_wrapper:
             server,
             username,
             password=None,
-            TMSconfig=None):
+            TMSconfig: 'TMS' = None):
         """Create JIRA_wrapper object for JIRA API communication.
 
         Arguments:
@@ -65,7 +65,7 @@ class JIRA_wrapper:
             'server': server}
 
         logging.debug('authenticating with JIRA ({}, {})...'.format(
-            username, options.get('server', 'unkown server')))
+            username, options.get('server', 'unknown server')))
 
         try:
             jira_place = []
@@ -81,7 +81,9 @@ class JIRA_wrapper:
                             basic_auth=(username, password),
                             options=options)
                     else:
+                        logging.debug('getting token from TMSconfig.')
                         token = self.TMSconfig.get_fresh_token()
+                        logging.debug('got token from TMSconfig.')
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',
@@ -99,12 +101,12 @@ class JIRA_wrapper:
                     error_message = str(e)
                     logging.debug(error_message)
                     errors_dict['error_message'] = error_message
-
+            logging.debug('starting get_jira_object thread')
             auth_thread = threading.Thread(
                 target=get_jira_object, args=(jira_place, errors_place))
             auth_thread.start()
 
-            logging.debug('waiting for {} seconds before checking for thread \
+            logging.debug('started get_jira_object thread. waiting for {} seconds before checking for thread \
 status'.format(jira_timout_seconds))
             auth_thread.join(jira_timout_seconds)
             logging.debug('thread join done. checking for thread')
@@ -119,7 +121,7 @@ check the team name with credentials and try again')
                     logging.debug('jira object acquired: {}. \
 Errors: "{}"'.format(jira, errors_place))
                 else:
-                    logging.debug('no JIRA object passed, rasing error.')
+                    logging.debug('no JIRA object passed, raising error.')
                     raise NameError(errors_place.get(
                         'error_message',
                         'Unknown error while authenticating with JIRA'))
@@ -192,6 +194,7 @@ Errors: "{}"'.format(jira, errors_place))
 
 
 def update_available_projects_for_TMS(tms):
+    logging.debug('update_available_projects_for_TMS started with tms {}'.format(tms))
     jira_wrapper = JIRA_wrapper(
         tms.endpoint,
         tms.username,
