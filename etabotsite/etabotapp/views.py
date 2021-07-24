@@ -332,7 +332,8 @@ class AtlassianOAuthCallback(APIView):
         tms_ids_list_string = construct_new_tms_ids_query_params(new_tms_ids)
         return redirect('/tmss' + tms_ids_list_string)
 
-    def add_update_atlassian_tms(self, owner, token_item):
+    @staticmethod
+    def add_update_atlassian_tms(owner, token_item):
         """Get all available systems for the token and pass to Django models.
 
         Return list of ids for newly created TMS Django models
@@ -357,6 +358,7 @@ class AtlassianOAuthCallback(APIView):
                     params=resource,
                     oauth2_token=token_item)
                 logging.debug('created new_TMS {}'.format(new_TMS))
+                new_TMS.save()
                 update_available_projects_for_TMS(new_TMS)
                 new_TMS.save()
                 new_tms_ids.append(new_TMS.id)
@@ -368,6 +370,7 @@ class AtlassianOAuthCallback(APIView):
                     existing_TMS.endpoint = resource['url']
                     existing_TMS.name = resource.get('name')
                     existing_TMS.oauth2_token = token_item
+                    existing_TMS.save()
                     update_available_projects_for_TMS(existing_TMS)
                     existing_TMS.save()
                     logging.debug('updated {}'.format(existing_TMS))

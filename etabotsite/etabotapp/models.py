@@ -1,7 +1,7 @@
 import sys
 import logging
 import os
-logging.getLogger().setLevel(logging.DEBUG)
+
 logging.debug('models import started.')
 # sys.path.append(os.path.abspath('etabotapp'))
 logging.debug('loading TMSlib')
@@ -176,16 +176,16 @@ class TMS(models.Model):
             Atlassian_API.ATLASSIAN_CLOUD_PROFILE, token=token_dict)
         logging.debug(res)
         logging.debug(vars(res))
-        logging.debug('self.oauth2_token: {}'.format(self.oauth2_token))
-        logging.debug('vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
-        logging.debug('token vars: {}'.format(vars(token)))
+        logging.debug('before TMS refresh from db self.oauth2_token: {}'.format(self.oauth2_token))
+        logging.debug('before TMS refresh from db vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
+        logging.debug('before TMS refresh from db token vars: {}'.format(vars(token)))
 
         logging.debug('refreshing from db')
         self.refresh_from_db()
-        logging.debug('self.oauth2_token: {}'.format(self.oauth2_token))
-        logging.debug('vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
-        logging.debug('token vars: {}'.format(vars(token)))
-        
+        logging.debug('after refreshing from db self.oauth2_token: {}'.format(self.oauth2_token))
+        logging.debug('after refreshing from db vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
+        logging.debug('after refreshing from db token vars: {}'.format(vars(token)))
+
         logging.debug('reassigning token to self.oauth2_token...')
         token = self.oauth2_token
         logging.debug('token vars: {}'.format(vars(token)))
