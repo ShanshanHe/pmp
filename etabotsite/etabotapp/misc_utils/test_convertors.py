@@ -14,5 +14,7 @@ def test_timestamp2unix():
     assert df2['t'][0] == 1584230400
     assert df2['s'][0] == 'test'
 
-def test_nan2None(x):
+
+def test_nan2None():
     assert nan2None(np.nan) is None
+    assert nan2None(np.inf) is None
