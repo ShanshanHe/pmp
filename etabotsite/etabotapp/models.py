@@ -1,7 +1,7 @@
 import sys
 import logging
 import os
-logging.getLogger().setLevel(logging.DEBUG)
+
 logging.debug('models import started.')
 # sys.path.append(os.path.abspath('etabotapp'))
 logging.debug('loading TMSlib')
