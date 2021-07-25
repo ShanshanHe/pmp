@@ -41,14 +41,17 @@ AUTHLIB_OAUTH_CLIENTS = getattr(settings, "AUTHLIB_OAUTH_CLIENTS", False)
 LOCAL_MODE = getattr(settings, "LOCAL_MODE", False)
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
+    print('set logging to DEBUG. testing DEBUG logging: ')
 else:
     logger.setLevel(logging.INFO)
+    print('set logging to INFO. testing logging levels: ')
+logging.debug('DEBUG level test')
+logging.debug('INFO level test')
+logging.debug('WARNING level test')
+print('DEBUG INFO WARNING levels test')
 
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
-
-
-# celery_app = clry.Celery('etabotapp')
 
 
 @ensure_csrf_cookie
@@ -360,7 +363,13 @@ class AtlassianOAuthCallback(APIView):
                         oauth2_token=token_item)
                     logging.debug('created new_TMS {}'.format(new_TMS))
                     new_TMS.save()
-                    # update_available_projects_for_TMS(new_TMS)
+                    jira_wrapper = JIRA_wrapper(
+                        new_TMS.endpoint,
+                        new_TMS.username,
+                        password=new_TMS.password,
+                        TMSconfig=new_TMS)
+                    logging.info('created jira object: {}'.format(jira_wrapper.jira))
+                    update_available_projects_for_TMS(new_TMS)
                     new_TMS.save()
                     new_tms_ids.append(new_TMS.id)
                     logging.debug('created new TMS {}'.format(new_TMS))

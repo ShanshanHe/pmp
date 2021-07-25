@@ -194,7 +194,7 @@ Errors: "{}"'.format(jira, errors_place))
 
 
 def update_available_projects_for_TMS(tms):
-    logging.debug('update_available_projects_for_TMS started with tms {}'.format(tms))
+    logging.info('update_available_projects_for_TMS started with tms {}'.format(tms))
     jira_wrapper = JIRA_wrapper(
         tms.endpoint,
         tms.username,
@@ -209,4 +209,5 @@ def update_available_projects_for_TMS(tms):
     logging.debug('tms.params: {}'.format(tms.params))
     tms.params[PROJECTS_AVAILABLE] = project_names
     logging.debug('projects_available: {}'.format(tms.params[PROJECTS_AVAILABLE]))
+    logging.info('update_available_projects_for_TMS finished for tms {}'.format(tms))
     return project_names

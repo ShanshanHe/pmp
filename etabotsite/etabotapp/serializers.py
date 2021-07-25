@@ -102,7 +102,7 @@ class TMSSerializer(serializers.ModelSerializer):
 
     def validate(self, val_input):
         """Validate credentials and endpoint result in successful login."""
-        logging.debug('validate_tms_credential started')
+        logging.info('validate_tms_credential started')
         logging.debug('self.initial_data: {}'.format(self.initial_data))
         # logging.debug('val_input: {}'.format(val_input))
         logging.debug('context: {}'.format(self.context))
@@ -115,7 +115,6 @@ class TMSSerializer(serializers.ModelSerializer):
             self.context['request'].method))
         if self.context['request'].method == 'POST':
             endpoint = self.initial_data['endpoint']
-            username = self.initial_data['username']
             if TMS.objects.filter(
                         endpoint=endpoint,
                         owner=owner).exists():
@@ -145,7 +144,7 @@ class TMSSerializer(serializers.ModelSerializer):
         if val_input.get('params') is None:
             val_input['params'] = {}
         val_input['params']['projects_available'] = project_names
-        logging.debug('validate_tms_credential finished')
+        logging.info('validate_tms_credential finished')
         return val_input
 
     def validate_Atlassian_API_key(self, instance):
