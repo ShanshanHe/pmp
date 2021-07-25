@@ -83,7 +83,7 @@ class JIRA_wrapper:
                     else:
                         logging.info('getting token from TMSconfig.')
                         token = self.TMSconfig.get_fresh_token()
-                        logging.info('got token from TMSconfig.')
+                        logging.info('got fresh token from TMSconfig.')
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',
@@ -95,7 +95,7 @@ class JIRA_wrapper:
                         res = jira.search_issues(search_string)
                         logging.debug('search result: {}'.format(res))
                         logging.info('found {} issues'.format(len(res)))
-                    logging.debug('Authenticated with JIRA. {}'.format(jira))
+                    logging.info('Authenticated with JIRA. {}'.format(jira))
                     target_list.append(jira)
                 except Exception as e:
                     error_message = str(e)

@@ -148,6 +148,7 @@ class TMSSerializer(serializers.ModelSerializer):
         return val_input
 
     def validate_Atlassian_API_key(self, instance):
+        logging.info('validate_Atlassian_API_key started.')
         TMS_w1 = TMSlib.TMSWrapper(instance)
         error = TMS_w1.connect_to_TMS(update_tms=False)
         if error is not None:
@@ -183,6 +184,7 @@ administrator to disable CAPTCHA.'
                 raise serializers.ValidationError('Unrecognized error has occurred - please check\
 inputs and try again. If the issue persists, please report the issue to \
 hello@etabot.ai')
+        logging.info('validate_Atlassian_API_key finished.')
 
 
 class ProjectSerializer(serializers.ModelSerializer):

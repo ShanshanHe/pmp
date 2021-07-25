@@ -358,7 +358,7 @@ class AtlassianOAuthCallback(APIView):
                 logging.debug('found TMSs with endpoint {}: {}'.format(
                     resource['url'], TMSs))
                 if len(TMSs) == 0:
-                    logging.debug('creating new TMS for {}'.format(resource['url']))
+                    logging.info('creating new TMS for {}'.format(resource['url']))
                     new_TMS = TMS(
                         owner=owner,
                         endpoint=resource['url'],
@@ -373,7 +373,7 @@ class AtlassianOAuthCallback(APIView):
                         new_TMS.username,
                         password=new_TMS.password,
                         TMSconfig=new_TMS)
-                    logging.info('created jira object: {}'.format(jira_wrapper.jira))
+                    logging.info('created test jira object: {}'.format(jira_wrapper.jira))
                     update_available_projects_for_TMS(new_TMS)
                     new_TMS.save()
                     new_tms_ids.append(new_TMS.id)
