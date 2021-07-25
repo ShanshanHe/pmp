@@ -142,7 +142,7 @@ logging_config = {
         }
     },
     'loggers': {
-        '': {
+        'django': {
             'handlers': ['mail_admins', 'django_console', 'django_file'],
             'propagate': True,
         },

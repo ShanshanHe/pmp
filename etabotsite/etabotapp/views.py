@@ -46,10 +46,10 @@ else:
     logger.setLevel(logging.INFO)
     print('not LOCAL_MODE views set logger to INFO.')
 
-print('logging test')
-logging.debug('views logging DEBUG level test')
-logging.info('views logging INFO level test')
-logging.warning('views logging WARNING level test')
+print('logger test')
+logger.debug('views logger DEBUG level test')
+logger.info('views logger INFO level test')
+logger.warning('views logger WARNING level test')
 logger.debug('views loggerDEBUG level test')
 logger.info('views  loggerINFO level test')
 logger.warning('views logger WARNING level test')
@@ -64,11 +64,11 @@ def index(request, path='', format=None):
     """
     Renders the Angular2 SPA
     """
-    logging.debug('format = "{}"'.format(format))
-    logging.debug('path = "{}"'.format(path))
-    logging.debug('request = "{}"'.format(request))
+    logger.debug('format = "{}"'.format(format))
+    logger.debug('path = "{}"'.format(path))
+    logger.debug('request = "{}"'.format(request))
     response = render(request, 'index.html')
-    logging.debug('response: {}'.format(response))
+    logger.debug('response: {}'.format(response))
     return response
 
 
@@ -76,9 +76,9 @@ def index(request, path='', format=None):
 @authentication_classes([])
 @permission_classes([])
 def activate(request):
-    logging.debug('activate API started')
+    logger.debug('activate API started')
     post_data = json.loads(request.body)
-    logging.debug('user activate post_data: "{}"'.format(post_data))
+    logger.debug('user activate post_data: "{}"'.format(post_data))
     code = ActivationProcessor.activate_user(post_data['token'])
     body = dict()
     status_code = 500
@@ -114,7 +114,7 @@ def activate(request):
 @authentication_classes([])
 @permission_classes([])
 def email_verification(request):
-    logging.debug('activate API started')
+    logger.debug('activate API started')
     post_data = json.loads(request.body)
     user = User.objects.get(pk=post_data['uid'])
     body = dict()
@@ -124,7 +124,7 @@ def email_verification(request):
         body['message'] = 'Successfully sent activation email to User {}'.format(user.username)
         return HttpResponse(json.dumps(body), content_type='application/json', status=200)
     except Exception as ex:
-        logging.error('Failed to send activation email to User %s: %s' % (user.username, str(ex)))
+        logger.error('Failed to send activation email to User %s: %s' % (user.username, str(ex)))
         body['message'] = 'Failed to send activation email to User {}'.format(user.username)
         return HttpResponse(json.dumps(body), content_type='application/json', status=500)
 
@@ -162,9 +162,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
         if self.request.user.is_superuser:
             return Project.objects.all()
         objects2return = Project.objects.filter(owner=self.request.user)
-        logging.debug('ProjectViewSet get_queryset:{}'.format(objects2return))
+        logger.debug('ProjectViewSet get_queryset:{}'.format(objects2return))
         for o in objects2return:
-            logging.debug('{}: project_tms_id="{}"'.format(
+            logger.debug('{}: project_tms_id="{}"'.format(
                 o, o.project_tms_id))
         return objects2return
 
@@ -193,7 +193,7 @@ class TMSViewSet(viewsets.ModelViewSet):
 class ParseTMSprojects(APIView):
 
     def get(self, request, format=None):
-        logging.debug('request.query_params: "{}"'.format(
+        logger.debug('request.query_params: "{}"'.format(
             request.query_params))
         response_message = ''
         celery_task_ids = []
@@ -201,11 +201,11 @@ class ParseTMSprojects(APIView):
             tms_set = get_tms_set_by_id(request)
         except Exception as e:
             response_message = 'Failed to parse tms id due to "{}"'.format(e)
-            logging.error(response_message)
+            logger.error(response_message)
             return Response(
                 response_message,
                 status=status.HTTP_400_BAD_REQUEST)
-        logging.debug('starting projects parsing for tms_set: {}'.format(
+        logger.debug('starting projects parsing for tms_set: {}'.format(
             tms_set))
         try:
             res_messages = []
@@ -214,20 +214,20 @@ class ParseTMSprojects(APIView):
                 celery_task = celery.send_task(
                     'etabotapp.django_tasks.parse_projects_for_tms_id',
                     (tms.id, parse_tms_kwargs))
-                logging.info('celerty task sent, celery id ={}'.format(celery_task))
+                logger.info('celerty task sent, celery id ={}'.format(celery_task))
                 celery_task_ids.append(celery_task.task_id)
                 res_messages.append('stared celery task id {} for tms id {}'.format(
                     celery_task.task_id, tms.id))
             response_message = '\n'.join(res_messages)
         except Exception as e:
-            logging.debug('parse_projects_for_TMS failed due to {}'.format(e))
+            logger.debug('parse_projects_for_TMS failed due to {}'.format(e))
             if 'not connected to JIRA' in str(e):
                 response_message = 'Issue with connecting to JIRA. \
 Please update your login credentials.'
             else:
                 response_message = 'unknown error. If the issue persists, \
 please contact us at hello@etabot.ai.'
-            logging.error(response_message)
+            logger.error(response_message)
             return Response(
                 response_message,
                 status=status.HTTP_400_BAD_REQUEST)
@@ -242,11 +242,11 @@ please contact us at hello@etabot.ai.'
 class AtlassianOAuth(APIView):
     def get(self, request):
         """Redirect to Atlassian for granting access to user data."""
-        # logging.debug(vars(request))
+        # logger.debug(vars(request))
         oauth_name = 'atlassian'
 
         permissions = request.GET.get('permissions')
-        logging.debug(permissions)
+        logger.debug(permissions)
 
         scope = AUTHLIB_OAUTH_CLIENTS.get(oauth_name, {}).get('client_kwargs', {}).get('scope')
         if permissions == 'in ETAbot only':
@@ -254,14 +254,14 @@ class AtlassianOAuth(APIView):
 
         timestamp = pytz.utc.localize(datetime.datetime.utcnow())
         state = hashlib.sha256(('{}{}'.format(request.user, timestamp)).encode('utf-8')).hexdigest()
-        logging.debug('state={}'.format(state))
+        logger.debug('state={}'.format(state))
         resp = oauth.atlassian.authorize_redirect(
             request, atlassian_redirect_uri,
             state=state,
             scope=scope)
 
-        logging.debug(resp)
-        logging.debug(vars(resp))
+        logger.debug(resp)
+        logger.debug(vars(resp))
         oa2cr = OAuth2CodeRequest(
             owner=request.user,
             name=oauth_name,
@@ -284,18 +284,18 @@ class AtlassianOAuthCallback(APIView):
         exchanged for an access token.
 
         TODO: setup framework for getting access token and storing it."""
-        logging.info(request.GET)
-        # logging.info(request.GET.get('code'))
-        logging.debug(oauth.atlassian.__dict__)
+        logger.info(request.GET)
+        # logger.info(request.GET.get('code'))
+        logger.debug(oauth.atlassian.__dict__)
         state = request.GET.get('state')
-        logging.debug('state={}'.format(state))
+        logger.debug('state={}'.format(state))
         try:
             token = oauth.atlassian.authorize_access_token(
                 request, redirect_uri=atlassian_redirect_uri)
 
-            logging.debug('token={}'.format(token))
+            logger.debug('token={}'.format(token))
         except Exception as e:
-            logging.error('cannot get token due to: "{}"'.format(e))
+            logger.error('cannot get token due to: "{}"'.format(e))
             return redirect('/error_page')
         if token.get('expires_in') is not None:
             try:
@@ -310,20 +310,20 @@ class AtlassianOAuthCallback(APIView):
 
         if len(users_set) == 0:
             error_message = 'no user found with such auth code request. please try again.'
-            logging.warning(error_message)
+            logger.warning(error_message)
             return Response(
                 error_message,
                 status=status.HTTP_400_BAD_REQUEST)
         elif len(users_set) > 1:
             error_message = 'Auth code request collision. please try again.'
-            logging.warning(error_message)
+            logger.warning(error_message)
             return Response(
                 error_message,
                 status=status.HTTP_400_BAD_REQUEST)
         else:
             pass
         user = users_set[0].owner
-        logging.debug('user: {}, username {}'.format(
+        logger.debug('user: {}, username {}'.format(
             user, user.username))
         token_item = OAuth2Token(
             owner=user,
@@ -334,7 +334,7 @@ class AtlassianOAuthCallback(APIView):
             expires_at=token['expires_at'])
 
         token_item.save()
-        logging.debug('token saved: {}'.format(vars(token_item)))
+        logger.debug('token saved: {}'.format(vars(token_item)))
 
         new_tms_ids = self.add_update_atlassian_tms(user, token_item)
         tms_ids_list_string = construct_new_tms_ids_query_params(new_tms_ids)
@@ -348,17 +348,17 @@ class AtlassianOAuthCallback(APIView):
         """
         atlassian = Atlassian_API.AtlassianAPI(token_item)
         resources = atlassian.get_accessible_resources()
-        logging.debug(resources)
+        logger.debug(resources)
         new_tms_ids = []
         for resource in resources:
             try:
                 TMSs = TMS.objects.all().filter(
                     endpoint=resource['url'],
                     owner=owner)
-                logging.debug('found TMSs with endpoint {}: {}'.format(
+                logger.debug('found TMSs with endpoint {}: {}'.format(
                     resource['url'], TMSs))
                 if len(TMSs) == 0:
-                    logging.info('creating new TMS for {}'.format(resource['url']))
+                    logger.info('creating new TMS for {}'.format(resource['url']))
                     new_TMS = TMS(
                         owner=owner,
                         endpoint=resource['url'],
@@ -366,21 +366,21 @@ class AtlassianOAuthCallback(APIView):
                         name=resource.get('name'),
                         params=resource,
                         oauth2_token=token_item)
-                    logging.debug('created new_TMS {}'.format(new_TMS))
+                    logger.debug('created new_TMS {}'.format(new_TMS))
                     new_TMS.save()
                     jira_wrapper = JIRA_wrapper(
                         new_TMS.endpoint,
                         new_TMS.username,
                         password=new_TMS.password,
                         TMSconfig=new_TMS)
-                    logging.info('created test jira object: {}'.format(jira_wrapper.jira))
+                    logger.info('created test jira object: {}'.format(jira_wrapper.jira))
                     update_available_projects_for_TMS(new_TMS)
                     new_TMS.save()
                     new_tms_ids.append(new_TMS.id)
-                    logging.debug('created new TMS {}'.format(new_TMS))
+                    logger.debug('created new TMS {}'.format(new_TMS))
                 else:
                     for existing_TMS in TMSs:
-                        logging.debug('updating {}'.format(existing_TMS))
+                        logger.debug('updating {}'.format(existing_TMS))
                         existing_TMS.params = resource
                         existing_TMS.endpoint = resource['url']
                         existing_TMS.name = resource.get('name')
@@ -388,13 +388,13 @@ class AtlassianOAuthCallback(APIView):
                         existing_TMS.save()
                         update_available_projects_for_TMS(existing_TMS)
                         existing_TMS.save()
-                        logging.debug('updated {}'.format(existing_TMS))
+                        logger.debug('updated {}'.format(existing_TMS))
             except Exception as e:
-                logging.error('Cannot parse resource "{}" due to "{}"'.format(
+                logger.error('Cannot parse resource "{}" due to "{}"'.format(
                     resource, e
                 ))
 
-            logging.debug('add_update_atlassian_tms is done')
+            logger.debug('add_update_atlassian_tms is done')
 
         return new_tms_ids
 
@@ -409,11 +409,11 @@ def construct_new_tms_ids_query_params(new_tms_ids):
 
 def get_tms_set_by_id(request):
     """Return tms_set on success or request Response."""
-    logging.debug(request.user)
+    logger.debug(request.user)
     tms_id = request.query_params.get('tms')
 
     tms_id = int(tms_id)
-    logging.debug('int tms_id: "{}"'.format(tms_id))
+    logger.debug('int tms_id: "{}"'.format(tms_id))
     tms_set = TMS.objects.all().filter(
         owner=request.user,
         id=tms_id)
@@ -433,9 +433,9 @@ def get_projects_by_tms(user, tms_id):
 
 
 def check_celery_worker_available():
-    logging.debug('checking celery workers availability')
+    logger.debug('checking celery workers availability')
     # result = celery_app.control.ping(timeout=0.5)
-    # logging.debug('checking celery workers availability: {}'.format(result))
+    # logger.debug('checking celery workers availability: {}'.format(result))
     # if len(result) == 0:
     #     raise NameError('no celery workers available')
 
@@ -447,7 +447,7 @@ def estimate_tms(user, tms, global_params, project_id=None):
         projects = get_projects_by_tms(
             user, tms.id
         )
-    logging.debug('projects: "{}"'.format(projects))
+    logger.debug('projects: "{}"'.format(projects))
     check_celery_worker_available()
     result = celery.send_task(
         'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
@@ -464,19 +464,19 @@ class EstimateTMSView(APIView):
 
         TODO: implement params per project."""
 
-        logging.debug('request.user: {}, username {}'.format(
+        logger.debug('request.user: {}, username {}'.format(
             request.user, request.user.username))
 
-        logging.debug('self.request.user: {}, self.username {}'.format(
+        logger.debug('self.request.user: {}, self.username {}'.format(
             self.request.user, self.request.user.username))
 
         post_data = {}
         if request.body:
-            logging.debug('request.body: {}'.format(request.body))
+            logger.debug('request.body: {}'.format(request.body))
             post_data = json.loads(request.body)
 
-        logging.debug('post_data: {}'.format(post_data))
-        logging.debug('request.query_params: "{}"'.format(
+        logger.debug('post_data: {}'.format(post_data))
+        logger.debug('request.query_params: "{}"'.format(
             request.query_params))
 
         if request.query_params.get('tms') is None:
@@ -496,7 +496,7 @@ class EstimateTMSView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST)
 
-        logging.debug('found tms: {}'.format(tms_set))
+        logger.debug('found tms: {}'.format(tms_set))
         if len(tms_set) == 0:
             return Response(
                 'No TMS found for user {}'.format(self.request.user),
@@ -505,7 +505,7 @@ class EstimateTMSView(APIView):
         # includes TMS credentials
         # threads = []
         global_params = post_data.get('params', {})
-        logging.debug('estimate call global_params: {}'.format(global_params))
+        logger.debug('estimate call global_params: {}'.format(global_params))
 
         tms_id_to_celery_task_id = {
             tms.id: estimate_tms(
@@ -528,16 +528,16 @@ class UserCommunicationView(APIView):
     """
 
     def post(self, request):
-        logging.debug('User Communication View POST Started')
+        logger.debug('User Communication View POST Started')
         error = False
 
         # Check for good data
         post_data = {}
         if request.body:
-            logging.debug('Request.body: {}'.format(request.body))
+            logger.debug('Request.body: {}'.format(request.body))
             post_data = json.loads(request.body)
         else:
-            logging.debug('No request body')
+            logger.debug('No request body')
             error = True
 
         if post_data.get('subject') is None or post_data.get('body') is None:
@@ -546,7 +546,7 @@ class UserCommunicationView(APIView):
         # Return error, and send email if necessary
         if error:
             if post_data.get('send_confirmation'):
-                logging.debug('Sending error email')
+                logger.debug('Sending error email')
                 subject = 'ETABot | Feedback Error'
                 body = 'Thank you for taking the time to provide feedback.' \
                        '<br><br> Unfortunately there was an issue ' \
@@ -570,7 +570,7 @@ class UserCommunicationView(APIView):
 
         # Format and send success email to user
         if post_data.get('send_confirmation'):
-            logging.debug('Sending confirmation email')
+            logger.debug('Sending confirmation email')
             subject = '[ETAbot] Feedback received!'
             body = 'Thanks for the feedback! <br><br> Subject: {} <br> Comments: {} ' \
                    '<br><br> We\'ll review it shortly. <br><br> -The ETABot Team'.format(
@@ -580,7 +580,7 @@ class UserCommunicationView(APIView):
             msg = email_toolbox.EmailWorker.format_email_msg(sender, str(user), subject, body)
             email_toolbox.EmailWorker.send_email(msg)
 
-        logging.debug('User Communication POST Finished')
+        logger.debug('User Communication POST Finished')
 
         return Response(status=status.HTTP_200_OK)
 
@@ -592,22 +592,22 @@ class CeleryTaskStatusView(APIView):
         Get celery task status for a particular celery task id.
         """
         # https://stackoverflow.com/questions/9034091/how-to-check-task-status-in-celery
-        logging.debug('CeleryTaskStatusView GET started')
+        logger.debug('CeleryTaskStatusView GET started')
         task_id = id
-        logging.debug('CeleryTaskStatusView GET started with id={}'.format(id))
+        logger.debug('CeleryTaskStatusView GET started with id={}'.format(id))
         if not task_id:
             response_dict = {'error': 'Celery task id not provided!'}
-            logging.debug('CeleryTaskStatusView GET returning {}'.format(response_dict))
+            logger.debug('CeleryTaskStatusView GET returning {}'.format(response_dict))
             return Response(
                 response_dict,
                 status=status.HTTP_400_BAD_REQUEST)
-        logging.debug('task status: {}'.format(
+        logger.debug('task status: {}'.format(
             celery.AsyncResult(task_id).status))
         response_dict = {
             task_id: celery.AsyncResult(task_id).status,
             '{}_result'.format(task_id): str(celery.AsyncResult(task_id).result)
         }
-        logging.debug('CeleryTaskStatusView GET returning {}'.format(response_dict))
+        logger.debug('CeleryTaskStatusView GET returning {}'.format(response_dict))
         return Response(
             data=response_dict,
             status=status.HTTP_200_OK)
