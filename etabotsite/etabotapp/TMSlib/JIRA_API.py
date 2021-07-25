@@ -75,34 +75,35 @@ class JIRA_wrapper:
             errors_place = {}
 
             def get_jira_object(target_list, errors_dict):
-                logger.info('"{}" connecting to JIRA with options: {}'.format(
+                logger2 = logging.getLogger('django')
+                logger2.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
                     if auth_method == 'password':
-                        logger.debug('using basic auth with password')
+                        logger2.debug('using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
                             options=options)
                     else:
-                        logger.info('getting token from TMSconfig.')
+                        logger2.info('getting token from TMSconfig.')
                         token = self.TMSconfig.get_fresh_token()
-                        logger.info('got fresh token from TMSconfig.')
+                        logger2.info('got fresh token from TMSconfig.')
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'}
-                        logger.debug('connecting with options: {}'.format(options))
+                        logger2.debug('connecting with options: {}'.format(options))
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'
-                        logger.debug('test jira query with search string: {}'.format(search_string))
+                        logger2.debug('test jira query with search string: {}'.format(search_string))
                         res = jira.search_issues(search_string)
-                        logger.debug('search result: {}'.format(res))
-                        logger.info('found {} issues'.format(len(res)))
-                    logger.info('Authenticated with JIRA. {}'.format(jira))
+                        logger2.debug('search result: {}'.format(res))
+                        logger2.info('found {} issues'.format(len(res)))
+                    logger2.info('Authenticated with JIRA. {}'.format(jira))
                     target_list.append(jira)
                 except Exception as e:
                     error_message = str(e)
-                    logger.debug(error_message)
+                    logger2.debug(error_message)
                     errors_dict['error_message'] = error_message
             logger.debug('starting get_jira_object thread')
             auth_thread = threading.Thread(

@@ -374,7 +374,7 @@ class AtlassianOAuthCallback(APIView):
                         password=new_TMS.password,
                         TMSconfig=new_TMS)
                     logger.info('created test jira object: {}'.format(jira_wrapper.jira))
-                    update_available_projects_for_TMS(new_TMS)
+                    # update_available_projects_for_TMS(new_TMS)
                     new_TMS.save()
                     new_tms_ids.append(new_TMS.id)
                     logger.debug('created new TMS {}'.format(new_TMS))
@@ -386,7 +386,7 @@ class AtlassianOAuthCallback(APIView):
                         existing_TMS.name = resource.get('name')
                         existing_TMS.oauth2_token = token_item
                         existing_TMS.save()
-                        update_available_projects_for_TMS(existing_TMS)
+                        # update_available_projects_for_TMS(existing_TMS)
                         existing_TMS.save()
                         logger.debug('updated {}'.format(existing_TMS))
             except Exception as e:
