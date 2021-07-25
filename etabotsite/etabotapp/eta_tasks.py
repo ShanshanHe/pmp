@@ -90,8 +90,7 @@ def estimate_ETA_for_TMS(
 
         logging.debug("saving project settings: {}".format(project_settings))
         logging.debug("saving project settings hierarchical_report: {}".format(
-            project_settings['hierarchical_report']))
-        logging.debug("saving velocity report: {}".format(project_settings['hierarchical_report']['velocity_report']))
+            project_settings.get('hierarchical_report')))
         project.project_settings = project_settings
 
         project.save()

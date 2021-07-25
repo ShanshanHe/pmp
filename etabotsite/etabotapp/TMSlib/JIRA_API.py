@@ -16,7 +16,7 @@ from typing import Dict
 from etabotapp.constants import PROJECTS_AVAILABLE
 
 JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
-JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.
+JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 15.
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
 logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
 

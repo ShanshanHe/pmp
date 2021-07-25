@@ -360,7 +360,7 @@ class AtlassianOAuthCallback(APIView):
                         oauth2_token=token_item)
                     logging.debug('created new_TMS {}'.format(new_TMS))
                     new_TMS.save()
-                    update_available_projects_for_TMS(new_TMS)
+                    # update_available_projects_for_TMS(new_TMS)
                     new_TMS.save()
                     new_tms_ids.append(new_TMS.id)
                     logging.debug('created new TMS {}'.format(new_TMS))
