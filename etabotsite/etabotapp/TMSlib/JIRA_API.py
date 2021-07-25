@@ -121,7 +121,7 @@ check the team name with credentials and try again')
                     logging.debug('jira object acquired: {}. \
 Errors: "{}"'.format(jira, errors_place))
                 else:
-                    logging.debug('no JIRA object passed, raising error.')
+                    logging.warning('no JIRA object passed, raising error.')
                     raise NameError(errors_place.get(
                         'error_message',
                         'Unknown error while authenticating with JIRA'))

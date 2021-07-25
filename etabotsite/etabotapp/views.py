@@ -343,38 +343,45 @@ class AtlassianOAuthCallback(APIView):
         logging.debug(resources)
         new_tms_ids = []
         for resource in resources:
-            TMSs = TMS.objects.all().filter(
-                endpoint=resource['url'],
-                owner=owner)
-            logging.debug('found TMSs with endpoint {}: {}'.format(
-                resource['url'], TMSs))
-            if len(TMSs) == 0:
-                logging.debug('creating new TMS for {}'.format(resource['url']))
-                new_TMS = TMS(
-                    owner=owner,
+            try:
+                TMSs = TMS.objects.all().filter(
                     endpoint=resource['url'],
-                    type='JI',
-                    name=resource.get('name'),
-                    params=resource,
-                    oauth2_token=token_item)
-                logging.debug('created new_TMS {}'.format(new_TMS))
-                new_TMS.save()
-                update_available_projects_for_TMS(new_TMS)
-                new_TMS.save()
-                new_tms_ids.append(new_TMS.id)
-                logging.debug('created new TMS {}'.format(new_TMS))
-            else:
-                for existing_TMS in TMSs:
-                    logging.debug('updating {}'.format(existing_TMS))
-                    existing_TMS.params = resource
-                    existing_TMS.endpoint = resource['url']
-                    existing_TMS.name = resource.get('name')
-                    existing_TMS.oauth2_token = token_item
-                    existing_TMS.save()
-                    update_available_projects_for_TMS(existing_TMS)
-                    existing_TMS.save()
-                    logging.debug('updated {}'.format(existing_TMS))
-        logging.debug('add_update_atlassian_tms is done')
+                    owner=owner)
+                logging.debug('found TMSs with endpoint {}: {}'.format(
+                    resource['url'], TMSs))
+                if len(TMSs) == 0:
+                    logging.debug('creating new TMS for {}'.format(resource['url']))
+                    new_TMS = TMS(
+                        owner=owner,
+                        endpoint=resource['url'],
+                        type='JI',
+                        name=resource.get('name'),
+                        params=resource,
+                        oauth2_token=token_item)
+                    logging.debug('created new_TMS {}'.format(new_TMS))
+                    new_TMS.save()
+                    update_available_projects_for_TMS(new_TMS)
+                    new_TMS.save()
+                    new_tms_ids.append(new_TMS.id)
+                    logging.debug('created new TMS {}'.format(new_TMS))
+                else:
+                    for existing_TMS in TMSs:
+                        logging.debug('updating {}'.format(existing_TMS))
+                        existing_TMS.params = resource
+                        existing_TMS.endpoint = resource['url']
+                        existing_TMS.name = resource.get('name')
+                        existing_TMS.oauth2_token = token_item
+                        existing_TMS.save()
+                        update_available_projects_for_TMS(existing_TMS)
+                        existing_TMS.save()
+                        logging.debug('updated {}'.format(existing_TMS))
+            except Exception as e:
+                logging.error('Cannot parse resource "{}" due to "{}"'.format(
+                    resource, e
+                ))
+
+            logging.debug('add_update_atlassian_tms is done')
+
         return new_tms_ids
 
 
