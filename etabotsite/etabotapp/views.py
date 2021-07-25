@@ -45,13 +45,15 @@ if LOCAL_MODE:
 else:
     logger.setLevel(logging.INFO)
     print('not LOCAL_MODE views set logger to INFO.')
+
+print('logging test')
 logging.debug('views logging DEBUG level test')
 logging.info('views logging INFO level test')
 logging.warning('views logging WARNING level test')
 logger.debug('views loggerDEBUG level test')
 logger.info('views  loggerINFO level test')
 logger.warning('views logger WARNING level test')
-print('DEBUG INFO WARNING levels test')
+print('DEBUG INFO WARNING levels test done')
 
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')

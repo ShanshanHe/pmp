@@ -93,6 +93,8 @@ log_filename_with_path = get_key_value(
     custom_settings, 'LOG_FILENAME_WITH_PATH', default='/usr/src/app/logging/django_log.txt')
 print('log_filename_with_path: {}'.format(log_filename_with_path))
 
+DJANGO_CONSOLE_LOGGING_LEVEL = get_key_value(custom_settings, 'DJANGO_CONSOLE_LOGGING_LEVEL', default='WARNING')
+print('DJANGO_CONSOLE_LOGGING_LEVEL: {}'.format(DJANGO_CONSOLE_LOGGING_LEVEL))
 # Logging to File and Logging Configuration
 # Logger will modify root logger
 # Handlers's levels can be changed to meet the needs of the dev
@@ -115,7 +117,7 @@ logging_config = {
     },
     'handlers': {
         'django_console': {
-            'level': 'WARNING',
+            'level': DJANGO_CONSOLE_LOGGING_LEVEL,
             'class': 'logging.StreamHandler',
             'formatter': 'django_format'
         },
@@ -162,8 +164,19 @@ logger = logging.getLogger(__name__)
 
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
+    print('set logger level to DEBUG')
 else:
     logger.setLevel(logging.INFO)
+    print('set logger level to INFO')
+
+print('logging test')
+logging.debug('settings logging DEBUG level test')
+logging.info('settings logging INFO level test')
+logging.warning('settings logging WARNING level test')
+logger.debug('settings loggerDEBUG level test')
+logger.info('settings  loggerINFO level test')
+logger.warning('settings logger WARNING level test')
+print('DEBUG INFO WARNING levels test done')
 
 # Set HOST_URL based on production or development mode
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url

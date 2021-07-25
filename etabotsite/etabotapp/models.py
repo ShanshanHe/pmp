@@ -144,7 +144,7 @@ def update_oauth_token(name, token, refresh_token=None, access_token=None):
         logging.debug(vars(tms_instance))
         logging.debug(tms_instance.oauth2_token)
         logging.debug(vars(tms_instance.oauth2_token))
-    logging.debug('update_oauth_token is done.')
+    logging.info('update_oauth_token is done.')
 
 
 class TMS(models.Model):
@@ -174,13 +174,14 @@ class TMS(models.Model):
         logging.info('priming TMS GET with oauth...')
         res = oauth.atlassian.get(
             Atlassian_API.ATLASSIAN_CLOUD_PROFILE, token=token_dict)
+        logging.info('got oauth.atlassian result')
         logging.debug(res)
         logging.debug(vars(res))
         logging.debug('before TMS refresh from db self.oauth2_token: {}'.format(self.oauth2_token))
         logging.debug('before TMS refresh from db vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
         logging.debug('before TMS refresh from db token vars: {}'.format(vars(token)))
 
-        logging.debug('refreshing from db')
+        logging.debug('refreshing TMS from db')
         self.refresh_from_db()
         logging.debug('after refreshing from db self.oauth2_token: {}'.format(self.oauth2_token))
         logging.debug('after refreshing from db vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))

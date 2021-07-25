@@ -81,9 +81,9 @@ class JIRA_wrapper:
                             basic_auth=(username, password),
                             options=options)
                     else:
-                        logging.debug('getting token from TMSconfig.')
+                        logging.info('getting token from TMSconfig.')
                         token = self.TMSconfig.get_fresh_token()
-                        logging.debug('got token from TMSconfig.')
+                        logging.info('got token from TMSconfig.')
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',
