@@ -339,11 +339,13 @@ projects: {}'.format(tms_config, projects))
             cloudid = None
             if tms_config.params is not None:
                 cloudid = tms_config.params.get('id')
+            else:
+                logger.warning('tms_config.params is None')
             if cloudid is not None:
                 server = JIRA_API.JIRA_CLOUD_API + cloudid
             else:
                 server = tms_config.endpoint
-
+            logger.debug('TMSWrapper set server: {}'.format(server))
             TMS_JIRA.__init__(
                 self,
                 server_end_point=server,

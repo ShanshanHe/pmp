@@ -11,13 +11,14 @@ import datetime
 
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
+logger = logging.getLogger('django')
 
 
 @shared_task
 def estimate_all():
     """Estimate ETA for all tasks for all users."""
     tms_set = TMS.objects.all()
-    logging.info(
+    logger.info(
         'starting generating ETAs for the \
 following TMS entries ({}): {}'.format(
             len(tms_set), tms_set))
@@ -31,20 +32,20 @@ following TMS entries ({}): {}'.format(
         result = celery.send_task(
             'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
             (tms.id, projects_ids, global_params))
-        logging.info('submitted celery job {} for tms {}, projects {}'.format(
+        logger.info('submitted celery job {} for tms {}, projects {}'.format(
             result.task_id, tms, projects))
     return True
 
 
 def get_tms_by_id(tms_id) -> TMS:
-    logging.info('searching for TMS with id: {}'.format(tms_id))
+    logger.info('searching for TMS with id: {}'.format(tms_id))
     tms_list = TMS.objects.all().filter(
             pk=tms_id)
-    logging.info('found TMSs: {}'.format(tms_list))
+    logger.info('found TMSs: {}'.format(tms_list))
     if len(tms_list) > 1:
         raise NameError('TMS id "{}" is not unique'.format(tms_id))
     elif tms_list is None or len(tms_list) == 0:
-        logging.warning('no TMS found with id {}'.format(tms_id))
+        logger.warning('no TMS found with id {}'.format(tms_id))
         return None
     else:
         tms = tms_list[0]
@@ -61,7 +62,7 @@ def estimate_ETA_for_TMS_project_set_ids(
     if tms is None:
         raise NameError('cannot find TMS with id {}'.format(tms_id))
     projects_set = Project.objects.all().filter(pk__in=projects_set_ids)
-    logging.info('found projects_set: {}'.format(projects_set))
+    logger.info('found projects_set: {}'.format(projects_set))
     if 'simulate_failure' in params:
         raise NameError('Simulating failure')
     eta_tasks.estimate_ETA_for_TMS(tms, projects_set, **params)
@@ -87,11 +88,11 @@ def parse_projects_for_tms_id(
 @shared_task
 def send_daily_project_report(**kwargs):
     """Generate Daily Email Reports for all Users"""
-    logging.info("Sending Emails to all users for Daily Reports!")
+    logger.info("Sending Emails to all users for Daily Reports!")
     userlist = User.objects.all()
     for user in userlist:
         tms_list = TMS.objects.all().filter(owner=user)
-        logging.debug("TMS: {}".format(len(tms_list)))
+        logger.debug("TMS: {}".format(len(tms_list)))
         for tms in tms_list:
             project_set = Project.objects.all().filter(project_tms_id=tms.id)
             if project_set:

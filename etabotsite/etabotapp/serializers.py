@@ -2,6 +2,8 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework.validators import UniqueTogetherValidator
 from django.contrib.auth.models import User
+
+from .constants import PROJECTS_AVAILABLE
 from .models import Project, TMS
 from .models import oauth
 from django.conf import settings
@@ -12,6 +14,7 @@ from copy import copy
 import etabotapp.response_regex as rr
 
 LOCAL_MODE = getattr(settings, "LOCAL_MODE", False)
+logger = logging.getLogger('django')
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -79,11 +82,12 @@ class OAuth2TokenSerializer(serializers.ModelSerializer):
 #     #     user.is_active = False
 #     #     return user
 
+
 class TMSSerializer(serializers.ModelSerializer):
     """Serializer to map the model instance into json format."""
     owner = serializers.ReadOnlyField(source='owner.username')
     connectivity_status = serializers.JSONField()
-    logging.debug('TMSSerializer owner: {}'.format(owner))
+    logger.debug('TMSSerializer owner: {}'.format(owner))
 
     class Meta:
         """Map this serializer to a model and their fields."""
@@ -101,27 +105,26 @@ class TMSSerializer(serializers.ModelSerializer):
 
     def validate(self, val_input):
         """Validate credentials and endpoint result in successful login."""
-        logging.debug('validate_tms_credential started')
-        logging.debug('self.initial_data: {}'.format(self.initial_data))
-        # logging.debug('val_input: {}'.format(val_input))
-        logging.debug('context: {}'.format(self.context))
+        logger.info('validate_tms_credential started')
+        logger.debug('self.initial_data: {}'.format(self.initial_data))
+        # logger.debug('val_input: {}'.format(val_input))
+        logger.debug('context: {}'.format(self.context))
         owner = self.context['request'].user
-        logging.debug('owner: {}, type: {}'.format(
+        logger.debug('owner: {}, type: {}'.format(
             owner, type(owner)))
-        logging.debug('self.initial_data[owner]="{}"'.format(
+        logger.debug('self.initial_data[owner]="{}"'.format(
             self.initial_data.get('owner')))
-        logging.debug('request method: {}'.format(
+        logger.debug('request method: {}'.format(
             self.context['request'].method))
         if self.context['request'].method == 'POST':
             endpoint = self.initial_data['endpoint']
-            username = self.initial_data['username']
             if TMS.objects.filter(
                         endpoint=endpoint,
                         owner=owner).exists():
                 raise serializers.ValidationError(
                         'Combination {}@{} already exists for this user'.format(
                             owner, endpoint))
-            logging.debug(
+            logger.debug(
                 'validated username/endpoint combination uniqueness current user')
             tms_params = copy(self.initial_data)
             if 'owner' in tms_params:
@@ -129,34 +132,34 @@ class TMSSerializer(serializers.ModelSerializer):
                 # when it comes to owner
                 tms_params['owner'] = owner
             instance = TMS(**tms_params)
+            self.validate_credentials_and_update_projects_available(instance)
+            if 'params' not in self.initial_data:
+                self.initial_data['params'] = {}
+            self.initial_data['params'][PROJECTS_AVAILABLE] = instance.params[PROJECTS_AVAILABLE]
         elif self.context['request'].method == 'PATCH':
-            tms = self.instance
-            # logging.debug(tms.password)
             for k, v in self.initial_data.items():
-                setattr(tms, k, v)
-            # logging.debug(tms.password)
-            instance = tms
+                setattr(self.instance, k, v)
+                logger.debug('patching TMS attribute "{}"'.format(k))
+            self.validate_credentials_and_update_projects_available(self.instance)
         else:
             raise serializers.ValidationError('unsupported method {}'.format(
                 self.context['request'].method))
-        self.validate_Atlassian_API_key(instance)
-        project_names = update_available_projects_for_TMS(instance)
-        if val_input.get('params') is None:
-            val_input['params'] = {}
-        val_input['params']['projects_available'] = project_names
-        logging.debug('validate_tms_credential finished')
+
+        logger.info('validate_tms_credential finished')
         return val_input
 
-    def validate_Atlassian_API_key(self, instance):
+    def validate_credentials_and_update_projects_available(self, instance):
+        logger.info('validate_Atlassian_API_key started.')
+        logger.debug('TMS instance: {}, params: {}'.format(instance, instance.params))
         TMS_w1 = TMSlib.TMSWrapper(instance)
         error = TMS_w1.connect_to_TMS(update_tms=False)
         if error is not None:
-            logging.debug('Error in validation: {}'.format(error))
+            logger.debug('Error in validation: {}'.format(error))
             if 'Unauthorized (401)' in error:
                 raise serializers.ValidationError('Unable to log in due to "Unauthorized (401)"\
  error - please check username/email and password')
             elif 'cannot connect to TMS JIRA' in error:
-                logging.debug('cannot connect to TMS JIRA error.')
+                logger.debug('cannot connect to TMS JIRA error.')
                 captcha_sig = \
                     "'X-Authentication-Denied-Reason': 'CAPTCHA_CHALLENGE"
                 if captcha_sig in error:
@@ -164,9 +167,9 @@ class TMSSerializer(serializers.ModelSerializer):
                     login_urls = rr.get_login_url(error)
                     if len(login_urls) > 0:
                         login_url = login_urls[0]
-                        logging.debug('login_url: {}'.format(login_url))
+                        logger.debug('login_url: {}'.format(login_url))
                     else:
-                        logging.debug(
+                        logger.debug(
                             'No login url detected, using TMS endpoint.')
                         login_url = instance.endpoint
                     message += 'Please login at <a href="{login_url}">{login_url}</a> \
@@ -175,7 +178,7 @@ first and then try again. '.format(login_url=login_url)
 administrator to disable CAPTCHA.'
                     raise serializers.ValidationError(message)
                 else:
-                    logging.debug('generic connectivity issue.')
+                    logger.debug('generic connectivity issue.')
                     raise serializers.ValidationError('cannot connect to TMS JIRA - please check\
      inputs and try again. If the issue persists, please report the issue to \
     hello@etabot.ai')
@@ -183,6 +186,8 @@ administrator to disable CAPTCHA.'
                 raise serializers.ValidationError('Unrecognized error has occurred - please check\
 inputs and try again. If the issue persists, please report the issue to \
 hello@etabot.ai')
+        update_available_projects_for_TMS(instance, TMS_w1.jira)
+        logger.info('validate_Atlassian_API_key finished.')
 
 
 class ProjectSerializer(serializers.ModelSerializer):
