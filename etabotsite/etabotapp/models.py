@@ -254,6 +254,7 @@ def parse_projects_for_TMS(instance: TMS, **kwargs) -> str:
     projects_names_user_selected = instance.params.get(
         PROJECTS_USER_SELECTED,
         instance.params.get(PROJECTS_AVAILABLE, []))
+    logger.debug('projects_names_user_selected: {}'.format(projects_names_user_selected))
     new_projects_user_selected = {}
     for user_selected_project in projects_names_user_selected:
         if user_selected_project not in existing_projects_dict:

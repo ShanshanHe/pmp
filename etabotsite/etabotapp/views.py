@@ -214,7 +214,7 @@ class ParseTMSprojects(APIView):
                 celery_task = celery.send_task(
                     'etabotapp.django_tasks.parse_projects_for_tms_id',
                     (tms.id, parse_tms_kwargs))
-                logger.info('celerty task sent, celery id ={}'.format(celery_task))
+                logger.info('celery task sent, celery id ={}'.format(celery_task))
                 celery_task_ids.append(celery_task.task_id)
                 res_messages.append('stared celery task id {} for tms id {}'.format(
                     celery_task.task_id, tms.id))

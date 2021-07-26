@@ -212,6 +212,5 @@ def update_available_projects_for_TMS(tms, jira_wrapper):
     else:
         logger.warning('no jira object. jira wrapper: {}'.format(jira_wrapper))
 
-
     logger.info('update_available_projects_for_TMS finished for tms {}'.format(tms))
     return project_names
