@@ -350,7 +350,7 @@ class AtlassianOAuthCallback(APIView):
         resources = atlassian.get_accessible_resources()
         logger.debug(resources)
         new_tms_ids = []
-        for resource in resources:
+        for resource in [resources[-1]]:
             try:
                 TMSs = TMS.objects.all().filter(
                     endpoint=resource['url'],

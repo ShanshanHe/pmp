@@ -197,16 +197,18 @@ Errors: "{}"'.format(jira, errors_place))
         return team_members
 
 
-def update_available_projects_for_TMS(tms, jira):
-    logger.info('update_available_projects_for_TMS started with tms {}, jira {}'.format(tms, jira))
-    if jira is not None:
-        projects = jira.projects()
+def update_available_projects_for_TMS(tms, jira_wrapper):
+    logger.info('update_available_projects_for_TMS started with tms {}, jira {}'.format(tms, jira_wrapper))
+    if jira_wrapper is not None and jira_wrapper.jira:
+        projects = jira_wrapper.jira.projects()
         project_names = [project.name for project in projects]
         logger.debug('project_names: {}'.format(project_names))
         logger.debug('TMS: {}'.format(tms))
         logger.debug('tms.params: {}'.format(tms.params))
         tms.params[PROJECTS_AVAILABLE] = project_names
         logger.debug('projects_available: {}'.format(tms.params[PROJECTS_AVAILABLE]))
+    else:
+        logger.warning('no jira object. jira wrapper: {}'.format(jira_wrapper))
     if tms.params is None:
         tms.params = {}
 
