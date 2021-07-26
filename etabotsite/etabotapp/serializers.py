@@ -140,8 +140,7 @@ class TMSSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('unsupported method {}'.format(
                 self.context['request'].method))
         self.validate_Atlassian_API_key(instance)
-        # project_names = update_available_projects_for_TMS(instance)
-        project_names = None
+
         if val_input.get('params') is None:
             val_input['params'] = {}
         val_input['params']['projects_available'] = instance.params.get('projects_available')
