@@ -144,7 +144,7 @@ class TMSSerializer(serializers.ModelSerializer):
         project_names = None
         if val_input.get('params') is None:
             val_input['params'] = {}
-        val_input['params']['projects_available'] = project_names
+        val_input['params']['projects_available'] = instance.params.get('projects_available')
         logging.info('validate_tms_credential finished')
         return val_input
 
