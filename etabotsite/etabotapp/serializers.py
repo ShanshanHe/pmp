@@ -16,6 +16,7 @@ import etabotapp.response_regex as rr
 LOCAL_MODE = getattr(settings, "LOCAL_MODE", False)
 logger = logging.getLogger('django')
 
+
 class UserSerializer(serializers.ModelSerializer):
     """Serializer to map the Model instance into JSON format."""
     email_validators = []

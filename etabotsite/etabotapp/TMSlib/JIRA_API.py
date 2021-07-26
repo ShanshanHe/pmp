@@ -19,7 +19,7 @@ JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
 JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 15.
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 logger.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
 
@@ -201,6 +201,7 @@ def update_available_projects_for_TMS(tms, jira_wrapper):
     logger.info('update_available_projects_for_TMS started with tms {}, jira {}'.format(tms, jira_wrapper))
     if tms.params is None:
         tms.params = {}
+        logger.warning('tms params is None, creating empty dict.')
     if jira_wrapper is not None and jira_wrapper.jira:
         projects = jira_wrapper.jira.projects()
         project_names = [project.name for project in projects]
