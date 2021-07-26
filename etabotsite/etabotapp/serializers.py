@@ -185,6 +185,7 @@ administrator to disable CAPTCHA.'
                 raise serializers.ValidationError('Unrecognized error has occurred - please check\
 inputs and try again. If the issue persists, please report the issue to \
 hello@etabot.ai')
+        update_available_projects_for_TMS(instance, TMS_w1.jira)
         logging.info('validate_Atlassian_API_key finished.')
 
 
