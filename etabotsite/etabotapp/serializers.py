@@ -104,7 +104,10 @@ class TMSSerializer(serializers.ModelSerializer):
             'connectivity_status')
 
     def validate(self, val_input):
-        """Validate credentials and endpoint result in successful login."""
+        """Validate credentials and endpoint result in successful login.
+        self.initial_data - only subset of parameters defined in API call
+        """
+
         logger.info('validate_tms_credential started')
         logger.debug('self.initial_data: {}'.format(self.initial_data))
         # logger.debug('val_input: {}'.format(val_input))
@@ -136,6 +139,9 @@ class TMSSerializer(serializers.ModelSerializer):
             if 'params' not in self.initial_data:
                 self.initial_data['params'] = {}
             self.initial_data['params'][PROJECTS_AVAILABLE] = instance.params[PROJECTS_AVAILABLE]
+            if val_input.get('params') is None:
+                val_input['params'] = {}
+            val_input['params'][PROJECTS_AVAILABLE] = instance.params[PROJECTS_AVAILABLE]
         elif self.context['request'].method == 'PATCH':
             for k, v in self.initial_data.items():
                 setattr(self.instance, k, v)
