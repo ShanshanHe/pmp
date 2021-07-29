@@ -155,6 +155,8 @@ class TMSViewTestCase(TestCase):
 
     def test_parse_projects_for_TMS(self):
         tms = TMS.objects.get()
+        if tms.params is None:
+            tms.params = {}
         tms.params[PROJECTS_USER_SELECTED] = ['ETAbot-Demo']
         parse_projects_for_TMS(tms)
         projects = Project.objects.all().filter(project_tms=tms.id)
