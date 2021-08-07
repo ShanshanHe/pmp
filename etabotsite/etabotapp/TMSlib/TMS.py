@@ -308,6 +308,7 @@ class TMSWrapper(TMS_JIRA):
 
         Arguments:
             tms_config - Django model of TMS.
+            projects - list of Django model projects to pre-populate open_status_values
 
         Todo:
             figure out how to subclass from ProtoTMS to
@@ -338,17 +339,18 @@ projects: {}'.format(tms_config, projects))
             cloudid = None
             if tms_config.params is not None:
                 cloudid = tms_config.params.get('id')
+            else:
+                logger.warning('tms_config.params is None')
             if cloudid is not None:
                 server = JIRA_API.JIRA_CLOUD_API + cloudid
             else:
                 server = tms_config.endpoint
-
+            logger.debug('TMSWrapper set server: {}'.format(server))
             TMS_JIRA.__init__(
                 self,
                 server_end_point=server,
                 tms_config=tms_config,
                 task_system_schema=task_system_schema)
-            # self.TMS = TMS_JIRA()
         else:
             raise NameError(
                 "TMS_type {} is not supported at this time".format(

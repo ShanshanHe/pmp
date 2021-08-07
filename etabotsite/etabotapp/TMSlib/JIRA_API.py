@@ -13,10 +13,15 @@ import etabotapp.TMSlib.Atlassian_API as Atlassian_API
 from jira import JIRA
 from typing import Dict
 
+from etabotapp.constants import PROJECTS_AVAILABLE
+
 JIRA_TIMEOUT_FOR_PASSWORD_SECONDS = 10.
-JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 30.
+JIRA_TIMEOUT_FOR_OAUTH2_SECONDS = 15.
 JIRA_CLOUD_API = Atlassian_API.ATLASSIAN_CLOUD_BASE + "ex/jira/"
-logging.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
+
+logger = logging.getLogger('django')
+
+logger.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
 
 
 class JIRA_wrapper:
@@ -27,7 +32,7 @@ class JIRA_wrapper:
             server,
             username,
             password=None,
-            TMSconfig=None):
+            TMSconfig: 'TMS' = None):
         """Create JIRA_wrapper object for JIRA API communication.
 
         Arguments:
@@ -62,62 +67,65 @@ class JIRA_wrapper:
             'max_retries': 1,
             'server': server}
 
-        logging.debug('authenticating with JIRA ({}, {})...'.format(
-            username, options.get('server', 'unkown server')))
+        logger.debug('authenticating with JIRA ({}, {})...'.format(
+            username, options.get('server', 'unknown server')))
 
         try:
             jira_place = []
             errors_place = {}
 
             def get_jira_object(target_list, errors_dict):
-                logging.info('"{}" connecting to JIRA with options: {}'.format(
+                logger2 = logging.getLogger('django')
+                logger2.info('"{}" connecting to JIRA with options: {}'.format(
                     username, options))
                 try:
                     if auth_method == 'password':
-                        logging.debug('using basic auth with password')
+                        logger2.debug('using basic auth with password')
                         jira = JIRA(
                             basic_auth=(username, password),
                             options=options)
                     else:
+                        logger2.info('getting token from TMSconfig.')
                         token = self.TMSconfig.get_fresh_token()
+                        logger2.info('got fresh token from TMSconfig.')
                         options['headers'] = {
                             'Authorization': 'Bearer {}'.format(token.access_token),
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'}
-                        logging.debug('connecting with options: {}'.format(options))
+                        logger2.debug('connecting with options: {}'.format(options))
                         jira = JIRA(options=options)
                         search_string = 'assignee=currentUser() ORDER BY Rank ASC'
-                        logging.debug('test jira query with search string: {}'.format(search_string))
+                        logger2.debug('test jira query with search string: {}'.format(search_string))
                         res = jira.search_issues(search_string)
-                        logging.debug('search result: {}'.format(res))
-                        logging.info('found {} issues'.format(len(res)))
-                    logging.debug('Authenticated with JIRA. {}'.format(jira))
+                        logger2.debug('search result: {}'.format(res))
+                        logger2.info('found {} issues'.format(len(res)))
+                    logger2.info('Authenticated with JIRA. {}'.format(jira))
                     target_list.append(jira)
                 except Exception as e:
                     error_message = str(e)
-                    logging.debug(error_message)
+                    logger2.debug(error_message)
                     errors_dict['error_message'] = error_message
-
+            logger.debug('starting get_jira_object thread')
             auth_thread = threading.Thread(
                 target=get_jira_object, args=(jira_place, errors_place))
             auth_thread.start()
 
-            logging.debug('waiting for {} seconds before checking for thread \
+            logger.debug('started get_jira_object thread. waiting for {} seconds before checking for thread \
 status'.format(jira_timout_seconds))
             auth_thread.join(jira_timout_seconds)
-            logging.debug('thread join done. checking for thread')
+            logger.debug('thread join done. checking for thread')
             if auth_thread.is_alive():
-                logging.debug('thread is still alive - time out occurred')
+                logger.debug('thread is still alive - time out occurred')
                 raise Exception('Could not login in a given time - please \
 check the team name with credentials and try again')
             else:
-                logging.debug('thread is done, getting jira object')
+                logger.debug('thread is done, getting jira object')
                 if len(jira_place) > 0:
                     jira = jira_place[0]
-                    logging.debug('jira object acquired: {}. \
+                    logger.debug('jira object acquired: {}. \
 Errors: "{}"'.format(jira, errors_place))
                 else:
-                    logging.debug('no JIRA object passed, rasing error.')
+                    logger.warning('no JIRA object passed, raising error.')
                     raise NameError(errors_place.get(
                         'error_message',
                         'Unknown error while authenticating with JIRA'))
@@ -128,9 +136,9 @@ Errors: "{}"'.format(jira, errors_place))
 
     def get_jira_issues(self, search_string, get_all=True):
         # Return list of jira issues using the search_string.
-        logging.debug('jira search_string = "{}"'.format(search_string))
+        logger.debug('jira search_string = "{}"'.format(search_string))
         if 'assignee' not in search_string:
-            logging.warning('Searching for all assignees.')
+            logger.warning('Searching for all assignees.')
         returned_result_length = 50
         jira_issues = []
         while get_all and returned_result_length == self.max_results_jira_api:
@@ -148,7 +156,7 @@ Errors: "{}"'.format(jira, errors_place))
             returned_result_length = len(jira_issues_batch)
             jira_issues += jira_issues_batch
 
-        logging.info('{}: got {} issues'.format(search_string, len(jira_issues)))
+        logger.info('{}: got {} issues'.format(search_string, len(jira_issues)))
         return jira_issues
 
     def get_team_members(self, project: str, time_frame=365) -> Dict[str, str]:
@@ -163,7 +171,7 @@ Errors: "{}"'.format(jira, errors_place))
 
         TODO: extract 'emailAddress'
         """
-        logging.debug('Getting team members started.')
+        logger.debug('Getting team members started.')
         # Error Checking
         if time_frame < 0:
             time_frame = 365
@@ -182,8 +190,28 @@ Errors: "{}"'.format(jira, errors_place))
             item = jira_issue.raw
             account_id = item['fields']['assignee']['accountId']
             if account_id not in team_members:
-                logging.debug(item['fields']['assignee'])
+                logger.debug(item['fields']['assignee'])
                 display_name = item['fields']['assignee']['displayName']
                 team_members[account_id] = display_name
-        logging.debug('Found {} team members: {}.'.format(len(team_members), team_members.keys()))
+        logger.debug('Found {} team members: {}.'.format(len(team_members), team_members.keys()))
         return team_members
+
+
+def update_available_projects_for_TMS(tms, jira_wrapper):
+    logger.info('update_available_projects_for_TMS started with tms {}, jira {}'.format(tms, jira_wrapper))
+    if tms.params is None:
+        tms.params = {}
+        logger.warning('tms params is None, creating empty dict.')
+    if jira_wrapper is not None and jira_wrapper.jira:
+        projects = jira_wrapper.jira.projects()
+        project_names = [project.name for project in projects]
+        logger.debug('project_names: {}'.format(project_names))
+        logger.debug('TMS: {}'.format(tms))
+        logger.debug('tms.params: {}'.format(tms.params))
+        tms.params[PROJECTS_AVAILABLE] = project_names
+        logger.debug('projects_available: {}'.format(tms.params[PROJECTS_AVAILABLE]))
+    else:
+        logger.warning('no jira object. jira wrapper: {}'.format(jira_wrapper))
+
+    logger.info('update_available_projects_for_TMS finished for tms {}'.format(tms))
+    return project_names

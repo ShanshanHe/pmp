@@ -14,7 +14,7 @@
   ],
   "vhosts": [
     {
-      "name": "\/etabotvhost"
+      "name": "etabotvhost"
     },
     {
       "name": "\/vhost2"
@@ -23,7 +23,7 @@
   "permissions": [
     {
       "user": "etabotdev",
-      "vhost": "\/etabotvhost",
+      "vhost": "etabotvhost",
       "configure": ".*",
       "write": ".*",
       "read": ".*"

@@ -1,0 +1,11 @@
+version: '2'
+services:
+
+  celery:
+    container_name: pmp-rabbitmq
+    build:
+      context: .
+      dockerfile: ./rabbitmq/Dockerfile
+    ports:
+      - 15672:15672
+      - 5672:5672

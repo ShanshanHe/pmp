@@ -7,6 +7,8 @@ import django
 from django.conf import settings
 from django.apps import apps
 
+logger = logging.getLogger('celery')
+logger.info('celery logger info.')
 # Set default Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'etabotsite.settings')
 

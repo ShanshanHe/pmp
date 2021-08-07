@@ -1,7 +1,7 @@
 import sys
 import logging
 import os
-logging.getLogger().setLevel(logging.DEBUG)
+
 logging.debug('models import started.')
 # sys.path.append(os.path.abspath('etabotapp'))
 logging.debug('loading TMSlib')
@@ -27,6 +27,10 @@ import time
 
 from django.conf import settings
 from authlib.integrations.django_client import OAuth
+from etabotapp.constants import PROJECTS_AVAILABLE
+from etabotapp.constants import PROJECTS_USER_SELECTED
+
+logger = logging.getLogger(__name__)
 
 #from django.contrib.postgres.fields.jsonb import JSONField
 
@@ -65,7 +69,7 @@ class OAuth2Token(models.Model):
     expires_at = models.PositiveIntegerField(null=True)
 
     def is_expired(self):
-        logging.debug('checking if Oauth2 token is expired.')
+        logger.debug('checking if Oauth2 token is expired.')
         return time.time() > self.expires_at
 
     def to_token(self):
@@ -82,7 +86,7 @@ class OAuth2Token(models.Model):
         if len(res) == 1:
             return res[0]
         elif len(res) > 1:
-            logging.warning('search params {} found more than one of tokens: {}'.format(
+            logger.warning('search params {} found more than one of tokens: {}'.format(
                 kwargs, res))
             return res[len(res)]
         else:
@@ -91,13 +95,13 @@ class OAuth2Token(models.Model):
 
 def fetch_oauth_token(name, request):
     """Authlib support function."""
-    logging.debug('fetching token {} {}'.format(name, request))
+    logger.debug('fetching token {} {}'.format(name, request))
     OAUTH1_SERVICES = []
     if name in OAUTH1_SERVICES:
         model = OAuth1Token
     else:
         model = OAuth2Token
-    logging.info('authlib fetch_token searching for token in model {}'.format(
+    logger.info('authlib fetch_token searching for token in model {}'.format(
         model))
     token = model.find(
         name=name,
@@ -111,9 +115,9 @@ def fetch_oauth_token(name, request):
 
 def update_oauth_token(name, token, refresh_token=None, access_token=None):
     """Authlib support function.""" 
-    logging.info('updating token')
+    logger.info('updating token')
     if refresh_token:
-        logging.info('searching for token by refresh_token')
+        logger.info('searching for token by refresh_token')
         item = OAuth2Token.find(name=name, refresh_token=refresh_token)
     elif access_token:
         item = OAuth2Token.find(name=name, access_token=access_token)
@@ -122,29 +126,29 @@ def update_oauth_token(name, token, refresh_token=None, access_token=None):
 
     # update old token
     TMSs = TMS.objects.filter(oauth2_token=item.id)
-    logging.debug('found TMSs with this oauth2 token: {}'.format(TMSs))
+    logger.debug('found TMSs with this oauth2 token: {}'.format(TMSs))
     for tms_instance in TMSs:
-        logging.debug(vars(tms_instance))
-        logging.debug(tms_instance.oauth2_token)        
-        logging.debug(vars(tms_instance.oauth2_token))
+        logger.debug(vars(tms_instance))
+        logger.debug(tms_instance.oauth2_token)        
+        logger.debug(vars(tms_instance.oauth2_token))
     item.access_token = token['access_token']
     item.refresh_token = token.get('refresh_token')
     item.expires_at = token['expires_at']
-    logging.info('saving token')
+    logger.info('saving token')
     item.save()
-    logging.info('token saved')
-    logging.debug('TMSs after saving token:')
+    logger.info('token saved')
+    logger.debug('TMSs after saving token:')
     for tms_instance in TMSs:
-        logging.debug(vars(tms_instance))
-        logging.debug(tms_instance.oauth2_token)        
-        logging.debug(vars(tms_instance.oauth2_token))
+        logger.debug(vars(tms_instance))
+        logger.debug(tms_instance.oauth2_token)        
+        logger.debug(vars(tms_instance.oauth2_token))
     TMSs = TMS.objects.filter(oauth2_token=item.id)
-    logging.debug('TMSs after saving token and repeat search:')
+    logger.debug('TMSs after saving token and repeat search:')
     for tms_instance in TMSs:
-        logging.debug(vars(tms_instance))
-        logging.debug(tms_instance.oauth2_token)
-        logging.debug(vars(tms_instance.oauth2_token))
-    logging.debug('update_oauth_token is done.')
+        logger.debug(vars(tms_instance))
+        logger.debug(tms_instance.oauth2_token)
+        logger.debug(vars(tms_instance.oauth2_token))
+    logger.info('update_oauth_token is done.')
 
 
 class TMS(models.Model):
@@ -167,28 +171,29 @@ class TMS(models.Model):
 
     def get_fresh_token(self):
         token = self.oauth2_token
-        logging.debug('initial token: {}'.format(token))
-        logging.debug('initial token vars: {}'.format(vars(token)))
+        logger.debug('initial token: {}'.format(token))
+        logger.debug('initial token vars: {}'.format(vars(token)))
         token_dict = token.to_token()
-        logging.debug('initial token dict: {}'.format(token_dict))
-        logging.info('priming TMS GET with oauth...')
+        logger.debug('initial token dict: {}'.format(token_dict))
+        logger.info('priming TMS GET with oauth...')
         res = oauth.atlassian.get(
             Atlassian_API.ATLASSIAN_CLOUD_PROFILE, token=token_dict)
-        logging.debug(res)
-        logging.debug(vars(res))
-        logging.debug('self.oauth2_token: {}'.format(self.oauth2_token))
-        logging.debug('vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
-        logging.debug('token vars: {}'.format(vars(token)))
+        logger.info('got oauth.atlassian result')
+        logger.debug(res)
+        logger.debug(vars(res))
+        logger.debug('before TMS refresh from db self.oauth2_token: {}'.format(self.oauth2_token))
+        logger.debug('before TMS refresh from db vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
+        logger.debug('before TMS refresh from db token vars: {}'.format(vars(token)))
 
-        logging.debug('refreshing from db')
+        logger.debug('refreshing TMS from db')
         self.refresh_from_db()
-        logging.debug('self.oauth2_token: {}'.format(self.oauth2_token))
-        logging.debug('vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
-        logging.debug('token vars: {}'.format(vars(token)))
-        
-        logging.debug('reassigning token to self.oauth2_token...')
+        logger.debug('after refreshing from db self.oauth2_token: {}'.format(self.oauth2_token))
+        logger.debug('after refreshing from db vars self.oauth2_token: {}'.format(vars(self.oauth2_token)))
+        logger.debug('after refreshing from db token vars: {}'.format(vars(token)))
+
+        logger.debug('reassigning token to self.oauth2_token...')
         token = self.oauth2_token
-        logging.debug('token vars: {}'.format(vars(token)))
+        logger.debug('token vars: {}'.format(vars(token)))
         return token
 
 
@@ -250,13 +255,13 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 # @receiver(post_save, sender=TMS)
 # def parse_tms(sender, instance, created, **kwargs):
 #     if created:
-#         logging.debug('new TMS instance created - parsing projects')
+#         logger.debug('new TMS instance created - parsing projects')
 #         parse_projects_for_TMS(instance, **kwargs)
 #     else:
-#         logging.debug('saving existing TMS - no need to parse projects')
+#         logger.debug('saving existing TMS - no need to parse projects')
 
 
-def parse_projects_for_TMS(instance, **kwargs) -> str:
+def parse_projects_for_TMS(instance: TMS, **kwargs) -> str:
     """Parse projects for the given TMS.
 
     Creates new Django model projects objects with parsed data.
@@ -264,56 +269,78 @@ def parse_projects_for_TMS(instance, **kwargs) -> str:
     Arguments:
         instance - Django TMS object instance
     """
-    logging.info('parse_tms started')
-    logging.debug('parse_projects_for_TMS kwargs: {}'.format(kwargs))
-    existing_projects = Project.objects.filter(project_tms=instance.id)
-    TMS_w1 = TMSlib.TMSWrapper(
-        instance,
-        projects=existing_projects)
-    TMS_w1.init_ETApredict([])
-
-    projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
-    velocities = TMS_w1.ETApredict_obj.eta_engine.user_velocity_per_project
-    logging.debug('parse_tms: velocities found: {}'.format(velocities))
-
+    logger.info('parse_tms started')
+    logger.debug('parse_projects_for_TMS kwargs: {}'.format(kwargs))
+    existing_projects = list(Project.objects.filter(project_tms=instance.id))
+    logger.info('existing_projects: {}'.format(existing_projects))
     existing_projects_dict = {}
-    new_projects = []
-    updated_projects = []
-    logging.info('existing_projects: {}'.format(existing_projects))
     for p in existing_projects:
         existing_projects_dict[p.name] = p
 
-    logging.info('passing parsed projects info to Django models.')
+    projects_names_user_selected = instance.params.get(
+        PROJECTS_USER_SELECTED,
+        instance.params.get(PROJECTS_AVAILABLE, []))
+    logger.debug('projects_names_user_selected: {}'.format(projects_names_user_selected))
+    new_projects_user_selected = {}
+    for user_selected_project in projects_names_user_selected:
+        if user_selected_project not in existing_projects_dict:
+            new_django_project = Project(
+                owner=instance.owner,
+                project_tms=instance,
+                name=user_selected_project,
+                mode='unknown mode',
+                open_status='',
+                velocities={},
+                grace_period=12.0,
+                work_hours={},
+                vacation_days={},
+                project_settings={})
+            new_django_project.save()
+            new_projects_user_selected[user_selected_project] = new_django_project
+    full_projects_list = existing_projects + list(new_projects_user_selected.values())
+    TMS_w1 = TMSlib.TMSWrapper(
+        instance,
+        projects=full_projects_list)
+
+    TMS_w1.init_ETApredict(full_projects_list)
+
+    projects_dict = TMS_w1.ETApredict_obj.eta_engine.projects
+    velocities = TMS_w1.ETApredict_obj.eta_engine.user_velocity_per_project
+    logger.debug('parse_tms: velocities found: {}'.format(velocities))
+
+    new_projects = []
+    updated_projects = []
+
+    logger.info('passing parsed projects info to Django models.')
     if projects_dict is not None:
         for project_name, attrs in projects_dict.items():
+            p = None
             velocity_json = dc.get_velocity_json(
                 velocities, project_name)
 
             if project_name not in existing_projects_dict:
-                new_django_project = Project(
-                    owner=instance.owner,
-                    project_tms=instance,
-                    name=project_name,
-                    mode=attrs.get('mode', 'unknown mode'),
-                    open_status=attrs.get('open_status', ''),
-                    velocities=velocity_json,
-                    grace_period=attrs.get('grace_period', 12.0),
-                    work_hours=attrs.get('work_hours', {}),
-                    vacation_days=attrs.get('vacation_days', {}),
-                    project_settings=attrs.get('project_settings', {}))
-                new_django_project.save()
-                new_projects.append(project_name)
+                if project_name in new_projects_user_selected:
+                    new_projects.append(project_name)
+                    p = new_projects_user_selected[project_name]
+                    p.open_status = attrs.get('open_status', '')
+                    p.grace_period = attrs.get('grace_period', 12.0)
+                    p.work_hours = attrs.get('work_hours', {})
+                    p.vacation_days = attrs.get('vacation_days', [])
+                else:
+                    logger.warning('Found project "{}", but did not intent to find.'.format(project_name))
             else:
                 p = existing_projects_dict[project_name]
+                updated_projects.append(project_name)
+            if p is not None:
                 p.velocities = velocity_json
                 p.project_settings = attrs.get(
                     'project_settings', p.project_settings)
                 p.mode = attrs.get('mode', p.mode)
                 p.save()
-                updated_projects.append(project_name)
+
     else:
-        logging.warning('projects_dict is None')
-    logging.info('parse_tms has finished')
+        logger.warning('projects_dict is None')
+    logger.info('parse_tms has finished')
     response_message = ''
     if len(new_projects) > 0:
         response_message += "New projects found and parsed: {}.".format(
@@ -323,15 +350,15 @@ def parse_projects_for_TMS(instance, **kwargs) -> str:
     if len(updated_projects) > 0:
         response_message += " Updated existing projects: {}.".format(
             ', '.join(updated_projects))
-    logging.info('parse_tms response: {}'.format(response_message))
+    logger.info('parse_tms response: {}'.format(response_message))
     return response_message
 
 
 PROD_HOST_URL = getattr(settings, "PROD_HOST_URL", "http://localhost:8000")
 atlassian_redirect_uri = PROD_HOST_URL + '/atlassian_callback'
-logging.debug('atlassian_redirect_uri: "{}"'.format(atlassian_redirect_uri))
+logger.debug('atlassian_redirect_uri: "{}"'.format(atlassian_redirect_uri))
 
 oauth = OAuth(fetch_token=fetch_oauth_token, update_token=update_oauth_token)
 oauth.register(name='atlassian')
-logging.debug('oauth registered: {}'.format(oauth.atlassian))
-logging.info('models import finished.')
+logger.debug('oauth registered: {}'.format(oauth.atlassian))
+logger.info('models import finished.')
