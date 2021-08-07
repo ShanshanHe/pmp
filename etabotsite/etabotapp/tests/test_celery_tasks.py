@@ -92,5 +92,4 @@ class TestCeleryTasks(TestCase):
         self.assertEqual(objects_in_db[0].owner, owner)
         self.assertEqual(objects_in_db[0].meta_data, meta_data)
 
-
-
+        # todo: add tests for populating end_time when the tasks are done

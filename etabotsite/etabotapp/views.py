@@ -442,13 +442,12 @@ def estimate_tms(user, tms, global_params, project_id=None):
     logger.debug('projects: "{}"'.format(projects))
     check_celery_worker_available()
     # Want to use send task helper here instead
-    result = celery.send_task(
+    result = send_celery_task_with_tracking(
         'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
-        (tms.id, projects, global_params))
+        (tms.id, projects, global_params), owner=tms.owner)
 
     # todo: stores task_id in database for this user
     return result.task_id
-
 
 
 class EstimateTMSView(APIView):
