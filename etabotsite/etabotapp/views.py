@@ -7,6 +7,8 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+from .celery_tracking import *
 from etabotapp.TMSlib.JIRA_API import update_available_projects_for_TMS
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import OAuth1Token, OAuth2Token, OAuth2CodeRequest
@@ -211,9 +213,9 @@ class ParseTMSprojects(APIView):
             res_messages = []
             for tms in tms_set:
                 parse_tms_kwargs = {}
-                celery_task = celery.send_task(
+                celery_task = send_celery_task_with_tracking(
                     'etabotapp.django_tasks.parse_projects_for_tms_id',
-                    (tms.id, parse_tms_kwargs))
+                    (tms.id, parse_tms_kwargs), owner=tms.owner)
                 logger.info('celery task sent, celery id ={}'.format(celery_task))
                 celery_task_ids.append(celery_task.task_id)
                 res_messages.append('stared celery task id {} for tms id {}'.format(
@@ -439,9 +441,10 @@ def estimate_tms(user, tms, global_params, project_id=None):
         )
     logger.debug('projects: "{}"'.format(projects))
     check_celery_worker_available()
-    result = celery.send_task(
+    # Want to use send task helper here instead
+    result = send_celery_task_with_tracking(
         'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
-        (tms.id, projects, global_params))
+        (tms.id, projects, global_params), owner=tms.owner)
 
     # todo: stores task_id in database for this user
     return result.task_id

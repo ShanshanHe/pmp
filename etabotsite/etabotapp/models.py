@@ -32,6 +32,8 @@ from etabotapp.constants import PROJECTS_USER_SELECTED
 
 logger = logging.getLogger(__name__)
 
+#from django.contrib.postgres.fields.jsonb import JSONField
+
 
 class OAuth1Token(models.Model):
     owner = models.ForeignKey('auth.User', related_name='OAuth1Tokens',
@@ -214,6 +216,30 @@ class Project(models.Model):
     def __str__(self):
         return self.name
 
+
+class CeleryTask(models.Model):
+    """This class represents the Celery Task (previously known as job) model."""
+    task_id = models.CharField(max_length=100, primary_key=True)
+    task_name = models.CharField(max_length=100)
+
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True)
+
+    # May need to add some more choices and/or specify 'other' option
+    status = models.CharField(
+        choices=[
+            ('PN', 'Pending'),
+            ('CN', 'Canceled'),
+            ('DN', 'Done'),
+            ('FL', 'Failed'),
+            ('X', 'Other')
+        ], max_length=100
+    )
+
+    owner = models.ForeignKey('auth.User', related_name='celeryTasks',
+                              on_delete=models.CASCADE)
+
+    meta_data = JSONField(null=True)
 
 # This receiver handles token creation immediately a new user is created.
 @receiver(post_save, sender=User)
