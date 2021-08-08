@@ -18,6 +18,8 @@ from email.mime.text import MIMEText
 import etabotapp.email_toolbox as email_toolbox
 from etabotapp.TMSlib.interface import HierarchicalReportNode, BasicReport
 
+logger = logging.getLogger()
+
 SYS_DOMAIN = getattr(settings, "SYS_DOMAIN", "127.0.0.1")
 SYS_EMAIL = getattr(settings, "SYS_EMAIL", None)
 SYS_EMAIL_PWD = getattr(settings, "SYS_EMAIL_PWD", None)
@@ -68,13 +70,18 @@ class EmailReportProcess(object):
         return report_email, full_report
 
     @staticmethod
-    def format_email_msg(user, html_report: str):
+    def format_email_msg(user, html_report: str, images=None):
         # Format the Msg for email.
-        msg = MIMEMultipart()
+        msg = MIMEMultipart('related')
         msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
         msg['To'] = user.email
         msg['Subject'] = '[ETAbot] Your ETAs Report'
         msg_body = html_report
         msg.attach(MIMEText(msg_body, 'html'))
-        logging.info("User Email: {}".format(user.email))
+        if images is not None:
+            for image in images:
+                msg.attach(image)
+        else:
+            logger.debug('no images to attach.')
+        logger.info("User Email: {}".format(user.email))
         return msg

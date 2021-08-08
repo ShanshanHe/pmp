@@ -46,8 +46,9 @@
 
   {{ report.short_html }}
 
-  {{ report.velocity_report.html_plots }}
-
+  {% for image_cid in report.velocity_report.images_for_email.keys %}
+    <br><img src="cid:{{image_cid}}">
+  {% endfor %}
 
 {% endfor %}
 
@@ -66,4 +67,5 @@ PS   Note: individual velocities do not necessarily represent individual's produ
 
 host: {{ host }}
 </font>
+
 {% endautoescape %}

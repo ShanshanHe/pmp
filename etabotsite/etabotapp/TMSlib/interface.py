@@ -62,6 +62,7 @@ class VelocityReport:
         self.df_velocity_stats = pd.DataFrame()  # rows - stats (mean, std, sum), columns - entities/measureable stats
         self.html = self.to_html()
         self.images = {}  # '{image_name: img_tag}'
+        self.images_for_email = {}  # {'cid': MIMEImage}
         self.aux = aux
 
     def to_html(self, **params) -> str:
@@ -198,5 +199,3 @@ class HierarchicalReportNode:
             'html': self.report.html,
             'children': [child.to_dict() for child in self.children]
         }
-
-        return d

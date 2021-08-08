@@ -48,6 +48,7 @@ def celery_task_update(func):
         except Exception as e:
             logging.error('Celery task failed due to "{}"'.format(e))
             result_status = 'FL'
+            result = None
 
         # End timer
         task_id = kwargs.get("task_id")

@@ -64,7 +64,7 @@ def estimate_ETA_for_TMS_project_set_ids(
         params,
         task_id=None):
     """Generate ETAs for a given TMS and set of projects."""
-    logging.info('estimate_ETA_for_TMS_project_set_ids celery task_id={} started'.format(task_id))
+    logger.info('estimate_ETA_for_TMS_project_set_ids celery task_id={} started'.format(task_id))
     tms = get_tms_by_id(tms_id)
     if tms is None:
         raise NameError('cannot find TMS with id {}'.format(tms_id))
@@ -75,7 +75,7 @@ def estimate_ETA_for_TMS_project_set_ids(
         raise NameError('Simulating failure')
 
     eta_tasks.estimate_ETA_for_TMS(tms, projects_set, **params)
-    logging.info('estimate_ETA_for_TMS_project_set_ids celery task_id={} finished'.format(task_id))
+    logger.info('estimate_ETA_for_TMS_project_set_ids celery task_id={} finished'.format(task_id))
 
 
 @shared_task
@@ -98,7 +98,7 @@ def parse_projects_for_tms_id(
 
 @shared_task
 @celery_task_update
-def send_daily_project_report(task_id=None,**kwargs):
+def send_daily_project_report(task_id=None, **kwargs):
     """Generate Daily Email Reports for all Users"""
     logger.info("Sending Emails to all users for Daily Reports!")
     userlist = User.objects.all()
@@ -108,4 +108,4 @@ def send_daily_project_report(task_id=None,**kwargs):
         for tms in tms_list:
             project_set = Project.objects.all().filter(project_tms_id=tms.id)
             if project_set:
-                eta_tasks.generate_email_report(tms, project_set, user, **kwargs)
+                eta_tasks.estimate_ETA_for_TMS(tms, project_set, **kwargs)
