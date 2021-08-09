@@ -138,7 +138,7 @@ class BasicReport:
             entity_display_name='Unknown',
             due_dates_stats=TargetDatesStats(),
             sprint_stats=TargetDatesStats(),
-            velocity_report=VelocityReport('No velocity data yet.', pd.DataFrame()),
+            velocity_report=VelocityReport(None, 'No velocity data yet.', pd.DataFrame()),
             params={},
             params_str='',
             tms_name='',
