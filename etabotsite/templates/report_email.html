@@ -3,6 +3,8 @@
   .summary_table {
       border-collapse: collapse;
       border: 1px solid silver;
+      margin-left: auto;
+      margin-right: auto;
   }
 
   .summary_table td, th, tr {
@@ -47,7 +49,7 @@
   {{ report.short_html }}
 
   {% for image_cid in report.velocity_report.images_for_email.keys %}
-    <br><img src="cid:{{image_cid}}">
+    <br><center><img src="cid:{{image_cid}}"></center>
   {% endfor %}
 
 {% endfor %}

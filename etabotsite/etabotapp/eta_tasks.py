@@ -69,8 +69,9 @@ def estimate_ETA_for_TMS(
         tms.owner, raw_status_reports)
     images = []
     for report_name, report_node in raw_status_reports.items():
-        for image in report_node.report.velocity_report.images_for_email.values():
-            images.append(image)
+        for report in report_node.all_reports():
+            for image in report.velocity_report.images_for_email.values():
+                images.append(image)
 
     email_msg = email_reports.EmailReportProcess.format_email_msg(
         tms.owner, html_report=email_report, images=images)

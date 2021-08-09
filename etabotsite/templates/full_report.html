@@ -45,7 +45,9 @@
   <br>
 
   {{ report.html }}
-  {{ report.velocity_report.html_plots }}
+  {% for image_key, img_tag in report.velocity_report.images.items %}
+    <br><center>{{img_tag}}</center>
+  {% endfor %}
 <br>
 
 {% endfor %}
@@ -72,6 +74,7 @@ The ETAbot Team<br>
     <h2>{{ report.entity_display_name }}</h2>
     Raw Filters/parameters: {{ report.params|default:"default parameters"}}.
     {{ report.velocity_report.html }}
+
     {{ report.aux.tasks_table|default:"no aux info"}}
     api: {{ report.aux.git_branch_api|default:"no git branch info"}}-{{ report.aux.git_commit_api|default:"no git commit info"}}
     algo: {{ report.aux.git_branch|default:"no git branch info"}}-{{ report.aux.git_commit|default:"no git commit info"}}
