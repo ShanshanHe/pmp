@@ -9,6 +9,8 @@
 """
 import threading
 import logging
+from datetime import datetime
+
 import etabotapp.TMSlib.Atlassian_API as Atlassian_API
 from jira import JIRA
 from typing import Dict
@@ -32,7 +34,8 @@ class JIRA_wrapper:
             server,
             username,
             password=None,
-            TMSconfig: 'TMS' = None):
+            TMSconfig: 'TMS' = None,
+            logs=None):
         """Create JIRA_wrapper object for JIRA API communication.
 
         Arguments:
@@ -45,6 +48,9 @@ class JIRA_wrapper:
         self.username = username
         self.max_results_jira_api = 50
         self.TMSconfig = TMSconfig
+        if logs is None:
+            logs = []
+        self.logs = logs
         self.jira = self.JIRA_connect(
             server, username, password=password)
 
@@ -136,7 +142,10 @@ Errors: "{}"'.format(jira, errors_place))
 
     def get_jira_issues(self, search_string, get_all=True):
         # Return list of jira issues using the search_string.
-        logger.debug('jira search_string = "{}"'.format(search_string))
+        log_message = 'JQL = "{}"'.format(search_string)
+        logger.debug(log_message)
+        self.logs.append((datetime.utcnow(), log_message))
+
         if 'assignee' not in search_string:
             logger.warning('Searching for all assignees.')
         returned_result_length = 50

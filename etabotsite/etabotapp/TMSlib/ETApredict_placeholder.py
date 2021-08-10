@@ -25,8 +25,13 @@ class ETAengine:
 class ETApredict:
     def __init__(
             self,
-            TMS_interface=None):
+            TMS_interface=None,
+            logs=None):
         self.TMS_interface = TMS_interface
+        if logs is None:
+            self.logs = []
+        else:
+            self.logs = logs
         self.eta_engine = ETAengine()
         self.df_tasks_with_ETAs = None
         self.task_system_schema = {'projects': {}}

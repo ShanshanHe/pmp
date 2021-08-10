@@ -55,13 +55,15 @@ class TargetDatesStats:
 
 
 class VelocityReport:
-    def __init__(self, summary: str, df_sprint_stats: pd.DataFrame, aux: str = ''):
+    def __init__(self, entity_uuid: Union[str, None], summary: str, df_sprint_stats: pd.DataFrame, aux: str = ''):
+        self.entity_uuid = entity_uuid
         self.summary = summary
         self.df_sprint_stats = df_sprint_stats  # rows - sprints, columns: scope, velocity, etc
         self.df_velocity_vs_time = pd.DataFrame()  # rows - sprints, columns - entities/measureables
         self.df_velocity_stats = pd.DataFrame()  # rows - stats (mean, std, sum), columns - entities/measureable stats
         self.html = self.to_html()
         self.images = {}  # '{image_name: img_tag}'
+        self.images_for_email = {}  # {'cid': MIMEImage}
         self.aux = aux
 
     def to_html(self, **params) -> str:
@@ -136,7 +138,7 @@ class BasicReport:
             entity_display_name='Unknown',
             due_dates_stats=TargetDatesStats(),
             sprint_stats=TargetDatesStats(),
-            velocity_report=VelocityReport('No velocity data yet.', pd.DataFrame()),
+            velocity_report=VelocityReport(None, 'No velocity data yet.', pd.DataFrame()),
             params={},
             params_str='',
             tms_name='',
@@ -198,5 +200,3 @@ class HierarchicalReportNode:
             'html': self.report.html,
             'children': [child.to_dict() for child in self.children]
         }
-
-        return d

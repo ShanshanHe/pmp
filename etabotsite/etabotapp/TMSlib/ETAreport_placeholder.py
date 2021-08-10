@@ -33,7 +33,7 @@ class ReportGenerator:
             'entity_display_name': 'Cheburaskha',
             'due_dates_stats': TargetDatesStats(),
             'sprint_stats': TargetDatesStats(),
-            'velocity_report': VelocityReport('mock velocity report', pd.DataFrame()),
+            'velocity_report': VelocityReport(None, 'mock velocity report', pd.DataFrame()),
             'params': {},
             'params_str': 'taram param params',
             'tms_name': 'JIRA-example',

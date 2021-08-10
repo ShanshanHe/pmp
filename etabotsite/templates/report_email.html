@@ -3,6 +3,8 @@
   .summary_table {
       border-collapse: collapse;
       border: 1px solid silver;
+      margin-left: auto;
+      margin-right: auto;
   }
 
   .summary_table td, th, tr {
@@ -46,9 +48,9 @@
 
   {{ report.short_html }}
 
-  {{ report.velocity_report.html_plots }}
-
-  Raw Filters/parameters: {{ report.params|default:"default parameters"}}.
+  {% for image_cid in report.velocity_report.images_for_email.keys %}
+    <br><center><img src="cid:{{image_cid}}"></center>
+  {% endfor %}
 
 {% endfor %}
 
@@ -67,4 +69,5 @@ PS   Note: individual velocities do not necessarily represent individual's produ
 
 host: {{ host }}
 </font>
+
 {% endautoescape %}
