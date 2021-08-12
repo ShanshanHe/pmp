@@ -74,7 +74,7 @@ class EmailReportProcess(object):
             formatted_reports = formatted_reports + project_formatted_reports
         if len(formatted_reports) == 0:
             report = BasicReport.empty_report('Something went wrong. Our apologies.')
-            report.short_html = html_logs
+            report.short_html = '<h1>Something went wrong. Our apologies.</h1><br><h2>Logs:</h2><br>' + html_logs
             formatted_reports.append(report)
             email_toolbox.EmailWorker.send_email(email_toolbox.EmailWorker.format_email_msg(
                 'no-reply@etabot.ai', 'hello@etabot.ai', 'no reports generated',
