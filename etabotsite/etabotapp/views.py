@@ -161,8 +161,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
                           IsOwner,)
 
     def get_queryset(self):
-        if self.request.user.is_superuser:
-            return Project.objects.all()
         objects2return = Project.objects.filter(owner=self.request.user)
         logger.debug('ProjectViewSet get_queryset:{}'.format(objects2return))
         for o in objects2return:
@@ -184,8 +182,6 @@ class TMSViewSet(viewsets.ModelViewSet):
                           IsOwner,)
 
     def get_queryset(self):
-        # if self.request.user.is_superuser:
-        #     return TMS.objects.all()
         return TMS.objects.filter(owner=self.request.user)
 
     def perform_create(self, serializer):
@@ -247,11 +243,11 @@ class AtlassianOAuth(APIView):
         # logger.debug(vars(request))
         oauth_name = 'atlassian'
 
-        permissions = request.GET.get('permissions')
-        logger.debug(permissions)
+        jira_permissions = request.GET.get('permissions')
+        logger.debug(jira_permissions)
 
         scope = AUTHLIB_OAUTH_CLIENTS.get(oauth_name, {}).get('client_kwargs', {}).get('scope')
-        if permissions == 'in ETAbot only':
+        if jira_permissions == 'in ETAbot only':
             scope = scope.replace('write:jira-work ', '')
 
         timestamp = pytz.utc.localize(datetime.datetime.utcnow())
