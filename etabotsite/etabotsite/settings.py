@@ -34,6 +34,15 @@ HOST_NAME = socket.gethostname()
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
 
+settings_path = '/usr/src/app/settings/custom_settings.json'
+try:
+    with open(settings_path) as f:
+        custom_settings = json.load(f)
+    logging.debug('loaded custom_settings.json with keys: "{}"'.format(custom_settings.keys()))
+except Exception as e:
+    print('could not load settings from "{}" due to {}. proceeding to next location'.format(
+        settings_path, e))
+
 try:
     with open('custom_settings.json') as f:
         custom_settings = json.load(f)
@@ -102,6 +111,10 @@ print('DJANGO_CONSOLE_LOGGING_LEVEL: {}'.format(DJANGO_CONSOLE_LOGGING_LEVEL))
 # django_file controls print outs to the logging file either locally or on docker.
 # mail_admins controls mailing admins through SendEmailAlert class in email_alert.py
 
+print('ADMIN_EMAILS: {}'.format(ADMIN_EMAILS))
+print('EMAIL SYS: {}, EMAIL_HOST: {}, EMAIL_PORT: {}'.format(
+    SYS_EMAIL, EMAIL_HOST, EMAIL_PORT
+))
 logging_config = {
     'version': 1,
     'disable_existing_loggers': False,

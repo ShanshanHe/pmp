@@ -17,13 +17,12 @@ logger = logging.getLogger('django')
 
 
 @shared_task
-@celery_task_update
 def estimate_all(task_id=None, **kwargs):  # Put kwargs into a decorator
     """Estimate ETA for all tasks for all users."""
 
     tms_set = TMS.objects.all()
-    logger.info('starting generating ETAs for the following TMS entries ({}): {}'.format(
-        len(tms_set), tms_set))
+    logger.info('starting generating ETAs for the following TMS entries ({}): {}, task_id={}'.format(
+        len(tms_set), tms_set, task_id))
     global_params = {
         'push_updates_to_tms': True
     }

@@ -19,6 +19,7 @@ services:
     volumes:
       - pmp-django-static:/usr/src/app/static
       - pmp-django-logging:/usr/src/app/logging
+      - pmp-django-settings:/usr/src/app/settings:ro
     ports:
       - 8000:8000
 
@@ -42,6 +43,7 @@ volumes:
   pmp-django-static:
   pmp-nginx-cert:
   pmp-django-logging:
+  pmp-djang-settings:
 
 networks:
   pmp-django-nginx:
