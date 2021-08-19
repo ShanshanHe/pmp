@@ -43,7 +43,7 @@ volumes:
   pmp-django-static:
   pmp-nginx-cert:
   pmp-django-logging:
-  pmp-djang-settings:
+  pmp-django-settings:
 
 networks:
   pmp-django-nginx:
