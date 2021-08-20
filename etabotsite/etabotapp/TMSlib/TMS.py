@@ -48,7 +48,7 @@ class ProtoTMS:
         TMS = Task Management System
         prototype for any TMS class to standardize critical methods and properties
     """
-    def __init__(self, server_end_point, username_login, task_system_schema: Dict):
+    def __init__(self, server_end_point, username_login, task_system_schema: Dict, logs=None):
         """
 
         :param server_end_point: TMS API. TMS url is stored in task_system_schema
@@ -60,6 +60,7 @@ class ProtoTMS:
         self.server_end_point = server_end_point
         self.username_login = username_login
         self.task_system_schema = task_system_schema
+        self.logs = logs
         # self.connectivity_status = None
 
     def get_projects(self):
@@ -91,7 +92,8 @@ class TMS_JIRA(ProtoTMS):
             self, *,
             server_end_point,
             task_system_schema,
-            tms_config):
+            tms_config,
+            logs=None):
         """
 
         :param server_end_point: api end point
@@ -109,7 +111,7 @@ class TMS_JIRA(ProtoTMS):
 
         username_login = tms_config.username
         ProtoTMS.__init__(
-            self, server_end_point, username_login, task_system_schema)
+            self, server_end_point, username_login, task_system_schema, logs=logs)
 
         self.jira = None
         self.tms_config = tms_config  # Django TMS object
@@ -129,7 +131,8 @@ class TMS_JIRA(ProtoTMS):
                 self.server_end_point,
                 self.username_login,
                 password=self.tms_config.password,
-                TMSconfig=self.tms_config)
+                TMSconfig=self.tms_config,
+                logs=self.logs)
             logging.debug('connect_to_TMS jira object: {}'.format(self.jira))
             self.tms_config.connectivity_status = {
                 'status': 'connected',
@@ -234,7 +237,7 @@ cannot send connectivity issue email')
 
         return extra_filter
 
-    def get_future_sprints_tasks_ranked(self, assignee=None, project_names=None):
+    def get_future_sprints_tasks_ranked(self, assignee=None, project_names=None, logs=None):
         """Get all open tasks sorted by rank from future sprints.
 
         Return list of tasks.
@@ -301,7 +304,8 @@ class TMSWrapper(TMS_JIRA):
     def __init__(
             self,
             tms_config: 'TMS',
-            projects=None):
+            projects=None,
+            logs=None):
         """
         Task Management System Wrapper - generalized TMS to
         support multiple platforms (JIRA, Asana, Trello, etc)
@@ -321,6 +325,8 @@ projects: {}'.format(tms_config, projects))
         logging.debug('tms_config.type: "{}" of type "{}"'.format(
             tms_config.type, type(tms_config.type)))
         self.ETApredict_obj = None
+        if logs is None:
+            logs = []
 
         task_system_schema = {}
 
@@ -339,16 +345,19 @@ projects: {}'.format(tms_config, projects))
             cloudid = None
             if tms_config.params is not None:
                 cloudid = tms_config.params.get('id')
+            else:
+                logger.warning('tms_config.params is None')
             if cloudid is not None:
                 server = JIRA_API.JIRA_CLOUD_API + cloudid
             else:
                 server = tms_config.endpoint
-
+            logger.debug('TMSWrapper set server: {}'.format(server))
             TMS_JIRA.__init__(
                 self,
                 server_end_point=server,
                 tms_config=tms_config,
-                task_system_schema=task_system_schema)
+                task_system_schema=task_system_schema,
+                logs=logs)
         else:
             raise NameError(
                 "TMS_type {} is not supported at this time".format(
@@ -361,7 +370,7 @@ server_end_point: {}, username_login: {}'.format(
     def init_ETApredict(self, projects, **kwargs):
         """Initializes ETApredict object: getting tasks, inferring TMS data schema."""
         logging.info('init_ETApredict started')
-        self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self)
+        self.ETApredict_obj = ETApredict.ETApredict(TMS_interface=self, logs=self.logs)
         try:
             logging.debug('user_velocity_per_project: {}'.format(
                 self.ETApredict_obj.eta_engine.user_velocity_per_project))
@@ -375,11 +384,11 @@ Connectivity status: {}'.format(self.tms_config.connectivity_status))
         logging.debug('self.ETApredict_obj.df_tasks_with_ETAs={}'.format(
             self.ETApredict_obj.df_tasks_with_ETAs))
 
-    def estimate_tasks(self, project_names=None, **kwargs):
+    def estimate_tasks(self, project_names=None, logs=None, **kwargs):
         logging.info('Estimating tasks for TMS "{}", \
 projects: "{}", hold tight!'.format(self, project_names))
         self.ETApredict_obj.generate_task_list_view_with_ETA(
-            project_names, **kwargs)
+            project_names, logs=logs, **kwargs)
 
     def generate_projects_status_report(self, **kwargs) -> Dict[str, 'HierarchicalReportNode']:
         """Generate list of report objects.

@@ -34,6 +34,15 @@ HOST_NAME = socket.gethostname()
 local_host_url = 'http://127.0.0.1:8000'
 prod_host_url = 'https://app.etabot.ai'
 
+settings_path = '/usr/src/app/settings/custom_settings.json'
+try:
+    with open(settings_path) as f:
+        custom_settings = json.load(f)
+    logging.debug('loaded custom_settings.json with keys: "{}"'.format(custom_settings.keys()))
+except Exception as e:
+    print('could not load settings from "{}" due to {}. proceeding to next location'.format(
+        settings_path, e))
+
 try:
     with open('custom_settings.json') as f:
         custom_settings = json.load(f)
@@ -93,6 +102,8 @@ log_filename_with_path = get_key_value(
     custom_settings, 'LOG_FILENAME_WITH_PATH', default='/usr/src/app/logging/django_log.txt')
 print('log_filename_with_path: {}'.format(log_filename_with_path))
 
+DJANGO_CONSOLE_LOGGING_LEVEL = get_key_value(custom_settings, 'DJANGO_CONSOLE_LOGGING_LEVEL', default='WARNING')
+print('DJANGO_CONSOLE_LOGGING_LEVEL: {}'.format(DJANGO_CONSOLE_LOGGING_LEVEL))
 # Logging to File and Logging Configuration
 # Logger will modify root logger
 # Handlers's levels can be changed to meet the needs of the dev
@@ -100,6 +111,10 @@ print('log_filename_with_path: {}'.format(log_filename_with_path))
 # django_file controls print outs to the logging file either locally or on docker.
 # mail_admins controls mailing admins through SendEmailAlert class in email_alert.py
 
+print('ADMIN_EMAILS: {}'.format(ADMIN_EMAILS))
+print('EMAIL SYS: {}, EMAIL_HOST: {}, EMAIL_PORT: {}'.format(
+    SYS_EMAIL, EMAIL_HOST, EMAIL_PORT
+))
 logging_config = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -115,7 +130,7 @@ logging_config = {
     },
     'handlers': {
         'django_console': {
-            'level': 'WARNING',
+            'level': DJANGO_CONSOLE_LOGGING_LEVEL,
             'class': 'logging.StreamHandler',
             'formatter': 'django_format'
         },
@@ -140,7 +155,7 @@ logging_config = {
         }
     },
     'loggers': {
-        '': {
+        'django': {
             'handlers': ['mail_admins', 'django_console', 'django_file'],
             'propagate': True,
         },
@@ -162,8 +177,19 @@ logger = logging.getLogger(__name__)
 
 if LOCAL_MODE:
     logger.setLevel(logging.DEBUG)
+    print('set logger level to DEBUG')
 else:
     logger.setLevel(logging.INFO)
+    print('set logger level to INFO')
+
+print('logging test')
+logging.debug('settings logging DEBUG level test')
+logging.info('settings logging INFO level test')
+logging.warning('settings logging WARNING level test')
+logger.debug('settings loggerDEBUG level test')
+logger.info('settings  loggerINFO level test')
+logger.warning('settings logger WARNING level test')
+print('DEBUG INFO WARNING levels test done')
 
 # Set HOST_URL based on production or development mode
 HOST_URL = local_host_url if LOCAL_MODE else prod_host_url

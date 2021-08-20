@@ -4,7 +4,9 @@ from typing import List, Dict, Union
 import queue
 from django.template.loader import render_to_string
 import pandas as pd
+import json
 
+from etabotapp.misc_utils.convertors import timestamp2unix, value2safejson, df_to_dict_for_json
 
 due_alert_names_map = {
     'DueAlert.on_track': 'on_track',
@@ -44,21 +46,40 @@ class TargetDatesStats:
             self.counts[val] = 0
             self.tasks[val] = []
 
+    def to_dict(self):
+        return {
+            "summary_table": self.summary_table,
+            "tasks": self.tasks,
+            "counts": self.counts
+            }
+
 
 class VelocityReport:
-    def __init__(self, summary: str, df_sprint_stats: pd.DataFrame, aux: str = ''):
+    def __init__(self, entity_uuid: Union[str, None], summary: str, df_sprint_stats: pd.DataFrame, aux: str = ''):
+        self.entity_uuid = entity_uuid
         self.summary = summary
         self.df_sprint_stats = df_sprint_stats  # rows - sprints, columns: scope, velocity, etc
         self.df_velocity_vs_time = pd.DataFrame()  # rows - sprints, columns - entities/measureables
         self.df_velocity_stats = pd.DataFrame()  # rows - stats (mean, std, sum), columns - entities/measureable stats
         self.html = self.to_html()
         self.images = {}  # '{image_name: img_tag}'
+        self.images_for_email = {}  # {'cid': MIMEImage}
         self.aux = aux
 
     def to_html(self, **params) -> str:
         if self.df_sprint_stats is not None:
             return self.df_sprint_stats.rename(columns={'id': 'done_issues in sprint'}).to_html(**params)
         return 'No Velocity report html.'
+
+    def to_dict(self) -> Dict:
+        return {
+            'summary': self.summary,
+            # 'df_sprint_stats': df_to_dict_for_json(self.df_sprint_stats),
+            # 'df_velocity_vs_time': df_to_dict_for_json(self.df_velocity_vs_time),
+            # 'df_velocity_stats': df_to_dict_for_json(self.df_velocity_stats),
+            'html': self.html,
+            'images': self.images
+        }
 
 
 class BasicReport:
@@ -96,10 +117,16 @@ class BasicReport:
         self.params_str = params_str
         self.tms_name = tms_name
         self.html = self.render_to_html()
+        self.short_html = self.render_to_html_short()
 
     def render_to_html(self):
         return render_to_string(
             'basic_report.html',
+            {'basic_report': self})
+
+    def render_to_html_short(self):
+        return render_to_string(
+            'short_report.html',
             {'basic_report': self})
 
     @staticmethod
@@ -111,7 +138,7 @@ class BasicReport:
             entity_display_name='Unknown',
             due_dates_stats=TargetDatesStats(),
             sprint_stats=TargetDatesStats(),
-            velocity_report=VelocityReport('No velocity data yet.', pd.DataFrame()),
+            velocity_report=VelocityReport(None, 'No velocity data yet.', pd.DataFrame()),
             params={},
             params_str='',
             tms_name='',
@@ -156,3 +183,23 @@ class HierarchicalReportNode:
 
     def all_reports(self) -> List[BasicReport]:
         return [node.report for node in self.all_nodes()]
+
+    def to_dict(self) -> Dict:
+        if not isinstance(self.report.due_dates_stats, TargetDatesStats):
+            logging.debug('self.report.due_dates_stats: {}'.format(self.report.due_dates_stats))
+            raise TypeError('report.due_dates_stats must be TargetDatesStats type.')
+        return {
+            'project': self.report.project,
+            'project_on_track': self.report.project_on_track.value,
+            'entity_uuid': self.report.entity_uuid,
+            'entity_display_name': self.report.entity_display_name,
+            'due_dates_stats': self.report.due_dates_stats.to_dict(),
+            'sprint_stats': self.report.sprint_stats.to_dict(),
+            'velocity_report': self.report.velocity_report.to_dict(),
+            # 'aux': self.report.aux,
+            'params': self.report.params,
+            'params_str': self.report.params_str,
+            'tms_name': self.report.tms_name,
+            'html': self.report.html,
+            'children': [child.to_dict() for child in self.children]
+        }

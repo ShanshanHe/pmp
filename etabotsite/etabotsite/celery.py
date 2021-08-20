@@ -6,7 +6,10 @@ import logging
 import django
 from django.conf import settings
 from django.apps import apps
+import datetime
 
+logger = logging.getLogger('celery')
+logger.info('celery logger info.')
 # Set default Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'etabotsite.settings')
 
@@ -34,21 +37,10 @@ app.conf.beat_schedule = settings.CUSTOM_SETTINGS.get(
     'eta_beat_schedule',
     {'estimate-at-midnight': {
         'task': 'etabotapp.django_tasks.estimate_all',
+        'kwargs': {'task_id': 'periodic_update_{}'.format(
+            datetime.datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S'))},
         'schedule': crontab(**crontab_args)
     }})
-
-# email_reports_crontab_args = settings.CUSTOM_SETTINGS.get(
-#     'email_reports_crontab_args',
-#     {'hour': 10})   # Midnight Pacific time is 8am UTC
-
-#Schedule our daily reports for 1am. An hour after the predicitions are.
-# commented out currently since sending out reports is done part of etabotapp.django_tasks.estimate_all
-# app.conf.beat_schedule = {
-#     'send_daily_reports': {
-#         'task':'etabotapp.django_tasks.send_daily_project_report',
-#         'schedule': crontab(**email_reports_crontab_args)
-#     }
-# }
 
 
 @app.task(bind=True)

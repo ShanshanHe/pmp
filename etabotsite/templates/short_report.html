@@ -1,0 +1,16 @@
+{% autoescape off %}
+<center><h1 id="entity-report-{{basic_report.entity_display_name}}-{{basic_report.project}}">{{ basic_report.entity_display_name }} <> project {{ basic_report.project|default:"Project name not found" }}.</h1></center>
+    <center>{{ basic_report.due_dates_stats.summary_table }}</center>
+    <center>{{ basic_report.sprint_stats.summary_table }}</center>
+    <br>
+    <br>
+    <center>{{ basic_report.velocity_report.summary }}</center>
+    <br>
+    <br>
+    <center><a href="https://app.etabot.ai/login/">See full report to see what's off track and more.</a></center>
+    {% for image_cid in report.velocity_report.images_for_email.keys %}
+        <br><center><img src="cid:{{image_cid}}"></center>
+    {% endfor %}
+
+
+{% endautoescape %}

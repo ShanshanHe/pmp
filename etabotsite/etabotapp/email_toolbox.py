@@ -39,19 +39,23 @@ class EmailWorker(object):
 
             logging.info('Successfully sent email')
         except Exception as ex:
-            logging.error('Failed to send email')
+            logging.error('Failed to send email due to "{}"'.format(ex))
 
     @staticmethod
     def format_email_msg(
             from_field,
             to_field,
             subject_field,
-            msg_body):
-        #Format the Msg for email.
+            msg_body,
+            images=None):
         msg = MIMEMultipart()
         msg['From'] = from_field
         msg['To'] = to_field
         msg['Subject'] = subject_field
         msg_body = msg_body
         msg.attach(MIMEText(msg_body, 'html'))
+
+        if images is not None:
+            for image in images:
+                msg.attach(image)
         return msg

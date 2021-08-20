@@ -1,14 +1,25 @@
+import json
+from unittest.mock import patch
+
 import factory
 import logging
 from django.test import TestCase
 from django.db.models import signals
 from django.contrib.auth.models import User
-from etabotapp.models import Project, TMS, parse_projects_for_TMS, PROJECTS_USER_SELECTED
+
+from etabotapp.TMSlib.Atlassian_API import AtlassianAPI
+from etabotapp.TMSlib.interface import HierarchicalReportNode, BasicReport
+from etabotapp.models import Project, TMS, parse_projects_for_TMS, PROJECTS_USER_SELECTED, OAuth2Token
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.conf import settings
 from copy import copy
+import pandas as pd
+import numpy as np
+import datetime
+
+from etabotapp.views import AtlassianOAuthCallback
 
 test_tms_data = getattr(settings, "TEST_TMS_DATA", None)
 if test_tms_data['username'] == '':
@@ -54,12 +65,14 @@ class UserTest(APITestCase):
 def mock_up_TMS(user):
     return TMS(**(create_tms_data_for_user(user)))
 
+
 def create_tms_data_for_user(user, **kwargs):
     tms_data = copy(test_tms_data)
     tms_data['owner'] = user
     for kw, arg in kwargs.items():
         tms_data[kw] = arg
     return tms_data
+
 
 class TMSModelTestCase(TestCase):
     """This class defines the test suite for the tms model."""
@@ -142,6 +155,8 @@ class TMSViewTestCase(TestCase):
 
     def test_parse_projects_for_TMS(self):
         tms = TMS.objects.get()
+        if tms.params is None:
+            tms.params = {}
         tms.params[PROJECTS_USER_SELECTED] = ['ETAbot-Demo']
         parse_projects_for_TMS(tms)
         projects = Project.objects.all().filter(project_tms=tms.id)
@@ -202,6 +217,10 @@ class ProjectViewTestCase(APITestCase):
         logging.debug('TMS:')
         logging.debug(self.tms)
         logging.debug(self.tms.id)
+        hn = HierarchicalReportNode(BasicReport.empty_report('Test'), 'entity')
+        hn.report.velocity_report.df_sprint_stats = pd.DataFrame(
+            {'t': [datetime.datetime(2020, 3, 15), np.datetime64('2020')], 'd': [np.nan, None]})
+
         self.project_data = {
             'owner': user.id,
             'project_tms': self.tms.id,
@@ -212,7 +231,7 @@ class ProjectViewTestCase(APITestCase):
             'work_hours': '1:(10,14)',
             'vacation_days': '(2017-04-21, 2017-04-30)',
             'velocities': {},
-            'project_settings': {}}
+            'project_settings': {'hierarchical_report': json.dumps(hn.to_dict())}}
         logging.debug('POST {}'.format(self.project_data))
         self.response = self.client.post('/api/projects/',
                                          self.project_data,
@@ -224,8 +243,8 @@ class ProjectViewTestCase(APITestCase):
         self.assertEqual(Project.objects.count(), 1)
         # And that we're returning a 201 created code.
         self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
-
-        logging.debug(Project.objects.all())
+        all_projects = Project.objects.all()
+        logging.debug(all_projects)
 
     def test_api_can_create_a_project(self):
         """Test the api has user creation capability."""
@@ -293,3 +312,40 @@ class UserCommunicationViewTestCase(APITestCase):
         """Test the api can handle unauthorized users"""
         response = self.badClient.post('/api/user_communication/', {'subject': 'Email subject', 'body': 'Email body'}, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class TestAtlassianOAuthCallback(APITestCase):
+    def setUp(self):
+        """Define and authenticate test client."""
+
+        # Create authorized user
+        self.user = create_test_user()
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_AtlassianOAuthCallback(self):
+        token = {
+            'token_type': 'mock type',
+            'access_token': 'mock token',
+            'refresh_token': 'mock refresh_token',
+            'expires_at': 123
+        }
+
+        token_item = OAuth2Token(
+            owner=self.user,
+            name='atlassian',
+            token_type=token['token_type'],
+            access_token=token['access_token'],
+            refresh_token=token['refresh_token'],
+            expires_at=token['expires_at'])
+        token_item.save()
+        # todo: mock apis to test the flow
+        # new_tms_ids = AtlassianOAuthCallback.add_update_atlassian_tms(
+        #     owner=self.user, token_item=token_item)
+
+        # with patch.object(
+        #     AtlassianAPI, 'get_accessible_resources', AtlassianAPI.mock_get_accessible_resources):
+        #     new_tms_ids = AtlassianOAuthCallback.add_update_atlassian_tms(
+        #         owner=self.user, token_item=token_item)
+        # assert len(new_tms_ids) == 1
+
