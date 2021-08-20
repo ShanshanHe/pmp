@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 import logging
 import etabotapp.eta_tasks as eta_tasks
 import datetime
+from typing import Union
 from .celery_tracking import *
 
 celery = clry.Celery()
@@ -16,32 +17,34 @@ logger = logging.getLogger('django')
 
 
 @shared_task
-@celery_task_update
 def estimate_all(task_id=None, **kwargs):  # Put kwargs into a decorator
     """Estimate ETA for all tasks for all users."""
 
     tms_set = TMS.objects.all()
-    logger.info('starting generating ETAs for the following TMS entries ({}): {}'.format(len(tms_set), tms_set))
+    logger.info('starting generating ETAs for the following TMS entries ({}): {}, task_id={}'.format(
+        len(tms_set), tms_set, task_id))
     global_params = {
         'push_updates_to_tms': True
     }
     results = []
+    tmss_str = []
     for tms in tms_set:
         projects = Project.objects.all().filter(project_tms_id=tms.id)
         projects_ids = [p.id for p in projects]
-
-        result = celery.send_task(
+        result = send_celery_task_with_tracking(
             'etabotapp.django_tasks.estimate_ETA_for_TMS_project_set_ids',
-            args=(tms.id, projects_ids, global_params),
+            (tms.id, projects_ids, global_params),
             owner=tms.owner,
-            task_id=task_id
-        )
+            parent_task_id=task_id)
         logger.info('submitted celery job {} for tms {}, projects {}'.format(result.task_id, tms, projects))
         results.append(result)
+        tmss_str.append(str(tms))
+    logger.error('sent celery tasks for tmss: \n{}'.format('\n'.join(tmss_str)))
+    # todo: make logging not through error
     return True
 
 
-def get_tms_by_id(tms_id) -> TMS:
+def get_tms_by_id(tms_id) -> Union[TMS, None]:
     logger.info('searching for TMS with id: {}'.format(tms_id))
     tms_list = TMS.objects.all().filter(
             pk=tms_id)
@@ -62,9 +65,11 @@ def estimate_ETA_for_TMS_project_set_ids(
         tms_id,
         projects_set_ids,
         params,
-        task_id=None):
+        task_id=None,
+        parent_task_id=None):
     """Generate ETAs for a given TMS and set of projects."""
-    logger.info('estimate_ETA_for_TMS_project_set_ids celery task_id={} started'.format(task_id))
+    logger.info('estimate_ETA_for_TMS_project_set_ids celery task_id={}, parent_task_id={} started'.format(
+        task_id, parent_task_id))
     tms = get_tms_by_id(tms_id)
     if tms is None:
         raise NameError('cannot find TMS with id {}'.format(tms_id))
@@ -72,10 +77,12 @@ def estimate_ETA_for_TMS_project_set_ids(
     projects_set = Project.objects.all().filter(pk__in=projects_set_ids)
     logger.info('found projects_set: {}'.format(projects_set))
     if 'simulate_failure' in params:
+        logger.error('Simulating failure: estimate_ETA_for_TMS_project_set_ids')
         raise NameError('Simulating failure')
 
     eta_tasks.estimate_ETA_for_TMS(tms, projects_set, **params)
-    logger.info('estimate_ETA_for_TMS_project_set_ids celery task_id={} finished'.format(task_id))
+    logger.info('estimate_ETA_for_TMS_project_set_ids celery task_id={}, parent_task_id={} finished'.format(
+        task_id, parent_task_id))
 
 
 @shared_task

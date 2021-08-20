@@ -1,4 +1,16 @@
 # Changelog
+
+## v1.4.0 (2021-08-11)
+- streamlined email reports
+- velocity plotting improvement (outliers, etc)
+- logs for failed jobs for troubleshooting
+- tracking jobs execution performance
+- hierarchical reports in API
+- support images in Gmail
+- scaled to points per week from points per hour in displays
+- UI updates: remove project capability, messaging for long jobs
+- misc fixes
+
 ## v1.3.0 (2021-07-06)
 - added import of only subset of projects
 - added report dates
