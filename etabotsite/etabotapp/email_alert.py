@@ -13,15 +13,13 @@ import logging
 import smtplib
 import time
 
-
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger('django')
 
 
 class EmailAlertWorker(object):
@@ -33,7 +31,6 @@ class EmailAlertWorker(object):
             server.set_debuglevel(1)
             server.ehlo()
             server.starttls()
-            #logger.debug('login("{}","***")'.format(SYS_EMAIL))
             server.login(SYS_EMAIL, SYS_EMAIL_PWD)
 
             server.send_message(msg)
@@ -49,7 +46,7 @@ class EmailAlertWorker(object):
             to_field,
             subject_field,
             msg_body):
-        #Format the Msg for email.
+
         msg = MIMEMultipart()
         msg['From'] = from_field
         msg['To'] = to_field
@@ -59,9 +56,6 @@ class EmailAlertWorker(object):
         return msg
 
 
-#
-
-#
 class SendEmailAlert(logging.StreamHandler):
     """ Send Email Alerts on Errors and above
 
@@ -71,13 +65,14 @@ class SendEmailAlert(logging.StreamHandler):
 
         All variables are defined in custom_settings.json.
     """
-    def __init__(self, SYS_DOMAIN,
-                SYS_EMAIL,
-                SYS_EMAIL_PWD,
-                EMAIL_HOST,
-                EMAIL_PORT,
-                ADMINS,
-                alertWorker = EmailAlertWorker()):
+    def __init__(
+            self, SYS_DOMAIN,
+            SYS_EMAIL,
+            SYS_EMAIL_PWD,
+            EMAIL_HOST,
+            EMAIL_PORT,
+            ADMINS,
+            alertWorker=EmailAlertWorker()):
         logging.StreamHandler.__init__(self)
         self.SYS_DOMAIN = SYS_DOMAIN
         self.SYS_EMAIL = SYS_EMAIL
@@ -86,13 +81,16 @@ class SendEmailAlert(logging.StreamHandler):
         self.EMAIL_PORT = EMAIL_PORT
         self.ADMINS = ADMINS
         self._emailAlertWorker = alertWorker
+        self.email_from = '"ETAbot" <no-reply@etabot.ai>'
+        self.email_subject = "Email Alert for Django Error"
 
     def emit(self, record):
-        '''This method is called automatically when handling a log'''
+        """This method is called automatically when handling a log"""
 
-        self.email_from = '"ETAbot" <no-reply@etabot.ai>'
-        self.email_subjet = "Email Alert for Django Error"
-        #Send an Email to all admins
         for emailTo in self.ADMINS:
-            msg = self._emailAlertWorker.format_email_msg(self.email_from,emailTo, self.email_subjet, self.format(record))
-            self._emailAlertWorker.send_email(msg,self.EMAIL_HOST, self.EMAIL_PORT, self.SYS_EMAIL, self.SYS_EMAIL_PWD)
+            logger.info('sending error alert email to {}'.format(emailTo))
+            msg = self._emailAlertWorker.format_email_msg(
+                self.email_from, emailTo, self.email_subject, self.format(record))
+            self._emailAlertWorker.send_email(
+                msg, self.EMAIL_HOST, self.EMAIL_PORT, self.SYS_EMAIL, self.SYS_EMAIL_PWD)
+            logger.info('sent error alert email to {}'.format(emailTo))

@@ -100,10 +100,10 @@ else:
 
 log_filename_with_path = get_key_value(
     custom_settings, 'LOG_FILENAME_WITH_PATH', default='/usr/src/app/logging/django_log.txt')
-print('log_filename_with_path: {}'.format(log_filename_with_path))
+logging.info('log_filename_with_path: {}'.format(log_filename_with_path))
 
 DJANGO_CONSOLE_LOGGING_LEVEL = get_key_value(custom_settings, 'DJANGO_CONSOLE_LOGGING_LEVEL', default='WARNING')
-print('DJANGO_CONSOLE_LOGGING_LEVEL: {}'.format(DJANGO_CONSOLE_LOGGING_LEVEL))
+logging.info('DJANGO_CONSOLE_LOGGING_LEVEL: {}'.format(DJANGO_CONSOLE_LOGGING_LEVEL))
 # Logging to File and Logging Configuration
 # Logger will modify root logger
 # Handlers's levels can be changed to meet the needs of the dev
@@ -111,8 +111,8 @@ print('DJANGO_CONSOLE_LOGGING_LEVEL: {}'.format(DJANGO_CONSOLE_LOGGING_LEVEL))
 # django_file controls print outs to the logging file either locally or on docker.
 # mail_admins controls mailing admins through SendEmailAlert class in email_alert.py
 
-print('ADMIN_EMAILS: {}'.format(ADMIN_EMAILS))
-print('EMAIL SYS: {}, EMAIL_HOST: {}, EMAIL_PORT: {}'.format(
+logging.info('ADMIN_EMAILS: {}'.format(ADMIN_EMAILS))
+logging.info('EMAIL SYS: {}, EMAIL_HOST: {}, EMAIL_PORT: {}'.format(
     SYS_EMAIL, EMAIL_HOST, EMAIL_PORT
 ))
 logging_config = {
@@ -168,7 +168,7 @@ logging_config = {
 # example.
 
 logging.config.dictConfig(logging_config)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('django')
 
 # Set Logger Level
 # If we're in production we don't want anything lower than INFO to show.
