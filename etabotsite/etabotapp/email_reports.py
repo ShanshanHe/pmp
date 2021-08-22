@@ -58,6 +58,7 @@ class EmailReportProcess(object):
 
     @staticmethod
     def generate_html_report(user, reports: Dict[str, HierarchicalReportNode], logs=None) -> (str, str):
+        """Return (report_email, full_report) tuple."""
         formatted_reports = []
         html_logs = logs2html(logs)
         for project, project_report in reports.items():
