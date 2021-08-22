@@ -14,6 +14,7 @@ logger = logging.getLogger()
 
 
 def save_project_velocities(tms_wrapper, projects_set) -> List[str]:
+    logger.debug('save_project_velocities started with projects_set {}'.format(projects_set))
     projects_dict = tms_wrapper.ETApredict_obj.task_system_schema['projects']
     project_names = []
 
@@ -32,8 +33,11 @@ def save_project_velocities(tms_wrapper, projects_set) -> List[str]:
             project.save()
             logger.debug('project.project_settings after save: {}'.format(
                 project.project_settings))
+        else:
+            logger.warning('eta_engine is None for project {}. skipping updating velocity'.format(project))
 
         project_names.append(project.name)
+    logger.debug('save_project_velocities finished with project_names {}'.format(project_names))
     return project_names
 
 
