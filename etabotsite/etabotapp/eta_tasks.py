@@ -93,31 +93,35 @@ def estimate_ETA_for_TMS(
         tms.owner, html_report=email_report, images=images)
 
     email_reports.EmailReportProcess.send_email(email_msg)
-
+    logger.info('updating projects_set: {}'.format(projects_set))
     for project in projects_set:
         project_settings = project.project_settings
         project_settings['report'] = full_report
         project_settings['report_date'] = str(datetime.utcnow())
+        logger.info('updated report for project: {} with date: {}'.format(project, project_settings['report_date']))
         if project.name in raw_status_reports:
             hierarchical_report = raw_status_reports[project.name]
             if isinstance(hierarchical_report, HierarchicalReportNode):
+                logger.info('updating hierarchical_report for project {}'.format(project.name))
                 project_settings['hierarchical_report'] = hierarchical_report.to_dict()
+                logger.info('updated hierarchical_report for project {}'.format(project.name))
                 # todo: https://etabot.atlassian.net/browse/ET-879
                 # del project_settings['hierarchical_report']['velocity_report']['df_sprint_stats']
                 # del project_settings['hierarchical_report']['velocity_report']['df_velocity_vs_time']
                 # del project_settings['hierarchical_report']['velocity_report']['df_velocity_stats']
-
             else:
                 logger.warning('hierarchical_report ({}) is not of HierarchicalReportNode type'.format(
                     type(hierarchical_report)
                 ))
-
+        else:
+            logger.warning('no project {} in raw_status_reports {}'.format(project.name, raw_status_reports.keys()))
         # logger.debug("saving project settings: {}".format(project_settings))
         # logger.debug("saving project settings hierarchical_report: {}".format(
         #     project_settings.get('hierarchical_report')))
         project.project_settings = project_settings
 
         project.save()
+        logger.info('saved project {} to DB.'.format(project.name))
 
     logger.debug('estimate_ETA_for_TMS finished')
 

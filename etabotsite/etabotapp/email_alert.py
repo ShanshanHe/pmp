@@ -88,9 +88,7 @@ class SendEmailAlert(logging.StreamHandler):
         """This method is called automatically when handling a log"""
 
         for emailTo in self.ADMINS:
-            logger.info('sending error alert email to {}'.format(emailTo))
             msg = self._emailAlertWorker.format_email_msg(
                 self.email_from, emailTo, self.email_subject, self.format(record))
             self._emailAlertWorker.send_email(
                 msg, self.EMAIL_HOST, self.EMAIL_PORT, self.SYS_EMAIL, self.SYS_EMAIL_PWD)
-            logger.info('sent error alert email to {}'.format(emailTo))

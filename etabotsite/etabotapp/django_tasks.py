@@ -39,8 +39,12 @@ def estimate_all(task_id=None, **kwargs):  # Put kwargs into a decorator
         logger.info('submitted celery job {} for tms {}, projects {}'.format(result.task_id, tms, projects))
         results.append(result)
         tmss_str.append(str(tms))
-    logger.error('sent celery tasks for tmss: \n{}'.format('\n'.join(tmss_str)))
-    # todo: make logging not through error
+
+    email_toolbox.EmailWorker.send_email(email_toolbox.EmailWorker.format_email_msg(
+        'no-reply@etabot.ai', 'hello@etabot.ai', 'sent celery tasks for Qty {} tmss'.format(len(tmss_str)),
+        'sent celery tasks for tmss:\n{}'.format('\n'.join(
+            ['{} {}'.format(tms_str, result.task_id) for tms_str, result in zip(tmss_str, results)]))))
+
     return True
 
 

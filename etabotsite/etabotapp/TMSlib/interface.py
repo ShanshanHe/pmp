@@ -185,9 +185,12 @@ class HierarchicalReportNode:
         return [node.report for node in self.all_nodes()]
 
     def to_dict(self) -> Dict:
+        if not isinstance(self.report, BasicReport):
+            raise TypeError('report must be BasicReport type. Got {} instead.'.format(type(self.report)))
         if not isinstance(self.report.due_dates_stats, TargetDatesStats):
             logging.debug('self.report.due_dates_stats: {}'.format(self.report.due_dates_stats))
-            raise TypeError('report.due_dates_stats must be TargetDatesStats type.')
+            raise TypeError('report.due_dates_stats must be TargetDatesStats type. Got {} instead'.format(
+                type(self.report.due_dates_stats)))
         return {
             'project': self.report.project,
             'project_on_track': self.report.project_on_track.value,
