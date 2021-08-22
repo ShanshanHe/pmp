@@ -1,5 +1,5 @@
 {% autoescape off %}
-<center><h1 id="entity-report-{{basic_report.entity_display_name}}-{{basic_report.project}}">{{ basic_report.entity_display_name }} <> project {{ basic_report.project|default:"Project name not found" }}.</h1></center>
+<center><h1 id="entity-report-{{basic_report.entity_display_name}}-{{basic_report.project}}">{{ basic_report.entity_display_name }} <> project {{ basic_report.project|default:"Project name not found" }}</h1></center>
     <center>{{ basic_report.due_dates_stats.summary_table }}</center>
     <center>{{ basic_report.sprint_stats.summary_table }}</center>
     <br>
@@ -12,5 +12,5 @@
         <br><center><img src="cid:{{image_cid}}"></center>
     {% endfor %}
 
-
+{{ basic_report.aux.logs_for_email }}
 {% endautoescape %}
