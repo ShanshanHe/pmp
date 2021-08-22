@@ -10,7 +10,7 @@ import etabotapp.eta_tasks as eta_tasks
 import datetime
 from typing import Union
 from .celery_tracking import *
-
+from etabotapp import email_toolbox
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
 logger = logging.getLogger('django')

@@ -62,11 +62,12 @@ Noticed a discrepancy or have a gift of feedback for us? Please email us at <a h
 Thanks,<br>
 The ETAbot Team<br>
 
-PS   Note: individual velocities do not necessarily represent individual's productivity or value. That is because measured velocity depends on bandwidth allocation, overhead, and other factors. Story points represent scope/effort, but not value.
+{% if report.velocity_report.images_for_email.keys.length > 0 %}
+PS Note: individual velocities do not necessarily represent individual's productivity or value. That is because measured velocity depends on bandwidth allocation, overhead, and other factors. Story points represent scope/effort, but not value.
   However individual velocities are useful for predicting when an individual may finish a task because it accounts for the bandwidth allocation, overhead, and other factors.
-
+{% endif %}
+<br>
 <font color="grey">
-
 host: {{ host }}
 </font>
 
