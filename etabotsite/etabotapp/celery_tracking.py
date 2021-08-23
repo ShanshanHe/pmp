@@ -65,6 +65,8 @@ def celery_task_update(func):
                 celery_task_record.end_time = datetime.datetime.now()
                 celery_task_record.status = result_status
                 meta_data = celery_task_record.meta_data
+                if meta_data is None:
+                    meta_data = {}
                 meta_data['error_str'] = error_str
                 celery_task_record.meta_data = meta_data
                 celery_task_record.save()
