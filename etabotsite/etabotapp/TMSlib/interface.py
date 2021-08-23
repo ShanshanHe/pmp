@@ -7,6 +7,7 @@ import pandas as pd
 import json
 
 from etabotapp.misc_utils.convertors import timestamp2unix, value2safejson, df_to_dict_for_json
+logger = logging.getLogger('django')
 
 due_alert_names_map = {
     'DueAlert.on_track': 'on_track',
@@ -191,18 +192,31 @@ class HierarchicalReportNode:
             logging.debug('self.report.due_dates_stats: {}'.format(self.report.due_dates_stats))
             raise TypeError('report.due_dates_stats must be TargetDatesStats type. Got {} instead'.format(
                 type(self.report.due_dates_stats)))
+        due_dates_stats = self.report.due_dates_stats.to_dict()
+        sprint_stats = self.report.sprint_stats.to_dict()
+        try:
+            velocity_report_dict = self.report.velocity_report.to_dict()
+        except Exception as e:
+            logger.warning('cannot create dict for {}'.format(self.report.velocity_report))
+            velocity_report_dict = {}
+        children_list = []
+        for child in self.children:
+            try:
+                children_list.append(child.to_dict())
+            except Exception as e:
+                logger.warning('cannot create dict for {}'.format(child))
         return {
             'project': self.report.project,
             'project_on_track': self.report.project_on_track.value,
             'entity_uuid': self.report.entity_uuid,
             'entity_display_name': self.report.entity_display_name,
-            'due_dates_stats': self.report.due_dates_stats.to_dict(),
-            'sprint_stats': self.report.sprint_stats.to_dict(),
-            'velocity_report': self.report.velocity_report.to_dict(),
+            'due_dates_stats': due_dates_stats,
+            'sprint_stats': sprint_stats,
+            'velocity_report': velocity_report_dict,
             # 'aux': self.report.aux,
             'params': self.report.params,
             'params_str': self.report.params_str,
             'tms_name': self.report.tms_name,
             'html': self.report.html,
-            'children': [child.to_dict() for child in self.children]
+            'children': children_list
         }
