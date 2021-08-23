@@ -45,18 +45,18 @@ class TestEmailAlert(TestCase):
         logger = logging.getLogger(__name__)
         logger.exception = MagicMock(name='exception')
 
-        #Log the test and setup the mock exception
+        # Log the test and setup the mock exception
         logger.info("Testing Email Alert with Divide by Zero Error!")
-        #We want to cause an error that's garunteed to throw an error and log!
+        # We want to cause an error that's garunteed to throw an error and log!
 
         try:
             fail = 1/0
         except Exception as e:
             logger.exception('Test Alert in test_logger_on_exception')
 
-        #Run some tests on the logger call
-        #We will test if the exception has been called.
-        #We will test if the exception has called with the correct Parameters
+        # Run some tests on the logger call
+        # We will test if the exception has been called.
+        # We will test if the exception has called with the correct Parameters
         logger.exception.assert_called_once()
         logger.exception.assert_called_once_with('Test Alert in test_logger_on_exception')
 

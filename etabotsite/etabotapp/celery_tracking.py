@@ -44,7 +44,7 @@ def celery_task_update(func):
     Updating a job in the database (as CeleryTask) """
     @functools.wraps(func)
     def inner(*args, **kwargs):
-
+        error_str = ''
         try:
             logger.debug('celery_task_update decorator is starting celery function. ')
             result = func(*args, **kwargs)
@@ -52,6 +52,7 @@ def celery_task_update(func):
             logger.info('Celery task function executed.')
         except Exception as e:
             logger.error('Celery task failed due to "{}"'.format(e))
+            error_str = str(e)
             result_status = 'FL'
             result = None
 
@@ -63,6 +64,11 @@ def celery_task_update(func):
                 celery_task_record = celery_task_records[0]
                 celery_task_record.end_time = datetime.datetime.now()
                 celery_task_record.status = result_status
+                meta_data = celery_task_record.meta_data
+                if meta_data is None:
+                    meta_data = {}
+                meta_data['error_str'] = error_str
+                celery_task_record.meta_data = meta_data
                 celery_task_record.save()
                 logger.info('updated celery task_id={} with status={}'.format(task_id, result_status))
             else:
