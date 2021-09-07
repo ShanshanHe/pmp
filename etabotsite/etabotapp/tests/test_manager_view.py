@@ -33,9 +33,9 @@ class TestJIRAwrapper(TestCase):
                 time_frame=-1)
             logging.info(team_members)
             self.assertTrue(isinstance(team_members, dict))
-            for uuid, person in team_members:
+            for uuid, person in team_members.items():
                 assert isinstance(person.display_name, str)
                 assert isinstance(person.uuid, str)
-                assert isinstance(person.avatar_urls, dict)
+                assert isinstance(person.avatars_urls, dict)
         else:
             logging.warning('no access token to test JIRA OAuth')
