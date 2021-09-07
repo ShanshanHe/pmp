@@ -31,6 +31,7 @@ class ReportGenerator:
             'project_status': DueAlert.unknown,
             'entity_uuid': '2358a398bcd',
             'entity_display_name': 'Cheburaskha',
+            'entity_avatars_urls': {},
             'due_dates_stats': TargetDatesStats(),
             'sprint_stats': TargetDatesStats(),
             'velocity_report': VelocityReport(None, 'mock velocity report', pd.DataFrame()),
