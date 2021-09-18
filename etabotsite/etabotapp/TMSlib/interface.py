@@ -96,6 +96,7 @@ class BasicReport:
             project_status: DueAlert,
             entity_uuid: str,
             entity_display_name: str,
+            entity_avatars_urls: dict,
             due_dates_stats: TargetDatesStats,
             sprint_stats: TargetDatesStats,
             velocity_report: VelocityReport,
@@ -107,6 +108,7 @@ class BasicReport:
         self.project_on_track = project_status
         self.entity_uuid = entity_uuid
         self.entity_display_name = entity_display_name
+        self.entity_avatars_urls = entity_avatars_urls
         self.due_dates_stats = due_dates_stats
         self.sprint_stats = sprint_stats
         self.velocity_report = velocity_report
@@ -137,6 +139,7 @@ class BasicReport:
             project_status=DueAlert.unknown,
             entity_uuid='Unknown',
             entity_display_name='Unknown',
+            entity_avatars_urls={},
             due_dates_stats=TargetDatesStats(),
             sprint_stats=TargetDatesStats(),
             velocity_report=VelocityReport(None, 'No velocity data yet.', pd.DataFrame()),
@@ -210,6 +213,7 @@ class HierarchicalReportNode:
             'project_on_track': self.report.project_on_track.value,
             'entity_uuid': self.report.entity_uuid,
             'entity_display_name': self.report.entity_display_name,
+            'entity_avatars_urls': self.report.entity_avatars_urls,
             'due_dates_stats': due_dates_stats,
             'sprint_stats': sprint_stats,
             'velocity_report': velocity_report_dict,
