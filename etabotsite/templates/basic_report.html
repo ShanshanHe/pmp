@@ -37,13 +37,13 @@
         <table align="center">
           <tr><td><span style="background-color:#e9a2ad">The following tasks are overdue </span></td></tr>
           <tr><td>consider renegotiating due date to the suggested ETA.</td></tr>
-          <tr><td>
-            <ul>
+          <tr><td></td></tr>
               {% for p in basic_report.due_dates_stats.tasks.overdue %}
-                <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
+              <tr><td align="left">
+                {{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}
+              </td></tr>
               {% endfor %}
-            </ul>
-          </td></tr>
+
           </table>
 
     {% endif %}
@@ -53,18 +53,18 @@
         <tr><td><span style="background-color:#f3c19d">The following tasks are off track (even optimistically)</span></td></tr>
         <tr><td></td></tr>
         <tr><td>consider reprioritizing, descoping, renegotiating due date.</td></tr>
-        <tr><td align="left">
           {% for p in basic_report.due_dates_stats.tasks.off_track %}
+        <tr><td align="left">
            {{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}
-          {% endfor %}
         </td></tr>
-
+          {% endfor %}
       </table>
     {% endif %}
 
     {% if basic_report.due_dates_stats.tasks.at_risk|length > 0 %}
       <table align="center">
         <tr><td><span style="background-color:#fbe192">The following tasks are at risk </span> (optimistically on track, pessimistically off track)</td></tr>
+        <tr><td></td></tr>
         <tr><td>consider reprioritizing, descoping, renegotiating due date or take calculated risk.</td></tr>
         <tr><td></td></tr>
 
@@ -82,7 +82,7 @@
       <table align="center">
         <tr><td><span style="background-color:#8dd7cf">The following tasks are on track </span></td></tr>
         <tr><td>(either there is no due date, or ETA (even pessimistic one) is before due date.</td></tr>
-
+        <tr><td></td></tr>
       {% for p in basic_report.due_dates_stats.tasks.on_track %}
         <tr><td align="left">
           {{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}
@@ -94,7 +94,7 @@
 
 
   <br><hr>
-  <center>{{ basic_report.sprint_stats.summary_table }}</center>
+  <center>{{ basic_report.sprint_stats.summary_table }}</center><br>
   {% if basic_report.sprint_stats.tasks.overdue|length > 0 %}
     <table align="center">
       <tr><td>The sprint is overdue and these tasks are not done yet:</td></tr>
@@ -107,12 +107,12 @@
 
   {% if basic_report.sprint_stats.tasks.at_risk|length > 0 or basic_report.sprint_stats.tasks.off_track|length > 0 %}
     <table align="center">
-      <tr><td>The following tasks are not fitting into sprint:</td></tr>
+      <tr><td><span style="background-color:#f3c19d">The following tasks are not fitting into sprint:</span></td></tr>
     {% for p in basic_report.sprint_stats.tasks.off_track %}
       <tr><td align="left">{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</td></tr>
     {% endfor %}
       <tr><td></td></tr>
-      <tr><td>The following tasks are at risk of not fitting into sprint:</td></tr>
+      <tr><td><span style="background-color:#fbe192">The following tasks are at risk of not fitting into sprint:</span></td></tr>
     {% for p in basic_report.sprint_stats.tasks.at_risk %}
       <tr><td align="left">{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</td></tr>
     {% endfor %}
