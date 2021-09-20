@@ -36,6 +36,12 @@ class Person:
         self.display_name = display_name
         self.avatars_urls = avatars_urls
 
+    def __repr__(self):
+        return 'person "{}" uuid "{}" avatars "{}"'.format(self.display_name, self.uuid, self.avatars_urls)
+
+    def __str__(self):
+        return self.__repr__()
+
 
 class JIRA_wrapper:
     """Handles communication with JIRA API."""
