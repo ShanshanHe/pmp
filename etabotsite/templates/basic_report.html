@@ -1,97 +1,132 @@
 {% autoescape off %}
-<h1 id="entity-report-{{basic_report.entity_display_name}}-{{basic_report.project}}">{{ basic_report.entity_display_name }} <> project {{ basic_report.project|default:"Project name not found" }}.</h1>
-  {% if basic_report.aux.active_team_members|length > 0 %}
-    Active members: <br>
+<h1 id="entity-report-{{basic_report.entity_uuid}}-{{basic_report.project}}" align="center">
+  {% if basic_report.entity_avatars_urls.48x48 %}
+    <img src="{{ basic_report.entity_avatars_urls.48x48 }}" width="48" height="48">
+  {% endif %}
+  {{ basic_report.entity_display_name }} <> project {{ basic_report.project|default:"Project name not found" }}.</h1>
+
+{% if basic_report.aux.active_team_members|length > 0 %}
+  <table align="center">
+    <tr><td></td><td><h2>Active members</h2></td></tr>
+    {% for active_member in basic_report.aux.active_team_members %}
+        <tr>
+          <td><a href="#entity-report-{{active_member.uuid}}-{{basic_report.project}}">
+            <img src="{{ active_member.avatars_urls.48x48 }}" width="48" height="48"></a></td>
+          <td><a href="#entity-report-{{active_member.uuid}}-{{basic_report.project}}">
+            {{ active_member.display_name }}</a></td>
+        </tr>
+    {% endfor %}
+  </table>
 
   {% else %}
   {% endif %}
-  <ul>
-  {% for active_member in basic_report.aux.active_team_members %}
-    <li><a href="#entity-report-{{active_member}}-{{basic_report.project}}">{{ active_member }}</a></li>
-  {% endfor %}
-  </ul>
+
 
   {% if basic_report.velocity_report.summary %}
-    {{ basic_report.velocity_report.summary }}
-    Note: individual velocities do not necessarily represent individual's productivity or value. That is because measured velocity depends on bandwidth allocation, overhead, and other factors. Story points represent scope/effort, but not value.
-  However individual velocities are useful for predicting when an individual may finish a task because it accounts for the bandwidth allocation, overhead, and other factors.
-
+    <br>
+      <center><h2>{{ basic_report.velocity_report.summary }}</h2></center>
+    <br>
   {% else %}
-    "Hmmm... Could not fetch velocity report
+    <center>"Hmmm... Could not fetch velocity report</center>
   {% endif %}
-  {{ basic_report.due_dates_stats.summary_table }}
+    <center>{{ basic_report.due_dates_stats.summary_table }}</center>
+
 
     <br>
     {% if basic_report.due_dates_stats.tasks.overdue|length > 0 %}
-      <span style="background-color:#e9a2ad">The following tasks are overdue </span>- consider renegotiating due date to the suggested ETA.
-      <ul>
-        {% for p in basic_report.due_dates_stats.tasks.overdue %}
-          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
-        {% endfor %}
-      </ul>
+        <table align="center">
+          <tr><td><span style="background-color:#e9a2ad">The following tasks are overdue </span></td></tr>
+          <tr><td>consider renegotiating due date to the suggested ETA.</td></tr>
+          <tr><td>
+            <ul>
+              {% for p in basic_report.due_dates_stats.tasks.overdue %}
+                <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
+              {% endfor %}
+            </ul>
+          </td></tr>
+          </table>
 
     {% endif %}
 
     {% if basic_report.due_dates_stats.tasks.off_track|length > 0 %}
-      <span style="background-color:#f3c19d">The following tasks are off track (even optimistically)</span> - consider reprioritizing, descoping, renegotiating due date.
-      <ul>
-        {% for p in basic_report.due_dates_stats.tasks.off_track %}
-          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
-        {% endfor %}
-      </ul>
+      <table align="center">
+        <tr><td><span style="background-color:#f3c19d">The following tasks are off track (even optimistically)</span></td></tr>
+        <tr><td></td></tr>
+        <tr><td>consider reprioritizing, descoping, renegotiating due date.</td></tr>
+        <tr><td align="left">
+          {% for p in basic_report.due_dates_stats.tasks.off_track %}
+           {{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}
+          {% endfor %}
+        </td></tr>
 
+      </table>
     {% endif %}
 
     {% if basic_report.due_dates_stats.tasks.at_risk|length > 0 %}
-      <span style="background-color:#fbe192">The following tasks are at risk </span> (optimistically on track, pessimistically off track) - consider reprioritizing, descoping, renegotiating due date or take calculated risk.
-      <ul>
+      <table align="center">
+        <tr><td><span style="background-color:#fbe192">The following tasks are at risk </span> (optimistically on track, pessimistically off track)</td></tr>
+        <tr><td>consider reprioritizing, descoping, renegotiating due date or take calculated risk.</td></tr>
+        <tr><td></td></tr>
+
         {% for p in basic_report.due_dates_stats.tasks.at_risk %}
-          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
+        <tr><td align="left">
+          {{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}
+        </td></tr><br>
         {% endfor %}
-      </ul>
+      </table>
+
 
     {% endif %}
 
     {% if basic_report.due_dates_stats.tasks.on_track|length > 0 %}
-      <span style="background-color:#8dd7cf">The following tasks are on track </span> (either there is no due date, or ETA (even pessimistic one) is before due date.
-      <ul>
+      <table align="center">
+        <tr><td><span style="background-color:#8dd7cf">The following tasks are on track </span></td></tr>
+        <tr><td>(either there is no due date, or ETA (even pessimistic one) is before due date.</td></tr>
+
       {% for p in basic_report.due_dates_stats.tasks.on_track %}
-          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
+        <tr><td align="left">
+          {{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}
       {% endfor %}
-      </ul>
+        </td></tr>
+
+        </table><br>
     {% endif %}
 
 
   <br><hr>
-  {{ basic_report.sprint_stats.summary_table }}
+  <center>{{ basic_report.sprint_stats.summary_table }}</center>
   {% if basic_report.sprint_stats.tasks.overdue|length > 0 %}
-    The sprint is overdue and these tasks are not done yet:
+    <table align="center">
+      <tr><td>The sprint is overdue and these tasks are not done yet:</td></tr>
+      <tr><td></td></tr>
     {% for p in basic_report.sprint_stats.tasks.overdue %}
-          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
+      <tr><td align="left">{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</td></tr>
     {% endfor %}
+      </table><br>
   {% endif %}
 
   {% if basic_report.sprint_stats.tasks.at_risk|length > 0 or basic_report.sprint_stats.tasks.off_track|length > 0 %}
-    <ul>
-    The following tasks may not fit into sprint:
-
+    <table align="center">
+      <tr><td>The following tasks are not fitting into sprint:</td></tr>
     {% for p in basic_report.sprint_stats.tasks.off_track %}
-          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
+      <tr><td align="left">{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</td></tr>
     {% endfor %}
-
+      <tr><td></td></tr>
+      <tr><td>The following tasks are at risk of not fitting into sprint:</td></tr>
     {% for p in basic_report.sprint_stats.tasks.at_risk %}
-          <li>{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</li>
+      <tr><td align="left">{{p.task_line_in_html_report|default:"hmm... cannot fetch task information"}}</td></tr>
     {% endfor %}
-    </ul>
+    </table><br>
   {% endif %}
 
   {% if basic_report.aux.inactive_team_members|length > 0 %}
-  Inactive members: <br>
-  <ul>
+<table align="center">
+  <tr><td>Inactive members:</td></tr>
+  <tr><td></td></tr>
   {% for inactive_member in basic_report.aux.inactive_team_members %}
-    <li>{{ inactive_member }}</li>
+    <tr><td><img src="{{ inactive_member.avatars_urls.48x48 }}" width="48" height="48"> {{ inactive_member.display_name }}</td></tr>
   {% endfor %}
-  </ul>
+</table><br>
   {% endif %}
 <hr>
 {% endautoescape %}
