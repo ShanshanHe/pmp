@@ -26,6 +26,23 @@ logger = logging.getLogger('django')
 logger.info('JIRA_CLOUD_API: {}'.format(JIRA_CLOUD_API))
 
 
+class Person:
+    def __init__(
+            self, *,
+            uuid: str,
+            display_name: str,
+            avatars_urls: Dict[str, str]):
+        self.uuid = uuid
+        self.display_name = display_name
+        self.avatars_urls = avatars_urls
+
+    def __repr__(self):
+        return 'person "{}" uuid "{}" avatars "{}"'.format(self.display_name, self.uuid, self.avatars_urls)
+
+    def __str__(self):
+        return self.__repr__()
+
+
 class JIRA_wrapper:
     """Handles communication with JIRA API."""
 
@@ -168,7 +185,7 @@ Errors: "{}"'.format(jira, errors_place))
         logger.info('{}: got {} issues'.format(search_string, len(jira_issues)))
         return jira_issues
 
-    def get_team_members(self, project: str, time_frame=365) -> Dict[str, str]:
+    def get_team_members(self, project: str, time_frame=365) -> Dict[str, Person]:
         """This function will gather all the team members in a given time range.
         Default is one 1 year.
 
@@ -200,8 +217,11 @@ Errors: "{}"'.format(jira, errors_place))
             account_id = item['fields']['assignee']['accountId']
             if account_id not in team_members:
                 logger.debug(item['fields']['assignee'])
-                display_name = item['fields']['assignee']['displayName']
-                team_members[account_id] = display_name
+                team_members[account_id] = Person(
+                    uuid=account_id,
+                    display_name=item['fields']['assignee']['displayName'],
+                    avatars_urls=item['fields']['assignee']['avatarUrls'])
+
         logger.debug('Found {} team members: {}.'.format(len(team_members), team_members.keys()))
         return team_members
 
