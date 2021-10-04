@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.0 (2021-10-03)
+- interactive reports
+- misc fixes
+
 ## v1.4.0 (2021-08-11)
 - streamlined email reports
 - velocity plotting improvement (outliers, etc)
