@@ -168,12 +168,18 @@ Errors: "{}"'.format(jira, errors_place))
         returned_result_length = 50
         jira_issues = []
         while get_all and returned_result_length == self.max_results_jira_api:
-            jira_issues_batch = self.jira.search_issues(
-                search_string,
-                maxResults=self.max_results_jira_api,
-                startAt=len(jira_issues),
-                expand='changelog')
-
+            try:
+                jira_issues_batch = self.jira.search_issues(
+                    search_string,
+                    maxResults=self.max_results_jira_api,
+                    startAt=len(jira_issues),
+                    expand='changelog')
+            except Exception as e:
+                log_message = 'ERROR: jira.search_issues for search_string="{}" failed due to "{}"'.format(
+                    search_string, e)
+                logger.error(log_message)
+                self.logs.append((datetime.utcnow(), log_message))
+                jira_issues_batch = []
             if returned_result_length > self.max_results_jira_api:
                 raise NameError(
                     'JIRA API problem: returned more results {} \
