@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.6.0 (2021-12-14)
+- interactive reports upgrade (plots and people filter)
+- jira search error handling
+
 ## v1.5.0 (2021-10-03)
 - interactive reports
 - misc fixes
