@@ -4,7 +4,7 @@ Authlib==0.15.3
 billiard==3.6.3.0
 boto3==1.17.22
 botocore==1.20.22
-celery==5.0.5
+celery==5.2.2
 certifi==2020.12.5
 cffi==1.14.5
 chardet==4.0.0
@@ -14,7 +14,7 @@ click-plugins==1.1.1
 click-repl==0.1.6
 cryptography==3.4.6
 defusedxml==0.7.0
-Django==2.2.24
+Django==2.2.27
 django-celery-beat==2.2.0
 django-cors-headers==3.7.0
 django-encrypted-model-fields==0.5.8
