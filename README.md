@@ -11,7 +11,7 @@ backend data infrastructure and server for Smart project management tool made fo
 ### To run django separately for development, please follow the process below:
 
 #### Prerequisite:
-* Have python 3.6 installed on your development machine (anaconda distribution is pretty good)
+* Have python 3.9 installed on your development machine (anaconda distribution is pretty good)
 
 ## Install virtual environment management tool
 If you already know how to create a python virtual environment, you can skip this section, and directly go to *Run django server locally* section.
