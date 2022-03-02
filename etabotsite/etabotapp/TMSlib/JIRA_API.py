@@ -234,6 +234,7 @@ Errors: "{}"'.format(jira, errors_place))
 
 def update_available_projects_for_TMS(tms, jira_wrapper):
     logger.info('update_available_projects_for_TMS started with tms {}, jira {}'.format(tms, jira_wrapper))
+    project_names = []
     if tms.params is None:
         tms.params = {}
         logger.warning('tms params is None, creating empty dict.')
