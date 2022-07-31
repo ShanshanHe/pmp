@@ -48,10 +48,6 @@
 
   {{ report.short_html }}
 
-  {% for image_cid in report.velocity_report.images_for_email.keys %}
-    <br><center><img src="cid:{{image_cid}}"></center>
-  {% endfor %}
-
 {% endfor %}
 
 
@@ -67,6 +63,16 @@ PS Note: individual velocities do not necessarily represent individual's product
   However individual velocities are useful for predicting when an individual may finish a task because it accounts for the bandwidth allocation, overhead, and other factors.
 {% endif %}
 <br>
+
+<h3>Details plots teaser </h3>:
+{% for report in reports %}
+  <br>
+  {% for image_cid in report.velocity_report.images_for_email.keys %}
+    <br><center><img src="cid:{{image_cid}}"></center>
+  {% endfor %}
+
+{% endfor %}
+
 <font color="grey">
 host: {{ host }}
 </font>
