@@ -2,6 +2,7 @@ from .models import Project, TMS, CeleryTask
 from kombu.utils.uuid import uuid
 import datetime
 import functools
+import traceback
 from .views import *
 import logging
 import celery as clry
@@ -51,8 +52,10 @@ def celery_task_update(func):
             result_status = 'DN'
             logger.info('Celery task function executed.')
         except Exception as e:
+            traceback_str = str(traceback.format_exc())
             logger.error('Celery task failed due to "{}"'.format(e))
-            error_str = str(e)
+            logger.error('Celery task failed due to "{}"'.format(traceback_str))
+            error_str = str(e) + traceback_str
             result_status = 'FL'
             result = None
 
