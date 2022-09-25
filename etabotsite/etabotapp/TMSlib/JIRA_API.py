@@ -173,7 +173,7 @@ Errors: "{}"'.format(jira, errors_place))
                     search_string,
                     maxResults=self.max_results_jira_api,
                     startAt=len(jira_issues),
-                    expand='changelog')
+                    expand=['changelog', 'names'])
             except Exception as e:
                 log_message = 'ERROR: jira.search_issues for search_string="{}" failed due to "{}"'.format(
                     search_string, e)
