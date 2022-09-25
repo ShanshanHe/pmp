@@ -181,7 +181,7 @@ cannot send connectivity issue email')
             assignee: str = None,
             project_names: List[str] = None,
             recent_time_period: str = None):
-        extra_filter = ' AND (type = "Task" OR type = "Story" OR type = "Bug") '
+        extra_filter = ' AND (type = "Task" OR type = "Story" OR type = "Bug" OR type = "Epic" OR type = "Initiative") '
         if assignee is not None:
             extra_filter += 'AND assignee = {assignee}'.format(assignee=assignee)
 
@@ -286,7 +286,7 @@ AND sprint in openSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
 
         open_issues_not_current_sprint = self.jira.get_jira_issues(
             'status not in ("Done") \
-AND sprint not in openSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
+AND (sprint not in openSprints() OR sprint is EMPTY) {extra_filter} ORDER BY Sprint, Rank ASC'.format(
                 extra_filter=extra_filter))
         result += open_issues_not_current_sprint
 
