@@ -3,7 +3,6 @@ from kombu.utils.uuid import uuid
 import datetime
 import functools
 import traceback
-from .views import *
 import logging
 import celery as clry
 celery = clry.Celery()

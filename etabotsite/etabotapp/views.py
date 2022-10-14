@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .celery_tracking import *
+from .celery_tracking import send_celery_task_with_tracking
 from etabotapp.TMSlib.JIRA_API import update_available_projects_for_TMS
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import OAuth1Token, OAuth2Token, OAuth2CodeRequest
@@ -483,11 +483,9 @@ class CriticalPathsView(APIView):
             'etabotapp.django_tasks.generate_critical_path',
             (tms.id, final_nodes, params), owner=tms.owner)
 
-
         return Response(
             data=result.task_id,
             status=status.HTTP_200_OK)
-
 
 
 class EstimateTMSView(APIView):

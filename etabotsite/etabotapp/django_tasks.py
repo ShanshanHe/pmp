@@ -9,7 +9,7 @@ import logging
 import etabotapp.eta_tasks as eta_tasks
 import datetime
 from typing import Union, List
-from .celery_tracking import send_celery_task_with_tracking, celery_task_update
+from .celery_tracking import *
 from etabotapp import email_toolbox, email_reports
 import etabotapp.TMSlib.TMS as TMSlib
 

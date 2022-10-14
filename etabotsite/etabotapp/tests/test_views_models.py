@@ -299,7 +299,7 @@ class CriticalPathsViewTestCase(APITestCase):
 
         logging.debug('TMS: {}, id: {}'.format(self.tms, self.tms.id))
 
-    def test_api_can_send_email(self):
+    def test_api_can_send_critical_path_email_report(self):
         """Test the api can send an email."""
         path = '/api/critical_paths?tms={}'.format(self.tms.id)
         logging.debug('path={}'.format(path))
