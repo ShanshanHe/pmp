@@ -3,7 +3,6 @@ from kombu.utils.uuid import uuid
 import datetime
 import functools
 import traceback
-from .views import *
 import logging
 import celery as clry
 celery = clry.Celery()
@@ -30,7 +29,7 @@ def celery_task_record_creator(name, owner):
 
 def send_celery_task_with_tracking(name, args, owner=None, **kwargs):
     """Create a record for tracking celery task and submit the celery task.
-
+    :param owner:
     :args: tuple of positional arguments to ass to celery.send_task"""
     logger.info('send_celery_task_with_tracking started with owner "{}".'.format(owner))
     celery_task_record = celery_task_record_creator(name=name, owner=owner)

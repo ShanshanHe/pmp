@@ -28,11 +28,13 @@ try:
     logging.debug(sys.path)
     import etabot_algo.ETApredict as ETApredict
     import etabot_algo.ETAreport as ETAreport
+    import etabot_algo.critical_path as cp
 except Exception as e:
     logging.warning('cannot load ETApredict or ETAreport due to "{}"\
  Loading ETApredict_placeholder, ETAreport_placeholder instead'.format(e))
     import etabotapp.TMSlib.ETApredict_placeholder as ETApredict
     import etabotapp.TMSlib.ETAreport_placeholder as ETAreport
+    import etabotapp.TMSlib.critical_path_placeholder as cp
 logging.debug('loading TMSlib.TMS: done')
 print('loading TMSlib.TMS: done')
 logger = logging.getLogger()

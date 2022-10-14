@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .celery_tracking import *
+from .celery_tracking import send_celery_task_with_tracking
 from etabotapp.TMSlib.JIRA_API import update_available_projects_for_TMS
 from .serializers import UserSerializer, ProjectSerializer, TMSSerializer
 from .models import OAuth1Token, OAuth2Token, OAuth2CodeRequest
@@ -397,7 +397,7 @@ def construct_new_tms_ids_query_params(new_tms_ids):
 
 def get_tms_set_by_id(request):
     """Return tms_set on success or request Response."""
-    logger.debug(request.user)
+    logger.debug('get_tms_set_by_id started for user {}'.format(request.user))
     tms_id = request.query_params.get('tms')
 
     tms_id = int(tms_id)
@@ -444,6 +444,48 @@ def estimate_tms(user, tms, global_params, project_id=None):
 
     # todo: stores task_id in database for this user
     return result.task_id
+
+
+class CriticalPathsView(APIView):
+
+    def post(self, request):
+        """Generate critical path for a given JQL and parameters.
+
+        """
+        try:
+            tms_set = get_tms_set_by_id(request)
+        except Exception as e:
+            return Response(
+                {
+                    "error":
+                        "No TMS found with tms_id=\"{}\" for user {} due "
+                        "to: {}".format(
+                            request.query_params.get('tms'),
+                            self.request.user, e)
+                },
+                status=status.HTTP_400_BAD_REQUEST)
+        post_data = {}
+        tms = tms_set[0]
+        if request.body:
+            logger.debug('request.body: {}'.format(request.body))
+            post_data = json.loads(request.body)
+        params = post_data.get('params', {})
+        logger.debug('CriticalPathView call global_params: {}'.format(params))
+        if 'final_nodes' in params:
+            final_nodes = params['final_nodes']
+        else:
+            return Response(
+                {
+                    "error": "No final_nodes in params."
+                },
+                status=status.HTTP_400_BAD_REQUEST)
+        result = send_celery_task_with_tracking(
+            'etabotapp.django_tasks.generate_critical_path',
+            (tms.id, final_nodes, params), owner=tms.owner)
+
+        return Response(
+            data=result.task_id,
+            status=status.HTTP_200_OK)
 
 
 class EstimateTMSView(APIView):
