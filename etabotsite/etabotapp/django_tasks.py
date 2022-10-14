@@ -8,9 +8,11 @@ from django.contrib.auth.models import User
 import logging
 import etabotapp.eta_tasks as eta_tasks
 import datetime
-from typing import Union
-from .celery_tracking import *
-from etabotapp import email_toolbox
+from typing import Union, List
+from .celery_tracking import send_celery_task_with_tracking, celery_task_update
+from etabotapp import email_toolbox, email_reports
+import etabotapp.TMSlib.TMS as TMSlib
+
 celery = clry.Celery()
 celery.config_from_object('django.conf:settings')
 logger = logging.getLogger('django')
@@ -61,6 +63,25 @@ def get_tms_by_id(tms_id) -> Union[TMS, None]:
     else:
         tms = tms_list[0]
     return tms
+
+
+@shared_task
+@celery_task_update
+def generate_critical_path(
+        tms_id: int,
+        final_nodes: List[str],
+        params: dict,
+        task_id=None):
+    """Generate critical path and send email report."""
+    logging.info('generate_critical_path started task_id = {}'.format(task_id))
+    logging.debug('tms_id = {}, final_nodes="{}", params={}'.format(tms_id, final_nodes, params))
+    tms = get_tms_by_id(tms_id)
+    logs = []
+    tms_wrapper = TMSlib.TMSWrapper(tms, logs=logs)
+    email_msg = TMSlib.cp.generate_critical_paths_email_report_for_tms(
+        tms_wrapper=tms_wrapper, final_nodes=final_nodes, params=params)
+    email_reports.EmailReportProcess.send_email(email_msg)
+    logging.info('generate_critical_path finished task_id = {}'.format(task_id))
 
 
 @shared_task

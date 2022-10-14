@@ -282,11 +282,41 @@ class ProjectViewTestCase(APITestCase):
         url = '{}{}{}'.format('/api/projects/', project.id, '/')
         response = self.client.delete(url, format='json', follow=True)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-    
+
+
+class CriticalPathsViewTestCase(APITestCase):
+    """Test suite for user communication view."""
+
+    def setUp(self):
+        """Define and authenticate test client."""
+
+        # Create authorized user
+        user = create_test_user()
+        self.client = APIClient()
+        self.client.force_authenticate(user=user)
+        self.tms = mock_up_TMS(user)
+        self.tms.save()
+
+        logging.debug('TMS: {}, id: {}'.format(self.tms, self.tms.id))
+
+    def test_api_can_send_email(self):
+        """Test the api can send an email."""
+        path = '/api/critical_paths?tms={}'.format(self.tms.id)
+        logging.debug('path={}'.format(path))
+        response = self.client.post(
+            path,
+            {'params': {
+                'start_date_field_name': 'customfield_10206',
+                'slack_tolerance_for_crit_path_days': 14,
+                'final_nodes': ['ED-127', 'ED-132'],
+                'jql_query': 'project = "ETAbot-Demo" and status != "Done"'}},
+             format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 # TODO: Implement test to check that email worker was called with correct arguments.
 class UserCommunicationViewTestCase(APITestCase):
-    "Test suite for user communication view."
+    """Test suite for user communication view."""
 
     def setUp(self):
         """Define and authenticate test client."""

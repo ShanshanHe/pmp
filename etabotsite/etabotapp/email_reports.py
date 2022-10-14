@@ -95,12 +95,21 @@ class EmailReportProcess(object):
         return report_email, full_report
 
     @staticmethod
-    def format_email_msg(user, html_report: str, images=None):
+    def format_email_msg(user, html_report: str, images=None, subject='[ETAbot] Your ETAs Report'):
+        """
+        Create email message.
+
+        :param user: Django User class
+        :param html_report:
+        :param images:
+        :param subject:
+        :return:
+        """
         # Format the Msg for email.
         msg = MIMEMultipart('related')
         msg['From'] = '"ETAbot" <no-reply@etabot.ai>'
         msg['To'] = user.email
-        msg['Subject'] = '[ETAbot] Your ETAs Report'
+        msg['Subject'] = subject
         msg_body = html_report
         msg.attach(MIMEText(msg_body, 'html'))
         if images is not None:
