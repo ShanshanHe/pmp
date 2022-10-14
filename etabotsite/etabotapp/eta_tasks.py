@@ -25,14 +25,14 @@ def save_project_velocities(tms_wrapper, projects_set) -> List[str]:
                 project.name)
             project_settings = projects_dict.get(project.name, {}).get(
                         'project_settings', {})
-            logger.debug(
-                'project.project_settings {} before update with {}:'.format(
-                    project.project_settings,
-                    project_settings))
+            # logger.debug(
+            #     'project.project_settings {} before update with {}:'.format(
+            #         project.project_settings,
+            #         project_settings))
             project.project_settings = project_settings
             project.save()
-            logger.debug('project.project_settings after save: {}'.format(
-                project.project_settings))
+            # logger.debug('project.project_settings after save: {}'.format(
+            #     project.project_settings))
         else:
             logger.warning('eta_engine is None for project {}. skipping updating velocity'.format(project))
 

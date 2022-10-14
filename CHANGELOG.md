@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.7.0 (2022-10-14)
+- added interface and API for critical path analysis
+- fixed bugs (ET-923)
+- dependencies versions updates
+- temporarily disabling periodic updates
+
 ## v1.6.0 (2021-12-14)
 - interactive reports upgrade (plots and people filter)
 - jira search error handling

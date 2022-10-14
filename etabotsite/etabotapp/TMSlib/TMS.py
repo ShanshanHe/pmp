@@ -28,11 +28,13 @@ try:
     logging.debug(sys.path)
     import etabot_algo.ETApredict as ETApredict
     import etabot_algo.ETAreport as ETAreport
+    import etabot_algo.critical_path as cp
 except Exception as e:
     logging.warning('cannot load ETApredict or ETAreport due to "{}"\
  Loading ETApredict_placeholder, ETAreport_placeholder instead'.format(e))
     import etabotapp.TMSlib.ETApredict_placeholder as ETApredict
     import etabotapp.TMSlib.ETAreport_placeholder as ETAreport
+    import etabotapp.TMSlib.critical_path_placeholder as cp
 logging.debug('loading TMSlib.TMS: done')
 print('loading TMSlib.TMS: done')
 logger = logging.getLogger()
@@ -181,7 +183,7 @@ cannot send connectivity issue email')
             assignee: str = None,
             project_names: List[str] = None,
             recent_time_period: str = None):
-        extra_filter = ' AND (type = "Task" OR type = "Story" OR type = "Bug") '
+        extra_filter = ' AND (type = "Task" OR type = "Story" OR type = "Bug" OR type = "Epic" OR type = "Initiative") '
         if assignee is not None:
             extra_filter += 'AND assignee = {assignee}'.format(assignee=assignee)
 
@@ -286,7 +288,7 @@ AND sprint in openSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
 
         open_issues_not_current_sprint = self.jira.get_jira_issues(
             'status not in ("Done") \
-AND sprint not in openSprints() {extra_filter} ORDER BY Sprint, Rank ASC'.format(
+AND (sprint not in openSprints() OR sprint is EMPTY) {extra_filter} ORDER BY Sprint, Rank ASC'.format(
                 extra_filter=extra_filter))
         result += open_issues_not_current_sprint
 

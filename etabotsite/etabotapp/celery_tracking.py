@@ -2,7 +2,7 @@ from .models import Project, TMS, CeleryTask
 from kombu.utils.uuid import uuid
 import datetime
 import functools
-from .views import *
+import traceback
 import logging
 import celery as clry
 celery = clry.Celery()
@@ -29,7 +29,7 @@ def celery_task_record_creator(name, owner):
 
 def send_celery_task_with_tracking(name, args, owner=None, **kwargs):
     """Create a record for tracking celery task and submit the celery task.
-
+    :param owner:
     :args: tuple of positional arguments to ass to celery.send_task"""
     logger.info('send_celery_task_with_tracking started with owner "{}".'.format(owner))
     celery_task_record = celery_task_record_creator(name=name, owner=owner)
@@ -51,8 +51,10 @@ def celery_task_update(func):
             result_status = 'DN'
             logger.info('Celery task function executed.')
         except Exception as e:
+            traceback_str = str(traceback.format_exc())
             logger.error('Celery task failed due to "{}"'.format(e))
-            error_str = str(e)
+            logger.error('Celery task failed due to "{}"'.format(traceback_str))
+            error_str = str(e) + traceback_str
             result_status = 'FL'
             result = None
 
