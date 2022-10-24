@@ -39,8 +39,8 @@ class OAuth1Token(models.Model):
     owner = models.ForeignKey('auth.User', related_name='OAuth1Tokens',
                               on_delete=models.CASCADE)    
     name = models.CharField(max_length=40)
-    oauth_token = models.CharField(max_length=200)
-    oauth_token_secret = models.CharField(max_length=200)
+    oauth_token = models.CharField(max_length=2000)
+    oauth_token_secret = models.CharField(max_length=2000)
 
     def to_token(self):
         return dict(
