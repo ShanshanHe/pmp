@@ -6,12 +6,14 @@ import logging
 import django
 from django.conf import settings
 from django.apps import apps
+import datetime
 
+logger = logging.getLogger('celery')
+logger.info('celery logger info.')
 # Set default Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'etabotsite.settings')
 
 django.setup()
-
 # print('celery os.environ: {}'.format(os.environ))
 app = Celery('etabotapp')
 # Celery will apply all configuration keys with defined namespace
@@ -35,6 +37,8 @@ app.conf.beat_schedule = settings.CUSTOM_SETTINGS.get(
     'eta_beat_schedule',
     {'estimate-at-midnight': {
         'task': 'etabotapp.django_tasks.estimate_all',
+        'kwargs': {'task_id': 'periodic_update_{}'.format(
+            datetime.datetime.utcnow().strftime('%Y-%m-%d_%H-%M-%S'))},
         'schedule': crontab(**crontab_args)
     }})
 
@@ -48,3 +52,4 @@ def debug_task(self):
 #         'task': 'tasks.estimate_all',
 #         'schedule': 10.0
 #     }
+logging.info('celery.py finished')

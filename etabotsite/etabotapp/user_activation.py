@@ -1,6 +1,5 @@
 import base64
 import logging
-import smtplib
 import time
 
 from django.conf import settings
@@ -10,7 +9,7 @@ from django.utils.encoding import force_bytes
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum
-
+import etabotapp.email_toolbox as email_toolbox
 from requests.utils import quote
 
 logging.getLogger().setLevel(logging.INFO)
@@ -45,20 +44,6 @@ class ResponseCode(Enum):
 
 class ActivationProcessor(object):
     @staticmethod
-    def send_email(msg):
-        logging.debug('starting send_email.')
-        server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
-        server.set_debuglevel(1)
-        server.ehlo()
-        server.starttls()
-        logging.debug('login("{}","***")'.format(SYS_EMAIL))
-        server.login(SYS_EMAIL, SYS_EMAIL_PWD)
-
-        server.send_message(msg)
-        logging.info('email sent.')
-        del server
- 
-    @staticmethod
     def email_token(user):
         try:
             now_millis = int(round(time.time() * 1000))
@@ -80,10 +65,19 @@ class ActivationProcessor(object):
             })
             msg.attach(MIMEText(msg_body, 'html'))
 
-            ActivationProcessor.send_email(msg)
+            email_toolbox.EmailWorker.send_email(msg)
 
             logging.info('Successfully sent activation email to User %s '
                          % user.username)
+
+            msg2 = MIMEMultipart()
+            msg2['From'] = '"ETAbot" <no-reply@etabot.ai>'
+            msg2['To'] = 'hello@etabot.ai'
+            msg2['Subject'] = 'new user {}'.format(user.email)
+            msg2_body = msg2['Subject']
+            msg2.attach(MIMEText(msg2_body, 'html'))
+            email_toolbox.EmailWorker.send_email(msg2)
+
         except Exception as ex:
             logging.error('Failed to send activation email to User %s: %s'
                           % (user.username, str(ex)))

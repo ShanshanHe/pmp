@@ -12,10 +12,10 @@
   <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
   <link type="text/css" rel="stylesheet" href="{% static 'ng2_app/assets/MaterialIcons.css' %}">
   <!-- <link href="https://fonts.googleapis.com/css?family=Josefin+Sans|Julius+Sans+One&amp;subset=latin-ext" rel="stylesheet">   -->
-  <link type="text/css" rel="stylesheet" href="{% static 'ng2_app/assets/JosefinJulius.css' %}">  
-  
-  
-  <link type="text/css" rel="stylesheet prefetch" href="{% static 'ng2_app/assets/materialize.css' %}"> 
+  <link type="text/css" rel="stylesheet" href="{% static 'ng2_app/assets/JosefinJulius.css' %}">
+
+
+  <link type="text/css" rel="stylesheet prefetch" href="{% static 'ng2_app/assets/materialize.css' %}">
   <!-- <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.css'>   -->
 <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet"> -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -46,9 +46,44 @@ window['_fs_namespace'] = 'FS';
 
   gtag('config', 'UA-130006699-1');
 </script>
+  <script>
+    (function(apiKey){
+      (function(p,e,n,d,o){var v,w,x,y,z;o=p[d]=p[d]||{};o._q=o._q||[];
+        v=['initialize','identify','updateOptions','pageLoad','track'];for(w=0,x=v.length;w<x;++w)(function(m){
+          o[m]=o[m]||function(){o._q[m===v[0]?'unshift':'push']([m].concat([].slice.call(arguments,0)));};})(v[w]);
+        y=e.createElement(n);y.async=!0;y.src='https://cdn.pendo.io/agent/static/'+apiKey+'/pendo.js';
+        z=e.getElementsByTagName(n)[0];z.parentNode.insertBefore(y,z);})(window,document,'script','pendo');
 
-<link rel="stylesheet" href="{% static 'ng2_app/styles.69867fd583e97aa2cbb0.css' %}"></head>
+      // Call this whenever information about your visitors becomes available
+      // Please use Strings, Numbers, or Bools for value types.
+      pendo.initialize({
+        visitor: {
+          id:              '123'   // Required if user is logged in
+          // email:        // Recommended if using Pendo Feedback, or NPS Email
+          // full_name:    // Recommended if using Pendo Feedback
+          // role:         // Optional
+
+          // You can add any additional visitor level key-values here,
+          // as long as it's not one of the above reserved names.
+        },
+
+        account: {
+          id:           '234' // Highly recommended
+          // name:         // Optional
+          // is_paying:    // Recommended if using Pendo Feedback
+          // monthly_value:// Recommended if using Pendo Feedback
+          // planLevel:    // Optional
+          // planPrice:    // Optional
+          // creationDate: // Optional
+
+          // You can add any additional account level key-values here,
+          // as long as it's not one of the above reserved names.
+        }
+      });
+    })('6be035c3-17cc-4a3e-58ba-ba89a7775b31');
+  </script>
+<link rel="stylesheet" href="{% static 'ng2_app/styles.ebf5bc1006cbe275e980.css' %}"></head>
 <body>
   <app-root></app-root>
-<script type="text/javascript" src="{% static 'ng2_app/runtime.a66f828dca56eeb90e02.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/polyfills.b7b7642b82b357ed611c.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/main.7c9425f2a97e289bdb60.js' %}"></script></body>
+<script type="text/javascript" src="{% static 'ng2_app/runtime.a5dd35324ddfd942bef1.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/polyfills.45554438a059f3b9f290.js' %}"></script><script type="text/javascript" src="{% static 'ng2_app/main.4b4fb857d71636b1a3bb.js' %}"></script></body>
 </html>

@@ -1,0 +1,80 @@
+<head>
+  <style type="text/css" media="screen">
+  .summary_table {
+      border-collapse: collapse;
+      border: 1px solid silver;
+      margin-left: auto;
+      margin-right: auto;
+  }
+
+  .summary_table td, th, tr {
+      padding: 5px;
+      border-collapse: collapse;
+      border: 1px solid silver;
+      text-align: center;
+  }
+
+  .df_table {
+      font-size: 11pt;
+      font-family: Arial;
+      border-collapse: collapse;
+      border: 1px solid silver;
+
+  }
+
+  .df_table td, th {
+      padding: 5px;
+  }
+
+  .df_table tr:nth-child(even) {
+      background: #E0E0E0;
+  }
+
+  .df_table tr:hover {
+      background: silver;
+      cursor: pointer;
+  }
+  </style>
+</head>
+{% autoescape off %}
+
+{% if reports.length == 0 %}
+  Hmm... No reports found. Please try again later. If the issue persists, please let us know at
+  <a href="mailto:hello@etabot.ai">hello@etabot.ai</a>
+{% endif %}
+
+{% for report in reports %}
+  <br>
+
+  {{ report.short_html }}
+
+{% endfor %}
+
+
+<br>
+Noticed a discrepancy or have a gift of feedback for us? Please email us at <a href="mailto:hello@etabot.ai">hello@etabot.ai</a>
+<br>
+<br>
+Thanks,<br>
+The ETAbot Team<br>
+
+{% if report.velocity_report.images_for_email.length > 0 %}
+PS Note: individual velocities do not necessarily represent individual's productivity or value. That is because measured velocity depends on bandwidth allocation, overhead, and other factors. Story points represent scope/effort, but not value.
+  However individual velocities are useful for predicting when an individual may finish a task because it accounts for the bandwidth allocation, overhead, and other factors.
+{% endif %}
+<br>
+
+<h3>Details plots teaser </h3>:
+{% for report in reports %}
+  <br>
+  {% for image_cid in report.velocity_report.images_for_email.keys %}
+    <br><center><img src="cid:{{image_cid}}"></center>
+  {% endfor %}
+
+{% endfor %}
+
+<font color="grey">
+host: {{ host }}
+</font>
+
+{% endautoescape %}

@@ -3,12 +3,23 @@ services:
 
   django:
     container_name: pmp-django
+    environment:
+      - DB_USER
+      - DB_PASSWORD
+      - DB_HOST
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
+      - DJANGO_SYS_EMAIL
+      - DJANGO_SYS_EMAIL_PWD
+      - MODE
     build:
       context: .
     networks:
       - pmp-django-nginx
     volumes:
       - pmp-django-static:/usr/src/app/static
+      - pmp-django-logging:/usr/src/app/logging
+      - pmp-django-settings:/usr/src/app/settings:ro
     ports:
       - 8000:8000
 
@@ -31,6 +42,8 @@ services:
 volumes:
   pmp-django-static:
   pmp-nginx-cert:
+  pmp-django-logging:
+  pmp-django-settings:
 
 networks:
   pmp-django-nginx:

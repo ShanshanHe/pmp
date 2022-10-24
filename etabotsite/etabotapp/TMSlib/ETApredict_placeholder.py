@@ -15,25 +15,33 @@ class Measurement():
     def higher_estimate(self, confidence_level=0.95):
         return self.value * 1.2
 
-class ETAengine():
+
+class ETAengine:
     def __init__(self):
         self.projects = {}
+        self.user_velocity_per_project = {}
 
 
-class ETApredict():
+class ETApredict:
     def __init__(
             self,
-            TMS_interface=None):
+            TMS_interface=None,
+            logs=None):
         self.TMS_interface = TMS_interface
-        self.user_velocity_per_project = {}
+        if logs is None:
+            self.logs = []
+        else:
+            self.logs = logs
         self.eta_engine = ETAengine()
+        self.df_tasks_with_ETAs = None
+        self.task_system_schema = {'projects': {}}
         logging.debug('ETApredict placeholder initialized')
 
     def init_with_Django_models(
             self,
             tms_config,
             projects):
-        if len(projects) > 0:
+        if projects is not None and len(projects) > 0:
             self.projects = projects
         else:
             self.get_projects()
@@ -118,7 +126,7 @@ class ETApredict():
 
         ]
 
-        self.user_velocity_per_project = {
+        self.eta_engine.user_velocity_per_project = {
             'Project Cheburashka': Measurement(1.2),
             'Project Buckwheat': Measurement(2.3)
         }

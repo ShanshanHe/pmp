@@ -1,10 +1,11 @@
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 from rest_framework.authtoken.views import obtain_auth_token
-from rest_framework_expiring_authtoken import views
+# from rest_framework_expiring_authtoken import views
 from .views import (
     UserViewSet, ProjectViewSet, TMSViewSet, EstimateTMSView,
-    EstimationStatusView)
+    CeleryTaskStatusView, CriticalPathsView)
+from .views import UserCommunicationView
 from .views import ParseTMSprojects
 from .views import index
 from .views import activate
@@ -15,25 +16,26 @@ from django.contrib.auth import views as auth_views
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 import logging
 
-
 router = DefaultRouter()
-router.register(r'users', UserViewSet, base_name='users')
-router.register(r'projects', ProjectViewSet, base_name='projects')
-router.register(r'tms', TMSViewSet, base_name='tms')
+router.register(r'users', UserViewSet, basename='users')
+router.register(r'projects', ProjectViewSet, basename='projects')
+router.register(r'tms', TMSViewSet, basename='tms')
 
-urlpatterns = staticfiles_urlpatterns()
+urlpatterns = staticfiles_urlpatterns() # this should be empty list when not in DEBUG mode by design
 logging.debug('static urlpatterns: "{}"'.format(urlpatterns))
 
 urlpatterns += [
     url(r'^api/', include(router.urls)),
     url(r'^api/auth/',
         include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^api/get-token/', views.obtain_expiring_auth_token),
+    url(r'^api/get-token/', obtain_auth_token),
     url(r'^api/estimate/', EstimateTMSView.as_view(), name="estimate_tms"),
-    url(r'^api/estimate-status/tms/(?P<id>.+)/$',
-        EstimationStatusView.as_view(), name="estimation_status"),
+    url(r'^api/job-status/(?P<id>.+)/$',
+        CeleryTaskStatusView.as_view(), name="job_status"),
     url(r'^api/parse_projects/', ParseTMSprojects.as_view(), name="estimate_tms"),
     url(r'^api/atlassian_oauth', AtlassianOAuth.as_view(), name='atlassian_oauth'),
+    url(r'^api/user_communication/', UserCommunicationView.as_view(), name="user_communication"),
+    url(r'^api/critical_paths', CriticalPathsView.as_view(), name="critical_paths"),
     url(r'^api/verification/activate/', activate, name='activate'),
     url(r'^api/verification/send-email/', email_verification, name='email_verification'),
 
